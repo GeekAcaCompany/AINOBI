@@ -9,6 +9,7 @@ import {
   isPublicRoute,
   sendUnauthorized,
 } from "../api-auth.ts";
+import { isAgentChatConfigured } from "../services/agent-chat-models.ts";
 import { handleCoursewareAiTeachersList } from "../services/courseware-ai-teachers-http.ts";
 import { handleAgentHandoffRedeem } from "../services/agent-handoff-http.ts";
 import { handleEmbedHandoffMint } from "../services/embed-handoff-http.ts";
@@ -73,7 +74,7 @@ import { requestPathname, sendJson } from "./request.ts";
  *
  * | Method | Path | Auth | Notes |
  * |--------|------|------|-------|
- * | GET | /health | public | Liveness |
+ * | GET | /health | public | Liveness, and whether the editor assistant has a model configured |
  * | GET | /plugins/ainobi-courseware-codex-plugin.zip | public | Codex plugin pack; MCP URL injected at download time |
  * | POST/GET/DELETE | /mcp | session | Codex / ChatGPT Apps MCP (Streamable HTTP); Bearer = access_token or org Agent ainobi_ak_* |
  * | GET | /.well-known/oauth-protected-resource | public | OAuth protected-resource metadata (MCP) |
@@ -176,7 +177,7 @@ export function createHttpHandler(): (req: IncomingMessage, res: ServerResponse)
       }
 
       if (method === "GET" && pathname === "/health") {
-        sendJson(res, 200, { ok: true });
+        sendJson(res, 200, { ok: true, editorAssistant: isAgentChatConfigured() });
         return;
       }
 

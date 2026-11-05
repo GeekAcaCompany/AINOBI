@@ -69,7 +69,7 @@ Everything above works with no API keys. Some features call an outside service a
 | --- | --- |
 | Narration, in 30 voices | `GEMINI_API_KEY` |
 | AI scoring of essays and recordings | `GEMINI_API_KEY` |
-| AI assistant in the editor | `ANTHROPIC_API_KEY` |
+| AI assistant in the editor (its panel is hidden until both are set) | `ANTHROPIC_API_KEY` and `ANTHROPIC_BASE_URL` |
 | Generating new AI teachers | `LLM_API_KEY` |
 | Image generation | `OPENAI_API_KEY` |
 | Web search for the agent | `TAVILY_API_KEY` |

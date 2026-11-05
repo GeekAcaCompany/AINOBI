@@ -6,6 +6,7 @@ import {
   DEFAULT_AGENT_CHAT_MODEL_ID,
   agentChatModelEnvSuffix,
   assertAgentChatModelSupported,
+  isAgentChatConfigured,
   resolveAgentChatModel,
   resolveAgentChatModelApiIdDetails,
   resolveAgentChatModelEndpoint,
@@ -185,4 +186,19 @@ test('resolveAgentChatModel accepts the new ids and ANTHROPIC_MODEL fallback', (
   }
   assert.equal(assertAgentChatModelSupported('gpt-6-sol').id, 'gpt-6-sol');
   assert.equal(agentChatModelEnvSuffix('deepseek-v4.1-flash'), 'DEEPSEEK_V4_1_FLASH');
+});
+
+test('the assistant counts as configured only with both a key and an endpoint for the default model', () => {
+  assert.equal(isAgentChatConfigured({}), false);
+  assert.equal(isAgentChatConfigured({ ANTHROPIC_API_KEY: 'k' }), false);
+  assert.equal(isAgentChatConfigured({ ANTHROPIC_BASE_URL: 'https://x.example' }), false);
+  assert.equal(isAgentChatConfigured({ ANTHROPIC_API_KEY: ' ', ANTHROPIC_BASE_URL: 'https://x.example' }), false);
+  assert.equal(isAgentChatConfigured({ ANTHROPIC_API_KEY: 'k', ANTHROPIC_BASE_URL: 'https://x.example' }), true);
+  assert.equal(isAgentChatConfigured({ ANTHROPIC_AUTH_TOKEN: 't', ANTHROPIC_BASE_URL: 'https://x.example' }), true);
+  assert.equal(
+    isAgentChatConfigured({ ANTHROPIC_DEEPSEEK_V4_FLASH_API_KEY: 'k', ANTHROPIC_DEEPSEEK_V4_FLASH_BASE_URL: 'https://x.example' }),
+    true,
+  );
+  // A key for another model does not help the model the panel starts on.
+  assert.equal(isAgentChatConfigured({ ANTHROPIC_GROK_4_6_API_KEY: 'k' }), false);
 });

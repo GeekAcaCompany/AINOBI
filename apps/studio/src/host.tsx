@@ -14,6 +14,7 @@ export type StudioConfig = {
   platformApi: string;
   videoRender: boolean;
   teacherGeneration: boolean;
+  editorAssistant: boolean;
   embedOrigins: string[];
 };
 
@@ -39,7 +40,7 @@ export function connectStudio(config: StudioConfig): TeacherClient {
   configureCoursewareHost({
     config: {
       origin: { coursewareApi: config.coursewareApi, api: config.platformApi, manage: '', static: '' },
-      modules: { courseware: { assetPresignEnabled: true } },
+      modules: { courseware: { assetPresignEnabled: true, editorAssistantEnabled: config.editorAssistant } },
     },
     coursewareApi: createCoursewareRequester({ baseUrl: config.coursewareApi, getAccessToken }),
     api,

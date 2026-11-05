@@ -3427,6 +3427,8 @@ function CoursewareEditorContent({ coursewareId }: { coursewareId: string }) {
   const [isTimelineResizing, setIsTimelineResizing] = useState(false);
 
   const isTimelineCollapsed = timelineHeight <= TIMELINE_COLLAPSED_HEIGHT + 2;
+  // The right panel holds only the assistant, so a host without a model configured drops the whole panel.
+  const isEditorAssistantEnabled = config.modules?.courseware?.editorAssistantEnabled !== false;
 
   useEffect(() => {
     writeCoursewareEditorLayoutToStorage({
@@ -8455,97 +8457,99 @@ function CoursewareEditorContent({ coursewareId }: { coursewareId: string }) {
           </div>
         </div>
 
-        <div
-          className={`relative min-h-0 shrink-0 border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 ${
-            isRightPanelResizing ? "" : "transition-[width] duration-300 ease-out"
-          }`}
-          style={{
-            width: isRightPanelCollapsed ? RIGHT_PANEL_COLLAPSED_WIDTH : rightPanelWidth,
-          }}
-        >
-          {!isRightPanelCollapsed ? (
-            <div
-              role="separator"
-              aria-orientation="vertical"
-              aria-label="Resize right panel"
-              title="Resize right panel"
-              className={`absolute inset-y-0 -left-1 z-10 w-2 cursor-col-resize transition-colors hover:bg-blue-500/20 ${
-                isRightPanelResizing ? "bg-blue-500/25" : ""
-              }`}
-              onPointerDown={beginRightPanelResize}
-            />
-          ) : null}
-          <button
-            className="absolute -left-2.5 top-1/2 z-20 flex h-10 w-5 -translate-y-1/2 items-center justify-center rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 shadow transition hover:border-slate-400 dark:hover:border-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
-            onClick={() => setIsRightPanelCollapsed((v) => !v)}
-            title={isRightPanelCollapsed ? t("coursewareEditor.panels.expandRight") : t("coursewareEditor.panels.collapseRight")}
-            aria-label={isRightPanelCollapsed ? t("coursewareEditor.panels.expandRight") : t("coursewareEditor.panels.collapseRight")}
-          >
-            {isRightPanelCollapsed ? (
-              <ChevronsLeft className="h-3.5 w-3.5" />
-            ) : (
-              <ChevronsRight className="h-3.5 w-3.5" />
-            )}
-          </button>
+        {isEditorAssistantEnabled ? (
           <div
-            className={`${isRightPanelCollapsed ? "flex" : "hidden"} h-full flex-col items-center gap-2 pt-8`}
-            aria-hidden={!isRightPanelCollapsed}
+            className={`relative min-h-0 shrink-0 border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 ${
+              isRightPanelResizing ? "" : "transition-[width] duration-300 ease-out"
+            }`}
+            style={{
+              width: isRightPanelCollapsed ? RIGHT_PANEL_COLLAPSED_WIDTH : rightPanelWidth,
+            }}
           >
+            {!isRightPanelCollapsed ? (
+              <div
+                role="separator"
+                aria-orientation="vertical"
+                aria-label="Resize right panel"
+                title="Resize right panel"
+                className={`absolute inset-y-0 -left-1 z-10 w-2 cursor-col-resize transition-colors hover:bg-blue-500/20 ${
+                  isRightPanelResizing ? "bg-blue-500/25" : ""
+                }`}
+                onPointerDown={beginRightPanelResize}
+              />
+            ) : null}
             <button
-              className="flex h-7 w-7 items-center justify-center rounded border border-blue-400/50 bg-blue-500/10 text-blue-700 transition hover:bg-blue-500/15 dark:border-blue-500/60 dark:bg-blue-500/20 dark:text-blue-300"
-              onClick={() => {
-                setRightTab("ai");
-                setIsRightPanelCollapsed(false);
-              }}
-              title={t("coursewareEditor.common.aiAssistant")}
-              aria-label={t("coursewareEditor.panels.expandAiAssistant")}
+              className="absolute -left-2.5 top-1/2 z-20 flex h-10 w-5 -translate-y-1/2 items-center justify-center rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 shadow transition hover:border-slate-400 dark:hover:border-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
+              onClick={() => setIsRightPanelCollapsed((v) => !v)}
+              title={isRightPanelCollapsed ? t("coursewareEditor.panels.expandRight") : t("coursewareEditor.panels.collapseRight")}
+              aria-label={isRightPanelCollapsed ? t("coursewareEditor.panels.expandRight") : t("coursewareEditor.panels.collapseRight")}
             >
-              <WandSparkles className="h-4 w-4" />
+              {isRightPanelCollapsed ? (
+                <ChevronsLeft className="h-3.5 w-3.5" />
+              ) : (
+                <ChevronsRight className="h-3.5 w-3.5" />
+              )}
             </button>
-          </div>
-          <div
-            className={`${isRightPanelCollapsed ? "hidden" : "flex"} h-full min-h-0 w-full flex-col`}
-            aria-hidden={isRightPanelCollapsed}
-          >
-            <div className="relative min-h-0 flex-1 overflow-hidden">
-              <div className="flex h-full min-h-0 flex-col overflow-hidden">
-                  <CoursewareEditorAiChatIsland
-                    themeMode={themeMode}
-                    coursewareId={coursewareId}
-                    onAgentSessionContextChange={handleAgentSessionContextChange}
-                    selectedSlideIndex={selectedSlideIndex}
-                    totalSlides={scene.slide_elements.length}
-                    selectedCanvasElements={selectedCanvasElementsForAgent}
-                    currentSlideId={slide?.element_id ?? null}
-                    getCurrentSlideJson={getCurrentSlideJson}
-                    onAddSlide={addSlide}
-                    onDeleteCurrentSlide={() => removeSlide(selectedSlideIndex)}
-                    onSubmitMessage={handleAiPanelSubmit}
-                    onAgentWorkingChange={handleAgentWorkingChange}
-                    onAgentChatFrozenElementIdsChange={handleAgentChatFrozenElementIdsChange}
-                    onSubmitAgentUserQuestion={handleSubmitAgentUserQuestion}
-                    onAssistantStreamEnd={handleAssistantStreamEnd}
-                    onClearAgentServerHistory={remoteCoursewareApiEnabled ? handleClearAiHistory : undefined}
-                    manualMarkModeActive={manualMarkMode}
-                    onManualMarkModeToggle={handleManualMarkModeToggle}
-                    onClearManualMarks={handleClearManualMarks}
-                    manualMarkRegions={manualMarkRegions}
-                    onManualMarkRegionsChange={setManualMarkRegions}
-                    pendingManualMark={pendingManualMark}
-                    onConfirmPendingManualMark={handleConfirmPendingManualMark}
-                    onCancelPendingManualMark={handleCancelPendingManualMark}
-                    manualMarkPlayheadMs={Math.max(0, Math.floor(currentTime))}
-                    manualMarkSlideId={slide?.element_id ?? null}
-                    uploadedAssetsRegistry={uploadedAssetsRegistry}
-                    sectionCourseId={
-                      editorSectionContext?.courseId ?? readCoursewareEditorCourseIdFromUrl()
-                    }
-                    orgId={editorSectionContext?.orgId?.trim() || coursewareOrgId?.trim() || null}
-                  />
+            <div
+              className={`${isRightPanelCollapsed ? "flex" : "hidden"} h-full flex-col items-center gap-2 pt-8`}
+              aria-hidden={!isRightPanelCollapsed}
+            >
+              <button
+                className="flex h-7 w-7 items-center justify-center rounded border border-blue-400/50 bg-blue-500/10 text-blue-700 transition hover:bg-blue-500/15 dark:border-blue-500/60 dark:bg-blue-500/20 dark:text-blue-300"
+                onClick={() => {
+                  setRightTab("ai");
+                  setIsRightPanelCollapsed(false);
+                }}
+                title={t("coursewareEditor.common.aiAssistant")}
+                aria-label={t("coursewareEditor.panels.expandAiAssistant")}
+              >
+                <WandSparkles className="h-4 w-4" />
+              </button>
+            </div>
+            <div
+              className={`${isRightPanelCollapsed ? "hidden" : "flex"} h-full min-h-0 w-full flex-col`}
+              aria-hidden={isRightPanelCollapsed}
+            >
+              <div className="relative min-h-0 flex-1 overflow-hidden">
+                <div className="flex h-full min-h-0 flex-col overflow-hidden">
+                    <CoursewareEditorAiChatIsland
+                      themeMode={themeMode}
+                      coursewareId={coursewareId}
+                      onAgentSessionContextChange={handleAgentSessionContextChange}
+                      selectedSlideIndex={selectedSlideIndex}
+                      totalSlides={scene.slide_elements.length}
+                      selectedCanvasElements={selectedCanvasElementsForAgent}
+                      currentSlideId={slide?.element_id ?? null}
+                      getCurrentSlideJson={getCurrentSlideJson}
+                      onAddSlide={addSlide}
+                      onDeleteCurrentSlide={() => removeSlide(selectedSlideIndex)}
+                      onSubmitMessage={handleAiPanelSubmit}
+                      onAgentWorkingChange={handleAgentWorkingChange}
+                      onAgentChatFrozenElementIdsChange={handleAgentChatFrozenElementIdsChange}
+                      onSubmitAgentUserQuestion={handleSubmitAgentUserQuestion}
+                      onAssistantStreamEnd={handleAssistantStreamEnd}
+                      onClearAgentServerHistory={remoteCoursewareApiEnabled ? handleClearAiHistory : undefined}
+                      manualMarkModeActive={manualMarkMode}
+                      onManualMarkModeToggle={handleManualMarkModeToggle}
+                      onClearManualMarks={handleClearManualMarks}
+                      manualMarkRegions={manualMarkRegions}
+                      onManualMarkRegionsChange={setManualMarkRegions}
+                      pendingManualMark={pendingManualMark}
+                      onConfirmPendingManualMark={handleConfirmPendingManualMark}
+                      onCancelPendingManualMark={handleCancelPendingManualMark}
+                      manualMarkPlayheadMs={Math.max(0, Math.floor(currentTime))}
+                      manualMarkSlideId={slide?.element_id ?? null}
+                      uploadedAssetsRegistry={uploadedAssetsRegistry}
+                      sectionCourseId={
+                        editorSectionContext?.courseId ?? readCoursewareEditorCourseIdFromUrl()
+                      }
+                      orgId={editorSectionContext?.orgId?.trim() || coursewareOrgId?.trim() || null}
+                    />
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        ) : null}
       </div>
 
       {showExportModal ? (

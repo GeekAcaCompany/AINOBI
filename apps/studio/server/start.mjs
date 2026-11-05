@@ -230,6 +230,16 @@ const isReachable = async (url) => {
   }
 };
 
+/** Whether the courseware service found a model for the editor's assistant. */
+const readEditorAssistant = async (url) => {
+  try {
+    const response = await fetch(`${url}/health`, { signal: AbortSignal.timeout(5000) });
+    return (await response.json()).editorAssistant === true;
+  } catch {
+    return false;
+  }
+};
+
 /** Resolves true once the service answers, false if it exits or does not answer in time. */
 const waitUntilHealthy = async (url, child, timeoutMs = 120_000) => {
   const deadline = Date.now() + timeoutMs;
@@ -305,6 +315,7 @@ async function main() {
   const videoProbe = setInterval(() => void isReachable(videoRenderUrl).then((up) => { videoRender = up; }), 15_000);
   videoProbe.unref();
 
+  let editorAssistant = false;
   const web = await startWeb({
     port: ports.web,
     distDir: join(studioDir, 'dist'),
@@ -317,6 +328,7 @@ async function main() {
       platformApi: `http://127.0.0.1:${ports.host}/v1`,
       videoRender,
       teacherGeneration: teachers.canGenerate(),
+      editorAssistant,
       embedOrigins: allowedEmbedders,
     }),
   });
@@ -342,8 +354,10 @@ async function main() {
     await stop(1);
     return;
   }
+  editorAssistant = await readEditorAssistant(`http://127.0.0.1:${ports.courseware}`);
   console.log(`\n  AINOBI Studio   http://127.0.0.1:${ports.web}`);
   console.log(`  Agent (MCP)     http://127.0.0.1:${ports.courseware}/mcp   configured in .mcp.json`);
+  console.log(`  Editor AI       ${editorAssistant ? 'on' : 'off (set ANTHROPIC_API_KEY and ANTHROPIC_BASE_URL in .env.local)'}`);
   console.log(`  Video export    ${videoRender ? videoRenderUrl : 'off (optional, see docs/video-export.md)'}\n`);
 }
 

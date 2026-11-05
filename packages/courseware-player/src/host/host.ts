@@ -41,7 +41,7 @@ export type CoursewareHostAuth = {
 
 export type CoursewareHostConfig = {
   origin: Record<string, string>;
-  modules?: { courseware?: { assetPresignEnabled?: boolean }; [name: string]: any };
+  modules?: { courseware?: { assetPresignEnabled?: boolean; editorAssistantEnabled?: boolean }; [name: string]: any };
   [name: string]: any;
 };
 

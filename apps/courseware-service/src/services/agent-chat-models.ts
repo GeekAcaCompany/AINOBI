@@ -222,3 +222,9 @@ export function resolveAgentChatModelEndpoint(
   }
   return { apiKey: apiKey || undefined, baseUrl: baseUrl || undefined };
 }
+
+/** Whether the editor's assistant can answer: the model its panel starts on has both a credential and an endpoint. */
+export function isAgentChatConfigured(env: NodeJS.ProcessEnv = process.env): boolean {
+  const { apiKey, baseUrl } = resolveAgentChatModelEndpoint(MODEL_BY_ID.get(DEFAULT_AGENT_CHAT_MODEL_ID)!, env);
+  return Boolean(apiKey && baseUrl);
+}
