@@ -50,6 +50,10 @@ describe('coursewareEnv', () => {
     expect(result.AINOBI_BACKEND_API_BASE).toBe('http://127.0.0.1:5601/v1');
   });
 
+  it('tells the service there is no manage app, so agents get no dead links', () => {
+    expect(env({}).AINOBI_MANAGE_VIEW_DISABLED).toBe('true');
+  });
+
   it('keeps the service on loopback whatever the user file says', () => {
     expect(env({ HOST: '0.0.0.0' }).HOST).toBe('127.0.0.1');
   });

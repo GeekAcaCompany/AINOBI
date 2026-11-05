@@ -14,6 +14,13 @@ describe('buildCoursewareUiLinks', () => {
     manageCourseId: 'course-9',
   };
 
+  it('leaves the manage links out when there is no manage app', () => {
+    const { links, paths } = buildCoursewareUiLinks({ ...baseSpec, manageOrigin: null });
+
+    assert.deepEqual(Object.keys(links).sort(), ['courseware_editor', 'courseware_preview']);
+    assert.deepEqual(Object.keys(paths).sort(), ['courseware_editor', 'courseware_preview']);
+  });
+
   it('builds preview/editor/manage links with the handoff code', () => {
     const { links, paths } = buildCoursewareUiLinks(baseSpec);
 

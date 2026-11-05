@@ -15,6 +15,7 @@ interface PersistedSessionFile {
   session_id: string;
   scene: unknown;
   live_preview_session_id?: string | null;
+  courseware_synced_at?: string | null;
 }
 
 /** Last serialized scene published (or seeded) per workspace + live preview session. */

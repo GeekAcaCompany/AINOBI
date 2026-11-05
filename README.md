@@ -26,6 +26,8 @@ The first run installs and builds, which takes a few minutes. Then open <http://
 
 The database is PGlite (PostgreSQL in WebAssembly), Redis is an in-memory server, and objects are files on disk, all inside the Node.js process. It is built for one person or a small team on one machine.
 
+If a port is taken, `npm start` stops and names it. Add `AINOBI_PORT_OFFSET=100` to `.env.local` to move every port together, and Studio is then at <http://127.0.0.1:5700>.
+
 If the build stops with `An Application Control policy has blocked this file`, Windows is refusing a compiled dependency because of where it is. Clone into an ordinary project directory instead of a temporary one.
 
 ## Pick only what you need
@@ -46,7 +48,7 @@ The [integration guide](docs/integration.md) shows the code for each, and how to
 
 ## Use it from your coding agent
 
-With Studio running, Claude Code and Codex can create courseware that appears in the list as they work. Start them from this directory; `npm start` writes the connection to `.mcp.json`. See [docs/agents.md](docs/agents.md).
+With Studio running, Claude Code and Codex can create courseware that appears in the list as they work. `npm start` writes the connection to `.mcp.json`, so start your agent from this directory after Studio prints its `AINOBI Studio` line; a session already running needs a restart. See [docs/agents.md](docs/agents.md).
 
 You can also hand the whole job over. Give your agent this repository and say:
 

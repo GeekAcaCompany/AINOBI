@@ -159,6 +159,11 @@ export type FlushAgentPersistenceOptions = {
    * cannot wipe a previously generated courseware in DB.
    */
   skipIfEmpty?: boolean;
+  /**
+   * The courseware `updated_at` this scene was synced to. When set, a newer row
+   * throws CoursewareVersionConflictError instead of being overwritten.
+   */
+  baseUpdatedAt?: string;
 };
 
 /**
@@ -217,7 +222,7 @@ async function writeAgentWorkspacePersistence(
 
   const orgId = await resolveAgentPersistenceOrgId(key, coursewareOrgId);
   // Host flush is create-or-update by design: the CLI just rewrote the workspace scene and
-  // is authoritative for this turn, and there is no client-supplied base updated_at to check.
+  // is authoritative for this turn, unless the caller passes the base updated_at it synced to.
   // Access was already enforced when the chat turn wired AINOBI_COURSEWARE_KEY.
   const dto = await saveCourseware({
     mode: 'upsert',
@@ -226,6 +231,7 @@ async function writeAgentWorkspacePersistence(
     title,
     actor,
     ...(orgId ? { orgId } : {}),
+    ...(options?.baseUpdatedAt ? { baseUpdatedAt: options.baseUpdatedAt } : {}),
   });
 
   await patchAgentWorkspaceSessionSyncedAt(workspaceDir, dto.updatedAt);

@@ -39,6 +39,11 @@ describe('assertSafeAinobiExecArgv', () => {
     assert.equal(result.ok, false);
   });
 
+  it('allows the timing commands the skill teaches', () => {
+    assert.equal(assertSafeAinobiExecArgv(['highlight', 'add', '2', 'el_1']).ok, true);
+    assert.equal(assertSafeAinobiExecArgv(['flow-pause', 'list', '2']).ok, true);
+  });
+
   it('rejects unknown roots', () => {
     const result = assertSafeAinobiExecArgv(['curl', 'https://evil.example']);
     assert.equal(result.ok, false);

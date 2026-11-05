@@ -78,7 +78,7 @@ function createAuthorizedRequest(session: AinobiAuthorizedSession): IncomingMess
   return req;
 }
 
-function resolveWorkspaceRelativePath(workspaceDir: string, relativePath: string): string | null {
+export function resolveWorkspaceRelativePath(workspaceDir: string, relativePath: string): string | null {
   const rel = relativePath.trim();
   if (!rel || isAbsolute(rel) || rel.includes('..')) {
     return null;

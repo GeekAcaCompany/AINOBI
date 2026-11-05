@@ -1,6 +1,6 @@
 ---
 name: ainobi-courseware
-description: Creates, incrementally edits, validates, and saves AINOBI courseware JSON through MCP tools (course_list, courseware_list, courseware_open, ainobi_exec, courseware_save, courseware_ui_links, asset upload, narration/search) and host fallbacks. Use when the user mentions AINOBI courseware, courses, slides, scenes, quizzes, narration, previewing the courseware, or @ainobi-courseware.
+description: Creates, incrementally edits, validates, and saves AINOBI courseware JSON through MCP tools (course_list, courseware_list, courseware_open, ainobi_exec, courseware_workspace_write, courseware_save, courseware_ui_links, asset upload, narration/search) and host fallbacks. Use when the user mentions AINOBI courseware, courses, slides, scenes, quizzes, narration, previewing the courseware, or @ainobi-courseware.
 ---
 
 # AINOBI Courseware (Codex Plugin L0)
@@ -34,6 +34,7 @@ Use dedicated MCP tools for hosted / billed / catalog work. Use **`ainobi_exec`*
 | **Preview link (login-free)** | **`courseware_ui_links`** | Guessing URLs / asking the user to log in |
 | **Register agent name (onboarding)** | **`agent_set_name`** (`name`) | Leaving the agent unnamed in the console list |
 | Open / status / close | `courseware_open` / `status` / `close` | — |
+| Prepare a batch plan, quiz layout, or HTML file | `courseware_workspace_write` | Guessing server paths / shell redirects |
 | Persist scene | `courseware_save` | `ainobi_exec ["save"]` |
 | AI teacher catalog | `courseware_ai_teachers` | `ainobi_exec ["ai-teachers",…]` |
 | Narration / TTS | `courseware_narration` (`--teacher-id`) | `ainobi_exec ["narration",…]` |
@@ -47,11 +48,25 @@ Use dedicated MCP tools for hosted / billed / catalog work. Use **`ainobi_exec`*
 
 ### What `ainobi_exec` **can** do
 
-Allowlisted roots: `status`, `help`, `validate`, `inspect`, `recall`, `scene`, `slide`, `element`, `animation`, `quiz`, `batch`, `reference`.
+Allowlisted roots: `status`, `help`, `validate`, `inspect`, `recall`, `scene`, `slide`, `element`, `animation`, `quiz`, `batch`, `reference`, `highlight`, `flow-pause`.
 
-Typical: `["slide","list","--verbose"]`, `["element","insert",…]`, `["batch","apply","--file",…]`, `["validate","--publish"]`, `["help","element","image"]`.
+Typical: `["slide","list","--verbose"]`, `["element","insert",…]`, `["batch","apply","--file","batch/plan.json"]`, `["validate","--publish"]`, `["help","element","image"]`.
 
 Blocked after `courseware_open`: `init`, `load`. Blocked always: `save`, `narration`, `search`, `image`, `doc`, `tts`, `ai-teachers`, `asset`, shell meta (`&&`, `|`, `;`, redirects), absolute/`..` filesystem paths in argv.
+
+### Files on this surface
+
+`ainobi_exec` runs in the session's workspace and cannot write files itself. Create them with **`courseware_workspace_write`** (`mcp_session_id`, relative `path`, text `content`), then pass the same relative path to `ainobi_exec`.
+
+The references were written for a shell. Read them with these substitutions:
+
+- `$AINOBI_WORK_DIR/x`, `$WORK_DIR/x`, and `work_dir/x` → the relative path `x`.
+- `… > q.jsx` → run the command without the redirect, then write its output with `courseware_workspace_write`.
+- "Write" and "Read" tools → `courseware_workspace_write`, and `ainobi_exec` commands such as `slide get` and `quiz get`.
+
+### On a local AINOBI Studio
+
+Studio is the single-machine edition: one organization and no courses. There, `course_*`, `courseware_bind_section`, `courseware_import_to_course`, `courseware_export_from_course`, and `agent_set_name` do nothing useful, so go straight to `courseware_list` / `courseware_create`. `courseware_ui_links` returns only the preview and editor links. Teachers are created on Studio's home page; narration, image generation, and web search report an error until the owner configures their keys in `.env.local`, so tell the user which feature needs configuring and continue with silent slides.
 
 ## Tool surface
 
@@ -67,7 +82,8 @@ Blocked after `courseware_open`: `init`, `load`. Blocked always: `save`, `narrat
 
 6. **`courseware_status`** — session / workspace binding.
 7. **`ainobi_exec`** — allowlisted scene CLI only (see table above).
-8. **`courseware_save`** — persist to AINOBI DB.
+    **`courseware_workspace_write`** — create the files `ainobi_exec` reads (see "Files on this surface").
+8. **`courseware_save`** — persist to AINOBI DB. Refuses with `VERSION_CONFLICT` when someone changed the courseware after this session loaded it (see below).
 9. **`courseware_ai_teachers`** — required before narration; show names (+ language); keep ids internal.
 10. **`courseware_narration`** — billed TTS (`--teacher-id`).
 11. **`courseware_search`** — billed web search.
@@ -79,6 +95,17 @@ Blocked after `courseware_open`: `init`, `load`. Blocked always: `save`, `narrat
 17. **`agent_set_name`** — register/rename THIS agent's display name (ask the user first; default to the client name). Called during connect onboarding.
 18. **`course_close`-family** — `course_create` / `course_update` manage the course CONTAINER (see table above).
 19. **`courseware_close`** / **`courseware_recall`**.
+
+### Saving when someone else edited
+
+The user can edit in the browser while you work. On `VERSION_CONFLICT`, nothing was saved and their change is intact:
+
+1. `courseware_open` with the same `courseware_id` to load the latest version. This discards your unsaved edits, so keep your batch plan to replay.
+2. Reapply your edits on top, then `courseware_save`.
+
+Use `courseware_save` with `force: true` only when the user says their other change can be replaced. Reopen before each round of edits if the user may have been editing.
+
+An agent save does not redraw the courseware's cover image; the editor regenerates it the next time the courseware is saved there.
 
 ### Course vs courseware (hard distinction)
 
@@ -189,7 +216,7 @@ Do **not** run `init` / `load` / `slide insert` / `element insert` / `narration`
 
 ## Authoring modes (required)
 
-- **Bulk build** (new multi-slide course, large structural rewrite after framework approval): use `ainobi_exec` to Write batch JSON under `work_dir/batch/` (resolve `work_dir` from `status` / `scene info --verbose`), then `batch dry-run` → `batch apply`. Spot-check with `slide get` / `inspect`. Details: [batch-operations.md](references/batch-operations.md).
+- **Bulk build** (new multi-slide course, large structural rewrite after framework approval): `courseware_workspace_write` a plan to `batch/plan.json`, then `ainobi_exec` `batch dry-run --file batch/plan.json` → `batch apply --file batch/plan.json`. Spot-check with `slide get` / `inspect`. Details: [batch-operations.md](references/batch-operations.md).
 - **Micro-edit**: incremental `ainobi_exec` (`element insert|update`, `animation preset`, …) — one call per logical change; inspect `ok`/`warnings` before continuing.
 - **TTS-first** on narrated slides: teacher catalog → transcript → **`courseware_narration`** → timed inserts → motion. Narration is **never** in batch. Read [topics/narration.md](references/topics/narration.md) first.
 - **Silent slides:** still set explicit `--start` / `--duration` and motion when the slide has a timeline. Read [topics/motion-timing.md](references/topics/motion-timing.md).
@@ -242,7 +269,7 @@ Do **not** run `init` / `load` / `slide insert` / `element insert` / `narration`
 | Need | File |
 |------|------|
 | Requirements checklist | [workflows.md](references/workflows.md) |
-| Command flags encyclopedia | [commands.md](references/commands.md) — if present; else `ainobi_exec` `["help", …]` |
+| Command flags | `ainobi_exec` `["help", …]` |
 | Aesthetics / TTS polish | [design-excellence.md](references/design-excellence.md) |
 | Quiz AST whitelist | [quiz-components.md](references/quiz-components.md) |
 | Bulk structure | [batch-operations.md](references/batch-operations.md) |

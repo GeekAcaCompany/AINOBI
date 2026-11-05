@@ -18,10 +18,10 @@ Only Node.js may be required. Video export is the one exception, and only if the
 
 This is `npm start`, and nothing else needs installing:
 
-1. Run `npm start` in the background and wait for the `AINOBI Studio` line. The first run takes a few minutes.
-2. Open <http://127.0.0.1:5600>. The list, editor, and preview are there.
-3. Follow [docs/agents.md](docs/agents.md) to connect their agent. In Claude Code, restart from this directory so it reads `.mcp.json`.
-4. Make a short sample with `courseware_create` and `courseware_save`, and show them it in the list.
+1. Run `npm start` in the background and wait for the `AINOBI Studio` line, which means everything is ready. The first run takes a few minutes. If a port is taken, add `AINOBI_PORT_OFFSET=100` to `.env.local` and run it again.
+2. Open the address on that line. The list, editor, and preview are there.
+3. Follow [docs/agents.md](docs/agents.md) to connect their agent. A running session cannot pick up a new `.mcp.json`: if the `courseware_*` tools are missing, tell the user to restart Claude Code from this directory and approve the `ainobi` server, then continue from their next message. Do not write your own MCP client.
+4. Make a short sample with `courseware_create`, `ainobi_exec`, and `courseware_save`, and show them it in the list.
 
 ### Authoring courseware
 

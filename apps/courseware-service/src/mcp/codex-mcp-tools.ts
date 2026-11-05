@@ -8,10 +8,12 @@ import type { AinobiAuthorizedSession } from '../auth/ainobi-user-session.ts';
 import { resolveHandoffAccessToken } from '../auth/ainobi-user-session.ts';
 import { dataSource } from '../db/db.ts';
 import { ensureDataSource } from '../db/ensure-data-source.ts';
-import { readFile } from 'node:fs/promises';
+import { mkdir, readFile, realpath, writeFile } from 'node:fs/promises';
+import { dirname, extname, relative, sep } from 'node:path';
 import { listAinobiCoursesForOrg } from '../services/ainobi-course-catalog.ts';
 import { fetchOrgAiTeachersFromPlatform } from '../services/ainobi-ai-teachers.ts';
 import { runHostNarration } from '../services/agent-narration-host-run.ts';
+import { invalidateAgentWorkspaceSessionCache, readAgentWorkspaceSession } from '../services/agent-live-preview-flush.ts';
 import { flushAgentWorkspacePersistenceWhenIdle } from '../services/agent-persistence-flush.ts';
 import { recallToolResultBlob } from '../services/agent-tool-result-archive.ts';
 import { writeSceneJsonAndAinobiLoad } from '../services/courseware-cli-preload.ts';
@@ -20,8 +22,9 @@ import {
   assertOrgIdManageAccess,
 } from '../services/courseware-design-templates-service.ts';
 import { assertCoursewareRequestAccess } from '../services/courseware-org-guard.ts';
-import { getCoursewareEntityById, listCoursewareForOrg, saveCourseware } from '../services/courseware-service.ts';
+import { CoursewareVersionConflictError, getCoursewareEntityById, listCoursewareForOrg, saveCourseware } from '../services/courseware-service.ts';
 import { createBlankCoursewareScene, newCoursewareBusinessKey } from './codex-mcp-blank-scene.ts';
+import { resolveWorkspaceRelativePath } from './codex-mcp-media-tools.ts';
 import { CONTENT_LANGUAGES, isContentLanguage } from '@ainobi/courseware-core/content-language.ts';
 import { billNarrationTtsCredits } from '../services/narration-tts-billing.ts';
 import {
@@ -428,6 +431,8 @@ export async function coursewareRenameTool(
       coursewareId: cw.id,
       coursewareKey: cw.key,
       title: dto.title ?? title,
+      previousUpdatedAt: cw.updatedAt.toISOString(),
+      updatedAt: dto.updatedAt,
     });
 
     return {
@@ -593,9 +598,62 @@ export async function ainobiExecTool(
   };
 }
 
+const WORKSPACE_TEXT_EXTENSIONS = new Set(['.json', '.jsx', '.tsx', '.html', '.css', '.svg', '.md', '.txt']);
+const MAX_WORKSPACE_TEXT_BYTES = 5 * 1024 * 1024;
+
+/** Writes one text file inside an MCP workspace. Dot directories hold session state, and the loaded scene is not an input. */
+export async function writeWorkspaceTextFile(
+  workspace: { workspaceDir: string; scenePath: string },
+  path: string | undefined,
+  content: string | undefined,
+): Promise<Record<string, unknown>> {
+  const target = path ? resolveWorkspaceRelativePath(workspace.workspaceDir, path) : null;
+  if (!target) {
+    return toolError('path must be relative to the workspace and cannot contain ..', 'USAGE');
+  }
+  const rel = relative(workspace.workspaceDir, target);
+  if (!rel || rel.split(sep).some((segment) => segment.startsWith('.')) || target === workspace.scenePath) {
+    return toolError('path cannot point at session state or the loaded scene', 'USAGE');
+  }
+  if (!WORKSPACE_TEXT_EXTENSIONS.has(extname(target).toLowerCase())) {
+    return toolError(`Unsupported extension. Supported: ${[...WORKSPACE_TEXT_EXTENSIONS].join(', ')}`, 'USAGE');
+  }
+  if (typeof content !== 'string') {
+    return toolError('content is required', 'USAGE');
+  }
+  const bytes = Buffer.byteLength(content, 'utf8');
+  if (bytes > MAX_WORKSPACE_TEXT_BYTES) {
+    return toolError(`content exceeds ${MAX_WORKSPACE_TEXT_BYTES} bytes`, 'USAGE');
+  }
+  await mkdir(dirname(target), { recursive: true });
+  const root = await realpath(workspace.workspaceDir);
+  const parent = await realpath(dirname(target));
+  if (parent !== root && !parent.startsWith(root + sep)) {
+    return toolError('path resolves outside the workspace', 'USAGE');
+  }
+  await writeFile(target, content, 'utf8');
+  return { ok: true, data: { path: rel.split(sep).join('/'), bytes } };
+}
+
+/** Lets a client that shares no filesystem with the service prepare batch plans and quiz layouts. */
+export async function coursewareWorkspaceWriteTool(
+  caller: AinobiAuthorizedSession,
+  args: { mcp_session_id?: string; path?: string; content?: string },
+): Promise<Record<string, unknown>> {
+  const session = await requireOwnedSession(caller, args.mcp_session_id);
+  if (isToolError(session)) {
+    return session;
+  }
+  const hydrateErr = await ensureHydratedWorkspace(caller, session);
+  if (hydrateErr) {
+    return hydrateErr;
+  }
+  return writeWorkspaceTextFile(session, args.path, args.content);
+}
+
 export async function coursewareSaveTool(
   caller: AinobiAuthorizedSession,
-  args: { mcp_session_id?: string },
+  args: { mcp_session_id?: string; force?: boolean },
 ): Promise<Record<string, unknown>> {
   const session = await requireOwnedSession(caller, args.mcp_session_id);
   if (isToolError(session)) {
@@ -607,12 +665,27 @@ export async function coursewareSaveTool(
   }
 
   await ensureDataSource();
-  const flushed = await flushAgentWorkspacePersistenceWhenIdle(
-    session.workspaceDir,
-    session.coursewareKey,
-    actorFromSession(caller),
-    session.coursewareOrgId,
-  );
+  invalidateAgentWorkspaceSessionCache(session.workspaceDir);
+  const syncedAt = (await readAgentWorkspaceSession(session.workspaceDir))?.courseware_synced_at?.trim();
+  let flushed;
+  try {
+    flushed = await flushAgentWorkspacePersistenceWhenIdle(
+      session.workspaceDir,
+      session.coursewareKey,
+      actorFromSession(caller),
+      session.coursewareOrgId,
+      syncedAt && args.force !== true ? { baseUpdatedAt: syncedAt } : undefined,
+    );
+  } catch (error) {
+    if (error instanceof CoursewareVersionConflictError) {
+      return toolError(
+        'Not saved: this courseware changed elsewhere (for example in the editor) after this session loaded it, and saving would overwrite those changes. ' +
+          'Call courseware_open to load the latest version, then reapply your edits. Pass force: true only if the user wants this version to replace theirs.',
+        'VERSION_CONFLICT',
+      );
+    }
+    throw error;
+  }
   if (!flushed) {
     return toolError('Nothing to save (empty or missing session scene)', 'EMPTY');
   }
@@ -1478,7 +1551,8 @@ export async function coursewareExportFromCourseTool(
 
 export type CoursewareUiLinkSpec = {
   studentOrigin: string;
-  manageOrigin: string;
+  /** Null when this deployment has no manage app: the manage links are left out. */
+  manageOrigin: string | null;
   handoffCode: string;
   coursewareId: string;
   orgId: string | null;
@@ -1516,16 +1590,24 @@ export function buildCoursewareUiLinks(spec: CoursewareUiLinkSpec): {
     links: {
       courseware_preview: joinUrl(spec.studentOrigin, previewPath, previewParams),
       courseware_editor: joinUrl(spec.studentOrigin, editorPath, previewParams),
-      manage_course: joinUrl(spec.manageOrigin, manageCoursePath, manageParams),
-      manage_course_list: joinUrl(spec.manageOrigin, manageCourseListPath, manageParams),
-      manage_agent_panel: joinUrl(spec.manageOrigin, manageAgentPanelPath, manageParams),
+      ...(spec.manageOrigin
+        ? {
+            manage_course: joinUrl(spec.manageOrigin, manageCoursePath, manageParams),
+            manage_course_list: joinUrl(spec.manageOrigin, manageCourseListPath, manageParams),
+            manage_agent_panel: joinUrl(spec.manageOrigin, manageAgentPanelPath, manageParams),
+          }
+        : {}),
     },
     paths: {
       courseware_preview: joinUrl('', previewPath, previewParams),
       courseware_editor: joinUrl('', editorPath, previewParams),
-      manage_course: joinUrl('', manageCoursePath, manageParams),
-      manage_course_list: joinUrl('', manageCourseListPath, manageParams),
-      manage_agent_panel: joinUrl('', manageAgentPanelPath, manageParams),
+      ...(spec.manageOrigin
+        ? {
+            manage_course: joinUrl('', manageCoursePath, manageParams),
+            manage_course_list: joinUrl('', manageCourseListPath, manageParams),
+            manage_agent_panel: joinUrl('', manageAgentPanelPath, manageParams),
+          }
+        : {}),
     },
   };
 }

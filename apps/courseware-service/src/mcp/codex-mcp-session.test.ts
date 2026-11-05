@@ -187,6 +187,39 @@ describe('isSafeCodexMcpSessionId / path traversal', () => {
     assert.equal(cliSession.scene.name, 'New Title');
     resetCodexMcpSessionsForTests();
   });
+
+  it('syncOpenCodexMcpWorkspaceTitles keeps only an in-sync session in sync', () => {
+    resetCodexMcpSessionsForTests();
+    const syncedAtAfterRename = (mcpSessionId: string, syncedAt: string): string => {
+      const binding = createCodexMcpWorkspaceBinding({
+        userSession: fakeSession('u1'),
+        coursewareId: `cw-${mcpSessionId}`,
+        coursewareKey: `key-${mcpSessionId}`,
+        actor: { userId: 'u1', accountName: 'test', orgId: 'org1' },
+        mcpSessionId,
+      });
+      mkdirSync(join(binding.stateDir, '.current'), { recursive: true });
+      writeFileSync(codexMcpShellBindingPath(binding), 'ainobi-sess\n');
+      const sessionPath = join(binding.stateDir, 'ainobi-sess.json');
+      writeFileSync(
+        sessionPath,
+        JSON.stringify({ session_id: 'ainobi-sess', courseware_synced_at: syncedAt, scene: { name: 'Old' } }),
+      );
+      seedCodexMcpSessionLocalCacheForTests(binding);
+      syncOpenCodexMcpWorkspaceTitles({
+        coursewareId: binding.coursewareId,
+        coursewareKey: binding.coursewareKey,
+        title: 'New',
+        previousUpdatedAt: '2026-11-05T10:00:00.000Z',
+        updatedAt: '2026-11-05T11:00:00.000Z',
+      });
+      return JSON.parse(readFileSync(sessionPath, 'utf8')).courseware_synced_at;
+    };
+
+    assert.equal(syncedAtAfterRename('rename-in-sync', '2026-11-05T10:00:00.000Z'), '2026-11-05T11:00:00.000Z');
+    assert.equal(syncedAtAfterRename('rename-behind', '2026-11-05T09:00:00.000Z'), '2026-11-05T09:00:00.000Z');
+    resetCodexMcpSessionsForTests();
+  });
 });
 
 describe('isCodexMcpToolFailure', () => {

@@ -13,6 +13,12 @@ Kinds: `single_choice | multiple_choice | fill_blank | essay | shadowing | speec
 
 Without `--jsx`, CLI writes a styled default layout. Choice labels: `--set options[i].value=<label>` (not `option_text`). Each `--set options[i].…` replaces the whole options array — set every index (≥2).
 
+With your own JSX or a batch `quiz.insert`, the label is the text inside `QuizOption`, and each option's `value` is its `option_id`: `QuizOption value`, `option_id`, and `value` must all match, or the answer will not score.
+
+**Answering again:** learners get one attempt unless the question sets `allow_resubmit: true` and its layout includes `QuizResubmitButton`. Set both when the user wants practice rather than assessment.
+
+**Pass score:** `pass_score: 0` means no threshold, so learners may continue whatever they score. Set it above 0 to make them pass first.
+
 ## Add a question styled like an existing one
 
 Do not re-invent a layout from what the slide looks like — read it:

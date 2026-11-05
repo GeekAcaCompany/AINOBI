@@ -233,11 +233,15 @@ export function createCodexMcpWorkspaceBinding(args: {
  * Best-effort: keep open local MCP workspaces’ scene `name` in sync after rename.
  * Updates both `db-courseware.scene.json` and the loaded CLI session's `scene.name`
  * (courseware_save persists the latter). Multi-instance Redis peers hydrate later.
+ * A session that was in sync before the rename stays in sync, so its next save is not
+ * mistaken for a conflict; a session already behind stays behind.
  */
 export function syncOpenCodexMcpWorkspaceTitles(args: {
   coursewareId: string;
   coursewareKey: string;
   title: string;
+  previousUpdatedAt?: string;
+  updatedAt?: string;
 }): number {
   const title = args.title.trim();
   if (!title) {
@@ -282,6 +286,10 @@ export function syncOpenCodexMcpWorkspaceTitles(args: {
             : null;
         if (scene) {
           scene.name = title;
+          const syncedAt = typeof parsed.courseware_synced_at === 'string' ? Date.parse(parsed.courseware_synced_at) : Number.NaN;
+          if (args.updatedAt && args.previousUpdatedAt && syncedAt >= Date.parse(args.previousUpdatedAt)) {
+            parsed.courseware_synced_at = args.updatedAt;
+          }
           writeFileSync(cliSessionPath, `${JSON.stringify(parsed, null, 2)}\n`, 'utf8');
           invalidateAgentWorkspaceSessionCache(session.workspaceDir);
           touched = true;

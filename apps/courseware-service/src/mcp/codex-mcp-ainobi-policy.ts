@@ -17,6 +17,8 @@ const ALLOWED_ROOT_COMMANDS = new Set([
   'quiz',
   'batch',
   'reference',
+  'highlight',
+  'flow-pause',
 ]);
 
 /** Use dedicated MCP tools instead of ainobi_exec. */

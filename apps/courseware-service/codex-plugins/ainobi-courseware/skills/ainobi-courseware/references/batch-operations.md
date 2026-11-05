@@ -16,17 +16,23 @@ Batch **cannot** replace the **TTS-first** narrated-slide pipeline. After struct
 
 Use this instead of chaining dozens of `element insert` in Bash (that inflates model context).
 
-1. Resolve `work_dir` from `ainobi status` / `scene info --verbose`.
-2. Write `$work_dir/batch/plan.json` (or per-slide `$work_dir/batch/slide-01.json`, …).
-3. Validate then apply:
+Over MCP:
 
-```bash
-ainobi batch dry-run --file "$WORK_DIR/batch/plan.json"
-ainobi batch apply --file "$WORK_DIR/batch/plan.json"
+1. `courseware_workspace_write` with `path: "batch/plan.json"` (or per-slide `batch/slide-01.json`, …).
+2. Validate then apply, with the same relative path:
+
+```json
+["batch", "dry-run", "--file", "batch/plan.json"]
+["batch", "apply", "--file", "batch/plan.json"]
 ```
 
-4. Spot-check: `slide list --verbose`, `slide get <n>`, `inspect overlaps <n>` as needed.
-5. For narrated slides: TTS-first incremental loop ([topics/narration.md](topics/narration.md)).
+In a terminal or agent sandbox with a shell, resolve `work_dir` from `ainobi status` and write the plan to `$work_dir/batch/plan.json` instead.
+
+Afterwards:
+
+
+- Spot-check: `slide list --verbose`, `slide get <n>`, `inspect overlaps <n>` as needed.
+- For narrated slides: TTS-first incremental loop ([topics/narration.md](topics/narration.md)).
 
 Minimal plan shape (use numeric slide indices; animation targets need real `element_id`s — either apply structure first, then a second plan for motion, or omit presets until after a quiet apply + `element list`):
 

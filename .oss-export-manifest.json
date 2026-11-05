@@ -1,5 +1,5 @@
 {
-  "sourceCommit": "3151a4a26d6ef7744eda31f8880bbd5489912248",
+  "sourceCommit": "87b9790e5e74870c5294456d6532e8bdc5a5faff",
   "files": [
     "apps/courseware-service/.dockerignore",
     "apps/courseware-service/.env.example",
@@ -73,6 +73,7 @@
     "apps/courseware-service/src/mcp/codex-mcp-tools-list.test.ts",
     "apps/courseware-service/src/mcp/codex-mcp-tools.ts",
     "apps/courseware-service/src/mcp/codex-mcp-ui-links.test.ts",
+    "apps/courseware-service/src/mcp/codex-mcp-workspace-write.test.ts",
     "apps/courseware-service/src/models/courseware-asset-refund-claims.ts",
     "apps/courseware-service/src/models/courseware-assets.ts",
     "apps/courseware-service/src/models/courseware-audit-log.ts",
@@ -1018,6 +1019,7 @@
     "packages/courseware-player/src/components/courseware/quiz/QuizContainer.tsx",
     "packages/courseware-player/src/components/courseware/quiz/QuizContinueButton.tsx",
     "packages/courseware-player/src/components/courseware/quiz/QuizExplanation.tsx",
+    "packages/courseware-player/src/components/courseware/quiz/QuizFeedback.test.tsx",
     "packages/courseware-player/src/components/courseware/quiz/QuizFeedback.tsx",
     "packages/courseware-player/src/components/courseware/quiz/QuizFormContext.tsx",
     "packages/courseware-player/src/components/courseware/quiz/QuizInput.tsx",

@@ -19,7 +19,7 @@ Example:
 ainobi element insert 2 --type text --set text='…' --set font_size=56 --center-x --set position.y=200 \
   --start 4200 --duration 3600
 ainobi animation preset 2 <element_id> --kind fade-up --start 4200 --to 5000
-ainobi highlight add 2 <element_id> --start 4200 --end 7800
+ainobi highlight add 2 <element_id> --from 4200 --to 7800
 ```
 
 ## html / quiz timeline

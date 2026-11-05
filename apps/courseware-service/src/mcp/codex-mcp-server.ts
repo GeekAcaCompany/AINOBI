@@ -32,6 +32,7 @@ import {
   coursewareSearchTool,
   coursewareStatusTool,
   coursewareUiLinksTool,
+  coursewareWorkspaceWriteTool,
   isCodexMcpToolFailure,
 } from './codex-mcp-tools.ts';
 
@@ -283,12 +284,32 @@ export function createCodexMcpServer(userSession: AinobiAuthorizedSession): McpS
     'courseware_save',
     {
       title: 'Save courseware',
-      description: 'Persist the loaded workspace scene to the AINOBI database (host flush).',
+      description:
+        'Persist the loaded workspace scene to the AINOBI database (host flush). Fails with VERSION_CONFLICT if the courseware changed elsewhere since this session loaded it; courseware_open loads the latest.',
       inputSchema: {
         mcp_session_id: z.string().min(1),
+        force: z
+          .boolean()
+          .optional()
+          .describe('Replace changes made elsewhere with this version. Only when the user asks for it.'),
       },
     },
     async (args) => jsonResult(await coursewareSaveTool(userSession, args)),
+  );
+
+  server.registerTool(
+    'courseware_workspace_write',
+    {
+      title: 'Write a workspace file',
+      description:
+        'Write a text file into the open session workspace so ainobi_exec can read it by relative path, such as a batch plan (batch apply --file batch/plan.json) or a quiz layout (quiz update --jsx-file q1.jsx). Works without access to the server filesystem.',
+      inputSchema: {
+        mcp_session_id: z.string().min(1),
+        path: z.string().min(1).describe('Path relative to the workspace, e.g. batch/plan.json'),
+        content: z.string().describe('File content as text (5 MB at most)'),
+      },
+    },
+    async (args) => jsonResult(await coursewareWorkspaceWriteTool(userSession, args)),
   );
 
   server.registerTool(

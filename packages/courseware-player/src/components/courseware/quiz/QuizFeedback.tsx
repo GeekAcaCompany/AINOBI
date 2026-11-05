@@ -14,6 +14,20 @@ export interface QuizFeedbackProps {
 }
 
 /**
+ * A pass score of 0 means the question sets no threshold, so a full score is
+ * what counts as a pass, and nothing earned stays a fail.
+ */
+export const quizFeedbackVariant = (
+  earnedScore: number | null | undefined,
+  passScore: number | null | undefined,
+  totalScore: number,
+): "neutral" | "pass" | "partial" | "fail" => {
+  if (earnedScore == null) return "neutral";
+  if (earnedScore >= (passScore || totalScore)) return "pass";
+  return earnedScore > 0 ? "partial" : "fail";
+};
+
+/**
  * Submission feedback (correct / incorrect / partial). Rendered only after
  * submit and only if the host returned a feedback string or the host opted
  * to always show feedback children. The wrapper exposes `data-variant` so
@@ -30,14 +44,7 @@ export const QuizFeedback = ({
   const reveal = ctx?.editorReveal ?? false;
   if (!ctx) return null;
   if (!reveal && !ctx.submitted) return null;
-  const autoVariant =
-    ctx.earnedScore == null
-      ? "neutral"
-      : ctx.earnedScore >= (ctx.question.pass_score ?? ctx.totalScore)
-        ? "pass"
-        : ctx.earnedScore > 0
-          ? "partial"
-          : "fail";
+  const autoVariant = quizFeedbackVariant(ctx.earnedScore, ctx.question.pass_score, ctx.totalScore);
   const variantStyle: CSSProperties =
     (variant ?? autoVariant) === "pass"
       ? { backgroundColor: "#ecfdf5", color: "#166534", border: "1px solid #86efac" }

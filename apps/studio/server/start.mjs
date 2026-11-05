@@ -65,6 +65,7 @@ export function coursewareEnv({ ports, token, internalToken, storageEndpoint, us
     OCI_S3_NAMESPACE: 'local',
     OSS_BUCKET: STORAGE_BUCKET,
     AINOBI_VIDEO_RENDER_ALLOW_PRIVATE_URLS: 'true',
+    AINOBI_MANAGE_VIEW_DISABLED: 'true',
     ...baseEnv,
     ...userEnv,
     DB_TYPE: 'postgres',
@@ -202,7 +203,7 @@ const assertPortFree = (port, purpose) =>
     const probe = connect(port, '127.0.0.1');
     probe.once('connect', () => {
       probe.destroy();
-      reject(new Error(`port ${port} (${purpose}) is in use; stop that process or set AINOBI_PORT_OFFSET`));
+      reject(new Error(`port ${port} (${purpose}) is in use. Stop that process, or move Studio by adding AINOBI_PORT_OFFSET=100 to .env.local`));
     });
     probe.once('error', () => resolve());
   });
@@ -229,14 +230,25 @@ const isReachable = async (url) => {
   }
 };
 
+/** Resolves true once the service answers, false if it exits or does not answer in time. */
+const waitUntilHealthy = async (url, child, timeoutMs = 120_000) => {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (child.exitCode !== null) return false;
+    if (await isReachable(url)) return true;
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  return false;
+};
+
 async function main() {
   const stateDir = join(repositoryRoot, '.ainobi');
   mkdirSync(join(stateDir, 'pg'), { recursive: true });
-  const ports = studioPorts();
-  for (const [name, port] of Object.entries(ports)) await assertPortFree(port, name);
-
   const userEnvPath = join(repositoryRoot, '.env.local');
   const userEnv = existsSync(userEnvPath) ? parseEnv(readFileSync(userEnvPath, 'utf8')) : {};
+  const ports = studioPorts({ ...userEnv, ...process.env });
+  for (const [name, port] of Object.entries(ports)) await assertPortFree(port, name);
+
   const secretsPath = join(stateDir, 'secrets.json');
   const stored = existsSync(secretsPath) ? JSON.parse(readFileSync(secretsPath, 'utf8')) : {};
   const secrets = {
@@ -324,6 +336,12 @@ async function main() {
   });
   process.on('SIGINT', () => void stop(0));
   process.on('SIGTERM', () => void stop(0));
+  // The line below tells people and agents that everything is ready, so it waits for the service behind the agent connection.
+  if (!(await waitUntilHealthy(`http://127.0.0.1:${ports.courseware}`, child))) {
+    if (!stopping) console.error('[studio] the courseware service did not become ready');
+    await stop(1);
+    return;
+  }
   console.log(`\n  AINOBI Studio   http://127.0.0.1:${ports.web}`);
   console.log(`  Agent (MCP)     http://127.0.0.1:${ports.courseware}/mcp   configured in .mcp.json`);
   console.log(`  Video export    ${videoRender ? videoRenderUrl : 'off (optional, see docs/video-export.md)'}\n`);

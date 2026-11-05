@@ -743,7 +743,7 @@ type SaveCoursewareBase = {
  * The field differences between the three modes are deliberate; don't relax them for the sake of "uniformity":
  * - update has no orgId: the courseware org is fixed at creation and can't be rewritten (see assertBindingOrgMatchesCourseware).
  * - update's baseUpdatedAt is required: so the blind-write form "update a row without a client base time" can't be constructed.
- * - upsert is only for the agent host flush: the disk scene is authoritative, with no client base time to compare.
+ * - upsert is only for the agent host flush: the disk scene is authoritative unless the caller passes the base time it synced to.
  */
 export type SaveCoursewareInput =
   | (SaveCoursewareBase & {
@@ -766,6 +766,8 @@ export type SaveCoursewareInput =
       mode: "upsert";
       key: string;
       orgId?: string;
+      /** When set, an existing row newer than this refuses the write instead of being overwritten */
+      baseUpdatedAt?: string;
     });
 
 /** Courseware not found (thrown when the update target was deleted concurrently); the message contains "not found" so the existing 404 mapping keeps working. */
@@ -919,6 +921,9 @@ export async function saveCourseware(input: SaveCoursewareInput): Promise<Course
         if (cw && input.mode === "create") {
           // "Key already taken when creating the row" is an explicit 409, instead of blindly writing someone else's row
           throw new CoursewareKeyConflictError(lockKey);
+        }
+        if (cw && input.mode === "upsert" && input.baseUpdatedAt) {
+          assertCoursewareVersionNotStale(cw, input.baseUpdatedAt);
         }
       }
 

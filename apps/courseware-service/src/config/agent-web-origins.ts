@@ -32,8 +32,14 @@ export function resolveStudentWebOrigin(): string {
   return "http://localhost:5173";
 }
 
-/** Manage-view web frontend base URL (no trailing slash). */
-export function resolveManageWebOrigin(): string {
+/**
+ * Manage-view web frontend base URL (no trailing slash), or null when this
+ * deployment has no manage app (AINOBI_MANAGE_VIEW_DISABLED=true).
+ */
+export function resolveManageWebOrigin(): string | null {
+  if (process.env.AINOBI_MANAGE_VIEW_DISABLED?.trim() === 'true') {
+    return null;
+  }
   const raw = process.env.AINOBI_MANAGE_VIEW_BASE_URL?.trim();
   if (raw) {
     return trimBaseUrl(raw);

@@ -128,7 +128,7 @@ ainobi highlight add <slide> <element_id> --from <ms> --to <ms> \
 - Defaults: padding 12, radius 24, opacity 0.62.
 - **Audit:** `element get` — if `highlight_segments` is empty, there are no CLI highlights yet.
 
-Full rules and anti-patterns: [SKILL.md](../SKILL.md) § Highlights.
+Commands and timing: [topics/motion-timing.md](topics/motion-timing.md).
 
 ---
 
@@ -235,7 +235,7 @@ Four lines — one `\n` per complete sentence or clear rhetorical beat. Read eac
 | `svg` | Paths, diagrams, icons, gradients — when shapes insufficient |
 | `image` / `video` | Photo evidence, footage |
 | `html` | Interactive widgets / full pages schema cannot model (sandboxed iframe) |
-| Quiz canvas | Retrieval at checkpoints — `quiz init` → `add-question` → `build-canvas` |
+| Quiz | Retrieval at checkpoints — `quiz init` → `quiz insert` ([topics/quiz.md](topics/quiz.md)) |
 
 **Card/grid decision:** if a "box" has more than one inner element, or alignment/wrapping matters, reach for `rich` (one element, nested DOM) instead of a `rectangle` + several absolutely-positioned `text` boxes (which overflow and drift). Keep `text` for genuinely single-line/single-paragraph content.
 
