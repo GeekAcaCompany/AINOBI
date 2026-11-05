@@ -1,0 +1,78 @@
+/* SPDX-License-Identifier: AGPL-3.0-only */
+/**
+ * Layout editor preview: disable event capture of the quiz's internal interactive controls, so button/input
+ * don't steal the pointer and block dragging. Hit testing uses coordinates + DOM measurement, independent of target.
+ */
+.quiz-layout-editor-surface [data-quiz-layout-editor],
+.quiz-layout-editor-surface [data-quiz-layout-editor] * {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.quiz-layout-editor-surface [data-quiz-layout-editor] button,
+.quiz-layout-editor-surface [data-quiz-layout-editor] input,
+.quiz-layout-editor-surface [data-quiz-layout-editor] textarea,
+.quiz-layout-editor-surface [data-quiz-layout-editor] select,
+.quiz-layout-editor-surface [data-quiz-layout-editor] a,
+.quiz-layout-editor-surface [data-quiz-layout-editor] [data-quiz-action],
+.quiz-layout-editor-surface [data-quiz-layout-editor] [data-quiz-option] {
+  pointer-events: none !important;
+  cursor: inherit !important;
+}
+
+.quiz-layout-editor-frame {
+  touch-action: pan-x pan-y;
+  scrollbar-color: rgb(148 163 184 / 0.55) transparent;
+  scrollbar-width: thin;
+}
+
+:where(.dark) .quiz-layout-editor-frame {
+  scrollbar-color: rgb(71 85 105 / 0.85) transparent;
+}
+
+.quiz-layout-editor-frame.is-dragging {
+  touch-action: none;
+}
+
+/** DOM clone following the mouse while dragging (the original's style, not a blue placeholder frame) */
+.quiz-layout-drag-follower {
+  margin: 0;
+  padding: 0;
+  z-index: 50;
+  filter: drop-shadow(0 10px 18px rgb(15 23 42 / 0.18));
+}
+
+:where(.dark) .quiz-layout-drag-follower {
+  filter: drop-shadow(0 10px 22px rgb(0 0 0 / 0.45));
+}
+
+/** Editor selection frame/handles: a fixed light style that doesn't follow the dark theme */
+.quiz-layout-selection-ring {
+  box-shadow: 0 0 0 2px rgb(59 130 246);
+}
+
+.quiz-layout-hover-ring {
+  box-shadow: 0 0 0 1px rgb(96 165 250 / 0.75);
+}
+
+.quiz-layout-resize-handle {
+  border: 1px solid rgb(37 99 235);
+  background-color: rgb(255 255 255);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.12);
+}
+
+/** In-place editing on the canvas: overlaid on the preview text, with no dialog border/shadow; text selection is allowed only here */
+.quiz-layout-inline-edit {
+  margin: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  box-shadow: none;
+  resize: none;
+  overflow: hidden;
+  cursor: text;
+  caret-color: currentcolor;
+  user-select: text;
+  -webkit-user-select: text;
+}

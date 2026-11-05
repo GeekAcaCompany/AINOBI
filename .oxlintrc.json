@@ -1,0 +1,41 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "categories": {
+    "correctness": "error"
+  },
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/coverage/**",
+    "**/playwright-report/**",
+    "**/test-results/**",
+    "**/storybook-static/**",
+    "apps/**",
+    "examples/**"
+  ],
+  "overrides": [
+    {
+      "files": [
+        "packages/courseware-player/**",
+        "packages/courseware-editor/**",
+        "packages/avatar-generator/**"
+      ],
+      "rules": {
+        "no-unused-vars": "off",
+        "no-control-regex": "off",
+        "no-unsafe-finally": "off",
+        "unicorn/no-useless-spread": "off"
+      }
+    },
+    {
+      "files": [
+        "packages/avatar-generator/**"
+      ],
+      "rules": {
+        "unicorn/no-new-array": "off",
+        "oxc/erasing-op": "off"
+      }
+    }
+  ]
+}

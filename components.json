@@ -1,0 +1,85 @@
+{
+  "$comment": "The component catalog: what each piece needs, and the smallest install for each goal. `npm run add -- <profile> --to <your app>` and docs/components.md read it.",
+  "profiles": {
+    "avatar": {
+      "summary": "Render a Live2D or Inochi2D avatar in your React app.",
+      "packages": [
+        "@ainobi/avatar"
+      ],
+      "services": []
+    },
+    "avatar-generator": {
+      "summary": "Generate an Inochi2D avatar from a description, in your Node.js service. Needs an image API key.",
+      "packages": [
+        "@ainobi/avatar-generator"
+      ],
+      "services": []
+    },
+    "format": {
+      "summary": "Read, validate, and edit courseware JSON, in any JavaScript runtime.",
+      "packages": [
+        "@ainobi/courseware-core"
+      ],
+      "services": []
+    },
+    "player": {
+      "summary": "Play courseware in your React app.",
+      "packages": [
+        "@ainobi/courseware-player"
+      ],
+      "services": [
+        "courseware-service"
+      ]
+    },
+    "editor": {
+      "summary": "Edit courseware in your React app.",
+      "packages": [
+        "@ainobi/courseware-editor"
+      ],
+      "services": [
+        "courseware-service"
+      ]
+    },
+    "embed": {
+      "summary": "Put the editor, player, or avatar in any web page through an iframe, with no React.",
+      "packages": [
+        "@ainobi/widgets"
+      ],
+      "services": [
+        "studio"
+      ]
+    },
+    "cli": {
+      "summary": "Author courseware from the command line or a coding agent, without a server.",
+      "packages": [
+        "@ainobi/courseware-cli"
+      ],
+      "services": []
+    },
+    "studio": {
+      "summary": "A complete courseware system: list, edit, preview, and agent authoring.",
+      "packages": [],
+      "services": [
+        "studio"
+      ]
+    }
+  },
+  "services": {
+    "studio": {
+      "directory": "apps/studio",
+      "requires": "Node.js",
+      "summary": "Web app, local host, and embedded stores; starts courseware-service."
+    },
+    "courseware-service": {
+      "directory": "apps/courseware-service",
+      "requires": "Node.js",
+      "summary": "Courseware storage, assets, the agent's MCP endpoint, and the editor's AI assistant."
+    },
+    "video-render-service": {
+      "directory": "apps/video-render-service",
+      "requires": "Docker",
+      "optional": true,
+      "summary": "Exports courseware as video. Only needed for video export."
+    }
+  }
+}

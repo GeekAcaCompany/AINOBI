@@ -1,0 +1,253 @@
+/* SPDX-License-Identifier: AGPL-3.0-only */
+.courseware-color-picker {
+  position: relative;
+  min-width: 0;
+}
+
+.courseware-color-picker__controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.courseware-color-picker--mini .courseware-color-picker__controls {
+  gap: 0;
+}
+
+.courseware-color-picker--mini .courseware-color-picker__swatch {
+  height: 20px;
+  width: 20px;
+  border-radius: 4px;
+}
+
+.courseware-color-picker__swatch {
+  height: 28px;
+  width: 28px;
+  flex-shrink: 0;
+  cursor: pointer;
+  border-radius: 6px;
+  border: 1px solid rgb(203 213 225);
+  box-shadow: inset 0 0 0 1px rgb(15 23 42 / 0.06);
+}
+
+.courseware-color-picker__swatch:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+:where([data-courseware-editor-theme="dark"]) .courseware-color-picker__swatch {
+  border-color: rgb(51 65 85);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
+}
+
+.courseware-color-picker__swatch.is-transparent,
+.courseware-color-picker__transparent-swatch {
+  background-color: #fff;
+  background-image:
+    linear-gradient(45deg, #cbd5e1 25%, transparent 25%),
+    linear-gradient(-45deg, #cbd5e1 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #cbd5e1 75%),
+    linear-gradient(-45deg, transparent 75%, #cbd5e1 75%);
+  background-size: 8px 8px;
+  background-position:
+    0 0,
+    0 4px,
+    4px -4px,
+    -4px 0;
+}
+
+:where([data-courseware-editor-theme="dark"]) .courseware-color-picker__swatch.is-transparent,
+:where([data-courseware-editor-theme="dark"]) .courseware-color-picker__transparent-swatch {
+  background-color: #1e293b;
+  background-image:
+    linear-gradient(45deg, #475569 25%, transparent 25%),
+    linear-gradient(-45deg, #475569 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #475569 75%),
+    linear-gradient(-45deg, transparent 75%, #475569 75%);
+}
+
+.courseware-color-picker__hex {
+  min-width: 0;
+  flex: 1;
+  border-radius: 6px;
+  border: 1px solid rgb(203 213 225);
+  background: rgb(241 245 249);
+  padding: 4px 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.25;
+  color: rgb(15 23 42);
+  outline: none;
+}
+
+.courseware-color-picker__hex:focus {
+  border-color: rgb(59 130 246);
+  box-shadow: 0 0 0 1px rgb(59 130 246);
+}
+
+:where([data-courseware-editor-theme="dark"]) .courseware-color-picker__hex {
+  border-color: rgb(51 65 85);
+  background: rgb(30 41 59);
+  color: rgb(241 245 249);
+}
+
+.courseware-color-picker__eyedropper {
+  display: flex;
+  height: 28px;
+  width: 28px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid rgb(203 213 225);
+  color: rgb(100 116 139);
+}
+
+.courseware-color-picker__eyedropper:hover:not(:disabled) {
+  background: rgb(241 245 249);
+  color: rgb(51 65 85);
+}
+
+:where([data-courseware-editor-theme="dark"]) .courseware-color-picker__eyedropper {
+  border-color: rgb(51 65 85);
+  color: rgb(148 163 184);
+}
+
+:where([data-courseware-editor-theme="dark"]) .courseware-color-picker__eyedropper:hover:not(:disabled) {
+  background: rgb(30 41 59);
+  color: rgb(226 232 240);
+}
+
+.courseware-color-picker__popover {
+  position: absolute;
+  right: 0;
+  z-index: 80;
+  margin-top: 8px;
+  width: 248px;
+  max-height: min(70vh, 560px);
+  overflow-y: auto;
+  border-radius: 10px;
+  border: 1px solid rgb(203 213 225);
+  background: rgb(255 255 255);
+  padding: 12px;
+  box-shadow:
+    0 10px 15px -3px rgb(15 23 42 / 0.12),
+    0 4px 6px -4px rgb(15 23 42 / 0.1);
+}
+
+.courseware-color-picker__popover--portal {
+  /* Once portaled to body it must sit above the toolbar menu (z-[100]). */
+  z-index: 120;
+}
+
+:where([data-courseware-editor-theme="dark"]) .courseware-color-picker__popover {
+  border-color: rgb(51 65 85);
+  background: rgb(15 23 42);
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.45),
+    0 4px 6px -4px rgb(0 0 0 / 0.35);
+}
+
+.courseware-color-picker__palette-section + .courseware-color-picker__palette-section {
+  margin-top: 10px;
+}
+
+.courseware-color-picker__palette-title {
+  margin-bottom: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  color: rgb(71 85 105);
+}
+
+:where([data-courseware-editor-theme="dark"]) .courseware-color-picker__palette-title {
+  color: rgb(148 163 184);
+}
+
+.courseware-color-picker__palette-grid {
+  display: grid;
+  gap: 3px;
+}
+
+.courseware-color-picker__palette-swatch {
+  aspect-ratio: 1;
+  min-height: 18px;
+  cursor: pointer;
+  border-radius: 2px;
+  border: 1px solid rgb(15 23 42 / 0.12);
+  padding: 0;
+}
+
+.courseware-color-picker__palette-swatch.is-light {
+  border-color: rgb(203 213 225);
+}
+
+.courseware-color-picker__palette-swatch:hover {
+  transform: scale(1.08);
+  z-index: 1;
+  box-shadow: 0 0 0 1px rgb(59 130 246 / 0.55);
+}
+
+.courseware-color-picker__palette-swatch.is-selected {
+  box-shadow:
+    0 0 0 1px rgb(255 255 255),
+    0 0 0 3px rgb(59 130 246);
+}
+
+.courseware-color-picker__divider {
+  margin: 12px 0 10px;
+  border-top: 1px solid rgb(226 232 240);
+}
+
+:where([data-courseware-editor-theme="dark"]) .courseware-color-picker__divider {
+  border-top-color: rgb(51 65 85);
+}
+
+.courseware-color-picker__popover .react-colorful {
+  width: 100%;
+  height: 140px;
+}
+
+.courseware-color-picker__popover .react-colorful__saturation {
+  border-radius: 8px 8px 0 0;
+}
+
+.courseware-color-picker__popover .react-colorful__hue {
+  height: 12px;
+  margin-top: 12px;
+  border-radius: 999px;
+}
+
+.courseware-color-picker__popover .react-colorful__pointer {
+  width: 18px;
+  height: 18px;
+  border-width: 2px;
+}
+
+.courseware-color-picker__hex--popover {
+  margin-top: 10px;
+  width: 100%;
+}
+
+.courseware-color-picker__popover-actions {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.courseware-color-picker__format {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: rgb(100 116 139);
+}
+
+.courseware-color-picker__format--center {
+  margin-top: 10px;
+  text-align: center;
+}
+
+:where([data-courseware-editor-theme="dark"]) .courseware-color-picker__format {
+  color: rgb(148 163 184);
+}

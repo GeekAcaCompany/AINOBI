@@ -1,0 +1,15 @@
+
+# Write the English subject on the first line.
+# Format: type(scope): summary
+# Breaking change: type(scope)!: summary
+# Allowed types: feat fix docs refactor perf test build ci chore revert
+# scope is required: start with a lowercase letter and use only lowercase letters, digits and hyphens.
+# Keep the whole subject within 72 characters; start the summary with a lowercase letter and omit the final period.
+# Examples:
+# docs(readme): clarify the development status
+# fix(courseware-core): preserve element ids when saving
+# feat(courseware-core)!: revise the courseware format
+# Add a short body after a blank line only when the diff alone is hard to understand.
+# Check English clarity and verb usage during review.
+# Do not add Co-Authored-By trailers or AI attributions.
+# Validate a message file: yarn lint:commits --edit <file>

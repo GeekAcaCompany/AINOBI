@@ -1,0 +1,43 @@
+{
+  "name": "@ainobi/agent-runtime",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Agent host kernel shared by the courseware and interaction services: the Claude Code OS sandbox settings, the subprocess env allowlist mechanism, the host clock prompt line, Tavily web search, and runtime binary resolution. Hosts supply their policy and settings; nothing reads the environment.",
+  "license": "AGPL-3.0-only",
+  "author": "GeekAca Ltd.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "build": "node ../../scripts/build-package.mjs"
+  },
+  "ainobi": {
+    "visibility": "public",
+    "capabilities": [
+      "agent-runtime"
+    ],
+    "origin": "adopted"
+  },
+  "dependencies": {
+    "@tavily/core": "^0.7.3"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5"
+  }
+}

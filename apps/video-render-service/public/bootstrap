@@ -1,0 +1,59 @@
+#!/bin/sh
+# FC custom-runtime entrypoint (pattern from ufn-web-reader-function).
+# Invoked as `sh bootstrap` — must stay POSIX sh (Aliyun FC debian10 uses dash).
+# Render workers exit Node after each /run; EXIT trap reaps chrome-headless-shell zombies.
+set -eu
+
+CHROME_PATTERN="${AINOBI_VIDEO_RENDER_CHROME_KILL_PATTERN:-chrome-headless-shell}"
+FUNCTION_ROLE="${AINOBI_VIDEO_RENDER_FUNCTION_ROLE:-all}"
+
+log() {
+  echo "[bootstrap] $*"
+}
+
+should_cleanup_chrome() {
+  case "$FUNCTION_ROLE" in
+    render|all) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+kill_pids() {
+  signal="$1"
+  pids="$2"
+  echo "$pids" | while IFS= read -r pid; do
+    [ -z "$pid" ] && continue
+    kill -"$signal" -- "-$pid" 2>/dev/null || kill -"$signal" "$pid" 2>/dev/null || true
+  done
+}
+
+cleanup_chrome_children() {
+  if ! should_cleanup_chrome; then
+    return 0
+  fi
+  if ! command -v pgrep >/dev/null 2>&1; then
+    return 0
+  fi
+
+  pids=$(pgrep -f "$CHROME_PATTERN" 2>/dev/null || true)
+  if [ -z "$pids" ]; then
+    return 0
+  fi
+
+  log "terminating chrome children ($CHROME_PATTERN)"
+  kill_pids TERM "$pids"
+  sleep 1
+
+  pids=$(pgrep -f "$CHROME_PATTERN" 2>/dev/null || true)
+  if [ -z "$pids" ]; then
+    return 0
+  fi
+
+  kill_pids KILL "$pids"
+  log "force-killed remaining chrome children"
+}
+
+trap cleanup_chrome_children EXIT INT TERM
+
+log "starting node (role=$FUNCTION_ROLE)"
+npm run start

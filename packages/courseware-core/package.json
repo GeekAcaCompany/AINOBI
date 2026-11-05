@@ -1,0 +1,190 @@
+{
+  "name": "@ainobi/courseware-core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Runtime-neutral courseware engine: scene schema, validation, serialization, editing operations, quiz AST and scoring, narration timeline. No React, Node APIs, filesystem, or provider dependencies.",
+  "license": "AGPL-3.0-only",
+  "author": "GeekAca Ltd.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./asset-url-normalize.ts": "./src/asset-url-normalize.ts",
+    "./content-language.ts": "./src/content-language.ts",
+    "./css-color.ts": "./src/css-color.ts",
+    "./element-default-names.ts": "./src/element-default-names.ts",
+    "./elements.ts": "./src/elements.ts",
+    "./flow-pause-agent.ts": "./src/flow-pause-agent.ts",
+    "./learning-progress.ts": "./src/learning-progress.ts",
+    "./narration-timeline-overlap.ts": "./src/narration-timeline-overlap.ts",
+    "./presign-scene.ts": "./src/presign-scene.ts",
+    "./quiz-ast-interp-fill.ts": "./src/quiz-ast-interp-fill.ts",
+    "./quiz-ast.ts": "./src/quiz-ast.ts",
+    "./quiz-default-asts.ts": "./src/quiz-default-asts.ts",
+    "./quiz-fill-blank-title.ts": "./src/quiz-fill-blank-title.ts",
+    "./quiz-preview-wrappers.ts": "./src/quiz-preview-wrappers.ts",
+    "./quiz-score-summary-ast-interp-fill.ts": "./src/quiz-score-summary-ast-interp-fill.ts",
+    "./quiz-score-summary-ast.ts": "./src/quiz-score-summary-ast.ts",
+    "./quiz-score-summary-default-ast.ts": "./src/quiz-score-summary-default-ast.ts",
+    "./quiz-score-summary.ts": "./src/quiz-score-summary.ts",
+    "./quiz-scoring.ts": "./src/quiz-scoring.ts",
+    "./quiz-state-branches.ts": "./src/quiz-state-branches.ts",
+    "./quiz-validation-messages.ts": "./src/quiz-validation-messages.ts",
+    "./quiz.ts": "./src/quiz.ts",
+    "./reference-scene-brief.ts": "./src/reference-scene-brief.ts",
+    "./rich-ast.ts": "./src/rich-ast.ts",
+    "./scene.ts": "./src/scene.ts",
+    "./slide-canvas-audio.ts": "./src/slide-canvas-audio.ts",
+    "./slide-flow-pause.ts": "./src/slide-flow-pause.ts",
+    "./slide-stack.ts": "./src/slide-stack.ts",
+    "./enums/*": "./src/enums/*"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      },
+      "./asset-url-normalize": {
+        "types": "./dist/asset-url-normalize.d.ts",
+        "import": "./dist/asset-url-normalize.js"
+      },
+      "./content-language": {
+        "types": "./dist/content-language.d.ts",
+        "import": "./dist/content-language.js"
+      },
+      "./css-color": {
+        "types": "./dist/css-color.d.ts",
+        "import": "./dist/css-color.js"
+      },
+      "./element-default-names": {
+        "types": "./dist/element-default-names.d.ts",
+        "import": "./dist/element-default-names.js"
+      },
+      "./elements": {
+        "types": "./dist/elements.d.ts",
+        "import": "./dist/elements.js"
+      },
+      "./flow-pause-agent": {
+        "types": "./dist/flow-pause-agent.d.ts",
+        "import": "./dist/flow-pause-agent.js"
+      },
+      "./learning-progress": {
+        "types": "./dist/learning-progress.d.ts",
+        "import": "./dist/learning-progress.js"
+      },
+      "./narration-timeline-overlap": {
+        "types": "./dist/narration-timeline-overlap.d.ts",
+        "import": "./dist/narration-timeline-overlap.js"
+      },
+      "./presign-scene": {
+        "types": "./dist/presign-scene.d.ts",
+        "import": "./dist/presign-scene.js"
+      },
+      "./quiz-ast-interp-fill": {
+        "types": "./dist/quiz-ast-interp-fill.d.ts",
+        "import": "./dist/quiz-ast-interp-fill.js"
+      },
+      "./quiz-ast": {
+        "types": "./dist/quiz-ast.d.ts",
+        "import": "./dist/quiz-ast.js"
+      },
+      "./quiz-default-asts": {
+        "types": "./dist/quiz-default-asts.d.ts",
+        "import": "./dist/quiz-default-asts.js"
+      },
+      "./quiz-fill-blank-title": {
+        "types": "./dist/quiz-fill-blank-title.d.ts",
+        "import": "./dist/quiz-fill-blank-title.js"
+      },
+      "./quiz-preview-wrappers": {
+        "types": "./dist/quiz-preview-wrappers.d.ts",
+        "import": "./dist/quiz-preview-wrappers.js"
+      },
+      "./quiz-score-summary-ast-interp-fill": {
+        "types": "./dist/quiz-score-summary-ast-interp-fill.d.ts",
+        "import": "./dist/quiz-score-summary-ast-interp-fill.js"
+      },
+      "./quiz-score-summary-ast": {
+        "types": "./dist/quiz-score-summary-ast.d.ts",
+        "import": "./dist/quiz-score-summary-ast.js"
+      },
+      "./quiz-score-summary-default-ast": {
+        "types": "./dist/quiz-score-summary-default-ast.d.ts",
+        "import": "./dist/quiz-score-summary-default-ast.js"
+      },
+      "./quiz-score-summary": {
+        "types": "./dist/quiz-score-summary.d.ts",
+        "import": "./dist/quiz-score-summary.js"
+      },
+      "./quiz-scoring": {
+        "types": "./dist/quiz-scoring.d.ts",
+        "import": "./dist/quiz-scoring.js"
+      },
+      "./quiz-state-branches": {
+        "types": "./dist/quiz-state-branches.d.ts",
+        "import": "./dist/quiz-state-branches.js"
+      },
+      "./quiz-validation-messages": {
+        "types": "./dist/quiz-validation-messages.d.ts",
+        "import": "./dist/quiz-validation-messages.js"
+      },
+      "./quiz": {
+        "types": "./dist/quiz.d.ts",
+        "import": "./dist/quiz.js"
+      },
+      "./reference-scene-brief": {
+        "types": "./dist/reference-scene-brief.d.ts",
+        "import": "./dist/reference-scene-brief.js"
+      },
+      "./rich-ast": {
+        "types": "./dist/rich-ast.d.ts",
+        "import": "./dist/rich-ast.js"
+      },
+      "./scene": {
+        "types": "./dist/scene.d.ts",
+        "import": "./dist/scene.js"
+      },
+      "./slide-canvas-audio": {
+        "types": "./dist/slide-canvas-audio.d.ts",
+        "import": "./dist/slide-canvas-audio.js"
+      },
+      "./slide-flow-pause": {
+        "types": "./dist/slide-flow-pause.d.ts",
+        "import": "./dist/slide-flow-pause.js"
+      },
+      "./slide-stack": {
+        "types": "./dist/slide-stack.d.ts",
+        "import": "./dist/slide-stack.js"
+      },
+      "./enums/*": {
+        "types": "./dist/enums/*.d.ts",
+        "import": "./dist/enums/*.js"
+      }
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "build": "node ../../scripts/build-package.mjs"
+  },
+  "ainobi": {
+    "visibility": "public",
+    "capabilities": [
+      "courseware-format"
+    ],
+    "origin": "adopted"
+  },
+  "dependencies": {
+    "csstype": "^3.1.3",
+    "yup": "^1.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5"
+  }
+}

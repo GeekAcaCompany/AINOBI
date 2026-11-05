@@ -1,0 +1,43 @@
+{
+  "name": "@ainobi/doc-converter",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Document conversion capability port: one interface over in-process parsers (PDF/PPTX text and page extraction) and the remote pdf2html/pptx2html services (per-page standalone HTML).",
+  "license": "AGPL-3.0-only",
+  "author": "GeekAca Ltd.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "build": "node ../../scripts/build-package.mjs"
+  },
+  "ainobi": {
+    "visibility": "public",
+    "capabilities": [
+      "doc-converter"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5"
+  },
+  "dependencies": {
+    "@ainobi/port-kit": "workspace:0.1.0"
+  }
+}

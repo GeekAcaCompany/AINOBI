@@ -1,0 +1,44 @@
+{
+  "name": "@ainobi/llm",
+  "version": "0.1.0",
+  "private": true,
+  "description": "LLM capability port: the streaming provider interface (with the unified chunk shape), the model parameter table, the throwing default, and the registry.",
+  "license": "AGPL-3.0-only",
+  "author": "GeekAca Ltd.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "build": "node ../../scripts/build-package.mjs"
+  },
+  "ainobi": {
+    "visibility": "public",
+    "capabilities": [
+      "llm"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5"
+  },
+  "dependencies": {
+    "@ainobi/api-contracts": "workspace:0.1.0",
+    "@ainobi/port-kit": "workspace:0.1.0"
+  }
+}

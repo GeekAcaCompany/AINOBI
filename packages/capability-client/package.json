@@ -1,0 +1,37 @@
+{
+  "name": "@ainobi/capability-client",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Framework-agnostic capability detection client: fetches the backend's /public/capabilities and provides a queryable store for feature gating.",
+  "license": "AGPL-3.0-only",
+  "author": "GeekAca Ltd.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "build": "node ../../scripts/build-package.mjs"
+  },
+  "ainobi": {
+    "visibility": "public",
+    "capabilities": [
+      "capability-detection"
+    ]
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "name": "@ainobi/lite-stores",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local stores for running without Docker: embedded PostgreSQL (PGlite) behind the Postgres protocol, an in-memory server behind the Redis protocol, and on-disk object storage behind the S3 API, so clients keep their usual drivers.",
+  "license": "AGPL-3.0-only",
+  "author": "GeekAca Ltd.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "build": "node ../../scripts/build-package.mjs"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "0.5.15"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-s3": "^3.1054.0",
+    "@aws-sdk/s3-request-presigner": "^3.1054.0",
+    "@types/node": "22.20.5",
+    "@types/pg": "^8.11.0",
+    "ioredis": "^5.7.0",
+    "pg": "^8.12.0"
+  },
+  "ainobi": {
+    "visibility": "public",
+    "capabilities": [
+      "lite-stores"
+    ]
+  }
+}

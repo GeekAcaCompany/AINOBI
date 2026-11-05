@@ -1,0 +1,5 @@
+# apps/* are runnable services, packages/* are the components, and examples/* are samples built on them.
+packages:
+  - apps/*
+  - packages/*
+  - examples/*

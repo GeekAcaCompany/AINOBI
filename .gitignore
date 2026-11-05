@@ -1,0 +1,43 @@
+node_modules/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+*.log
+.DS_Store
+.env
+.env.*
+!.env.example
+/local-workspaces/
+/data/
+/uploads/
+
+# credentials and host-local configuration
+.ainobi/
+*.pem
+*.key
+*.p12
+.codex/
+.gemini/
+*.local.json
+
+# test and build artifacts
+.react-router/
+playwright-report/
+test-results/
+playwright/.auth/
+storybook-static/
+.vite/
+*.tgz
+
+# other package managers' lockfiles
+.mcp.json
+package-lock.json
+yarn.lock
+
+# vendored build output is source here
+!packages/inochi2d/dist/
+
+# generated at build and run time
+apps/courseware-service/public/ainobi-courseware-codex-plugin.zip
+packages/courseware-cli/agent-workspaces/

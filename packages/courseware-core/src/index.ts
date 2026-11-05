@@ -1,0 +1,37 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+// The courseware engine. Subpath imports ("@ainobi/courseware-core/<module>.ts") are preferred;
+// this index re-exports every module for consumers that want one entry point.
+export * from "./asset-url-normalize.ts";
+export * from "./content-language.ts";
+export * from "./css-color.ts";
+export * from "./element-default-names.ts";
+export * from "./elements.ts";
+export * from "./enums/effects.ts";
+export * from "./enums/events.ts";
+export * from "./enums/transitions.ts";
+export * from "./flow-pause-agent.ts";
+export * from "./learning-progress.ts";
+export * from "./narration-timeline-overlap.ts";
+export * from "./presign-scene.ts";
+export * from "./quiz-ast-interp-fill.ts";
+export * from "./quiz-ast.ts";
+export * from "./quiz-default-asts.ts";
+export * from "./quiz-fill-blank-title.ts";
+export * from "./quiz-preview-wrappers.ts";
+export * from "./quiz-score-summary-ast-interp-fill.ts";
+export * from "./quiz-score-summary-ast.ts";
+export * from "./quiz-score-summary-default-ast.ts";
+export * from "./quiz-score-summary.ts";
+export * from "./quiz-scoring.ts";
+export * from "./quiz-slide-media-placement.ts";
+export * from "./quiz-state-branches.ts";
+export * from "./quiz-validation-messages.ts";
+export * from "./quiz.ts";
+export * from "./reference-scene-brief.ts";
+export * from "./rich-ast.ts";
+export * from "./scene.ts";
+export * from "./slide-canvas-audio.ts";
+export * from "./slide-flow-pause.ts";
+export * from "./slide-stack.ts";
+export * from "./strip-undefined.ts";
+export * from './asset-file-path.ts';

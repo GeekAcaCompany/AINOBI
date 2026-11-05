@@ -1,0 +1,22 @@
+{
+  "name": "ainobi-example-courseware-system",
+  "version": "0.0.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "description": "A minimal courseware system assembled only from the public AINOBI packages: sign-in and sign-up, an AI courseware home with the avatar, the editor, and the player.",
+  "scripts": {
+    "dev": "vite --port 5180",
+    "build": "vite build",
+    "preview": "vite preview --port 5180",
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@ainobi/client": "workspace:*",
+    "@ainobi/widgets": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.3",
+    "vite": "6.3.3"
+  }
+}

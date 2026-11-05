@@ -1,0 +1,87 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+import { listCoursewareLibrary, type CoursewareLibraryListItem } from '@ainobi/courseware-player/api/courseware_list';
+import { Pencil, Play, Plus } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router';
+import { TeacherStrip } from './TeacherStrip.tsx';
+import type { TeacherClient } from './teachers.ts';
+import { useStudioText } from './text.ts';
+
+const editorUrl = (key: string, orgId: string) =>
+  `/courseware-editor?courseware_id=${encodeURIComponent(key)}&org_id=${encodeURIComponent(orgId)}`;
+const previewUrl = (key: string, orgId: string) =>
+  `/courseware-preview?courseware_id=${encodeURIComponent(key)}&org_id=${encodeURIComponent(orgId)}`;
+
+export function CoursewareList({ orgId, teachers }: { orgId: string; teachers: TeacherClient }) {
+  const text = useStudioText();
+  const navigate = useNavigate();
+  const [items, setItems] = useState<CoursewareLibraryListItem[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    // Courseware an agent creates appears here without a reload.
+    const load = () =>
+      listCoursewareLibrary({ orgId, pageSize: 100, order: 'desc' })
+        .then((response) => {
+          if (!cancelled) {
+            setItems(response.data);
+            setError(null);
+          }
+        })
+        .catch((caught: unknown) => {
+          if (!cancelled) setError(caught instanceof Error ? caught.message : String(caught));
+        });
+    void load();
+    const timer = setInterval(() => void load(), 5000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [orgId]);
+
+  return (
+    <main className="mx-auto max-w-4xl p-8">
+      <TeacherStrip client={teachers} />
+      <header className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">{text.courseware}</h1>
+        <button
+          type="button"
+          className="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-700"
+          onClick={() => navigate(editorUrl(crypto.randomUUID(), orgId))}
+        >
+          <Plus className="h-4 w-4" aria-hidden /> {text.newCourseware}
+        </button>
+      </header>
+      {error ? (
+        <p role="alert" className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800">
+          {text.loadFailed}: {error}
+        </p>
+      ) : null}
+      {items === null && !error ? <p className="text-sm text-slate-500">{text.loading}</p> : null}
+      {items?.length === 0 ? (
+        <p className="rounded-md border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">
+          {text.empty}
+        </p>
+      ) : null}
+      <ul className="divide-y divide-slate-200">
+        {items?.map((item) => (
+          <li key={item.id} className="flex items-center justify-between gap-4 py-3">
+            <div className="min-w-0">
+              <p className="truncate font-medium">{item.title?.trim() || text.untitled}</p>
+              <p className="text-xs text-slate-500">{text.updated} {new Date(item.updatedAt).toLocaleString()}</p>
+            </div>
+            <div className="flex shrink-0 gap-2 text-sm">
+              <Link className="inline-flex items-center gap-1 rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-50" to={editorUrl(item.key, orgId)}>
+                <Pencil className="h-4 w-4" aria-hidden /> {text.edit}
+              </Link>
+              <Link className="inline-flex items-center gap-1 rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-50" to={previewUrl(item.key, orgId)}>
+                <Play className="h-4 w-4" aria-hidden /> {text.preview}
+              </Link>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </main>
+  );
+}

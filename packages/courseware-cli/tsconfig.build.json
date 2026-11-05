@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["cli/**/*.ts", "polyfill/**/*.ts"],
+  "exclude": ["cli/**/*.test.ts", "cli/**/*.spec.ts"],
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": "dist",
+    "rootDir": ".",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "rewriteRelativeImportExtensions": true
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "name": "@ainobi/backend-client",
+  "version": "0.1.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "author": "GeekAca Ltd.",
+  "type": "module",
+  "ainobi": {
+    "visibility": "public",
+    "capabilities": [
+      "backend-client"
+    ],
+    "origin": "adopted"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "description": "Client side of the platform backend API for the Node services: base URL resolution and URL joining. The host supplies the configured base.",
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "build": "node ../../scripts/build-package.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5"
+  },
+  "dependencies": {
+    "@ainobi/billing": "workspace:0.1.0"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
+  }
+}

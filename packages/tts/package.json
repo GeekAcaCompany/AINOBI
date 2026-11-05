@@ -1,0 +1,48 @@
+{
+  "name": "@ainobi/tts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "TTS capability port: the provider interface, the throwing default, and the registry. Implementations live in @ainobi/tts-* packages or inside an app; billing wraps the port as a decorator.",
+  "license": "AGPL-3.0-only",
+  "author": "GeekAca Ltd.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./styles.ts": "./src/styles.ts"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      },
+      "./styles": {
+        "types": "./dist/styles.d.ts",
+        "import": "./dist/styles.js"
+      }
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "build": "node ../../scripts/build-package.mjs"
+  },
+  "ainobi": {
+    "visibility": "public",
+    "capabilities": [
+      "tts"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5"
+  },
+  "dependencies": {
+    "@ainobi/port-kit": "workspace:0.1.0"
+  }
+}

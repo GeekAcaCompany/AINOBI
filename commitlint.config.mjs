@@ -1,0 +1,39 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+// Commitlint rules that enforce the AINOBI commit message convention.
+const headerPattern = /^[a-z]+\([a-z][a-z0-9-]*\)!?: [a-z][\x20-\x7e]*$/;
+const coAuthorPattern = /^\s*co-authored-by\s*:/i;
+const aiAttributionPattern = /^(?:(?:generated|written|authored|created|assisted|co-authored)\s+(?:by|with|using)\s+\[?(?:AI\b|Codex\b|Claude\b|ChatGPT\b|Copilot\b|Gemini\b|Cursor\b|Hermes\b|OpenAI\b|Anthropic\b)|AI[- ](?:generated|assisted)\b)/i;
+
+export default {
+  extends: ['@commitlint/config-conventional'],
+  // Merge, revert and version-bump messages are validated like any other; there are no exceptions.
+  defaultIgnores: false,
+  plugins: [{
+    rules: {
+      'ainobi-header-format': ({ header }) => [
+        headerPattern.test(header ?? ''),
+        'Use type(scope): summary or type(scope)!: summary; scope must match [a-z][a-z0-9-]* and summary must start with a lowercase English letter and use printable ASCII.',
+      ],
+      'ainobi-no-attribution': ({ raw }) => {
+        const hasAttribution = (raw ?? '').split(/\r?\n/).some((line) => {
+          const text = line.replace(/^[^\p{L}\p{N}]+/u, '');
+          return coAuthorPattern.test(text) || aiAttributionPattern.test(text);
+        });
+        return [!hasAttribution, 'Do not include Co-Authored-By trailers or AI attribution signatures.'];
+      },
+    },
+  }],
+  rules: {
+    'type-enum': [2, 'always', ['feat', 'fix', 'docs', 'refactor', 'perf', 'test', 'build', 'ci', 'chore', 'revert']],
+    'scope-empty': [2, 'never'],
+    'header-max-length': [2, 'always', 72],
+    'subject-case': [0],
+    'subject-full-stop': [2, 'never', '.'],
+    'body-leading-blank': [2, 'always'],
+    'footer-leading-blank': [2, 'always'],
+    'body-max-line-length': [0],
+    'footer-max-line-length': [0],
+    'ainobi-header-format': [2, 'always'],
+    'ainobi-no-attribution': [2, 'always'],
+  },
+};

@@ -1,0 +1,441 @@
+/* SPDX-License-Identifier: AGPL-3.0-only */
+@import "tailwindcss";
+/* Tailwind scans the importing app by default; these packages carry their own class names. Sources are
+   here in this repository, and dist/ where they are installed; a package that is not installed is skipped. */
+@source "..";
+@source "../../../avatar/src";
+@source "../../../avatar/dist";
+@source "../../../courseware-editor/src";
+@source "../../../courseware-editor/dist";
+
+/* ───────────────────────────────────────────────────────────────────────────
+ * Rich element (element_type:"rich") Tailwind safelist
+ * ----------------------------------------------------
+ * Agent-authored `className` strings live in scene JSON (loaded at runtime), so
+ * the Tailwind v4 content scanner never sees them in source files. `@source
+ * inline(...)` force-generates a broad, documented utility set so rich-component
+ * classes resolve. Variants/breakpoints are intentionally omitted (the canvas is
+ * a fixed 1920×1080 stage); for exact/arbitrary values use sanitized inline
+ * `style` instead. Keep this list in sync with the "supported utilities" docs in
+ * the ainobi-courseware-cli skill (design-excellence.md).
+ * ─────────────────────────────────────────────────────────────────────────── */
+/* Display & layout */
+@source inline("{block,inline-block,inline,flex,inline-flex,grid,inline-grid,hidden,contents,table}");
+@source inline("flex-{row,row-reverse,col,col-reverse,wrap,wrap-reverse,nowrap}");
+@source inline("{flex-1,flex-auto,flex-initial,flex-none,grow,grow-0,shrink,shrink-0}");
+@source inline("items-{start,end,center,baseline,stretch}");
+@source inline("justify-{start,end,center,between,around,evenly,stretch}");
+@source inline("justify-items-{start,end,center,stretch}");
+@source inline("self-{auto,start,end,center,stretch,baseline}");
+@source inline("content-{start,end,center,between,around,evenly,stretch}");
+@source inline("place-{items,content}-{start,end,center,stretch,between}");
+@source inline("grid-cols-{1,2,3,4,5,6,7,8,9,10,11,12}");
+@source inline("grid-rows-{1,2,3,4,5,6}");
+@source inline("col-span-{1,2,3,4,5,6,7,8,9,10,11,12,full}");
+@source inline("row-span-{1,2,3,4,5,6}");
+@source inline("auto-cols-{auto,min,max,fr}");
+@source inline("grid-flow-{row,col,dense,row-dense,col-dense}");
+/* Position (within the clipped block only; fixed/sticky deliberately excluded) */
+@source inline("{relative,absolute}");
+@source inline("z-{0,10,20,30,40,50}");
+@source inline("inset-0");
+@source inline("inset-x-0");
+@source inline("inset-y-0");
+@source inline("{top,right,bottom,left}-0");
+/* Spacing */
+@source inline("gap-{0,1,2,3,4,5,6,8,10,12,16,20,24}");
+@source inline("gap-x-{0,1,2,3,4,5,6,8,10,12,16}");
+@source inline("gap-y-{0,1,2,3,4,5,6,8,10,12,16}");
+@source inline("{p,px,py,pt,pr,pb,pl}-{0,1,2,3,4,5,6,8,10,12,14,16,20,24,28,32}");
+@source inline("{m,mx,my,mt,mr,mb,ml}-{0,1,2,3,4,5,6,8,10,12,16,20,24,auto}");
+@source inline("space-{x,y}-{0,1,2,3,4,6,8}");
+/* Sizing */
+@source inline("w-{0,1,2,3,4,5,6,8,10,12,16,20,24,32,40,48,56,64,72,80,96,full,auto,fit,min,max,px}");
+@source inline("h-{0,1,2,3,4,5,6,8,10,12,16,20,24,32,40,48,56,64,72,80,96,full,auto,fit,min,max,px}");
+@source inline("w-{1/2,1/3,2/3,1/4,3/4,1/5,2/5,3/5,4/5,1/6,5/6}");
+@source inline("h-{1/2,1/3,2/3,1/4,3/4}");
+@source inline("size-{0,1,2,3,4,6,8,10,12,16,20,24,32,full,fit}");
+@source inline("{min-w,min-h}-{0,full,fit,min,max}");
+@source inline("{max-w,max-h}-{0,full,fit,min,max}");
+@source inline("max-w-{xs,sm,md,lg,xl,2xl,3xl,4xl,5xl,6xl,7xl,prose}");
+/* Typography */
+@source inline("text-{xs,sm,base,lg,xl,2xl,3xl,4xl,5xl,6xl,7xl,8xl,9xl}");
+@source inline("font-{thin,extralight,light,normal,medium,semibold,bold,extrabold,black}");
+@source inline("leading-{none,tight,snug,normal,relaxed,loose,3,4,5,6,7,8,9,10}");
+@source inline("tracking-{tighter,tight,normal,wide,wider,widest}");
+@source inline("text-{left,center,right,justify,start,end}");
+@source inline("{uppercase,lowercase,capitalize,normal-case,italic,not-italic,truncate,underline,line-through,no-underline}");
+@source inline("whitespace-{normal,nowrap,pre,pre-line,pre-wrap}");
+@source inline("break-{normal,words,all,keep}");
+@source inline("line-clamp-{1,2,3,4,5,6,none}");
+@source inline("list-{none,disc,decimal,inside,outside}");
+@source inline("align-{baseline,top,middle,bottom,text-top,text-bottom}");
+/* Colors: text / bg / border */
+@source inline("{text,bg,border}-{white,black,transparent,current}");
+@source inline("{text,bg,border}-{slate,gray,zinc,neutral,stone,red,orange,amber,yellow,lime,green,emerald,teal,cyan,sky,blue,indigo,violet,purple,fuchsia,pink,rose}-{50,{100..900..100},950}");
+/* Opacity steps /5../95 commonly used in agent JSON (e.g. border-amber-300/40, bg-sky-400/15) */
+@source inline("{text,bg,border}-{white,black,transparent,current}/{5,10,15,20,25,30,40,50,60,70,75,80,90,95,100}");
+@source inline("{text,bg,border}-{slate,gray,zinc,neutral,stone,red,orange,amber,yellow,lime,green,emerald,teal,cyan,sky,blue,indigo,violet,purple,fuchsia,pink,rose}-{50,{100..900..100},950}/{5,10,15,20,25,30,40,50,60,70,75,80,90,95,100}");
+/* Gradients */
+@source inline("bg-gradient-to-{t,tr,r,br,b,bl,l,tl}");
+@source inline("bg-linear-to-{t,tr,r,br,b,bl,l,tl}");
+@source inline("{from,via,to}-{white,black,transparent}");
+@source inline("{from,via,to}-{slate,gray,red,orange,amber,yellow,lime,green,emerald,teal,cyan,sky,blue,indigo,violet,purple,fuchsia,pink,rose}-{50,{100..900..100},950}");
+@source inline("{from,via,to}-{white,black,transparent}/{5,10,15,20,25,30,40,50,60,70,75,80,90,95,100}");
+@source inline("{from,via,to}-{slate,gray,red,orange,amber,yellow,lime,green,emerald,teal,cyan,sky,blue,indigo,violet,purple,fuchsia,pink,rose}-{50,{100..900..100},950}/{5,10,15,20,25,30,40,50,60,70,75,80,90,95,100}");
+/* Borders & radius */
+@source inline("border");
+@source inline("border-{0,2,4,8}");
+@source inline("border-{x,y,t,r,b,l}");
+@source inline("border-{t,r,b,l}-{0,2,4,8}");
+@source inline("border-{solid,dashed,dotted,double,none}");
+@source inline("rounded");
+@source inline("rounded-{none,sm,md,lg,xl,2xl,3xl,full}");
+@source inline("rounded-{t,r,b,l,tl,tr,br,bl}-{none,sm,md,lg,xl,2xl,3xl,full}");
+@source inline("divide-{x,y}");
+/* Effects & misc */
+@source inline("shadow");
+@source inline("shadow-{sm,md,lg,xl,2xl,inner,none}");
+@source inline("opacity-{0,5,10,20,25,30,40,50,60,70,75,80,90,95,100}");
+@source inline("overflow-{auto,hidden,visible,scroll,clip}");
+@source inline("overflow-{x,y}-{auto,hidden,visible,scroll}");
+@source inline("object-{contain,cover,fill,none,scale-down}");
+@source inline("object-{top,bottom,center,left,right}");
+@source inline("aspect-{auto,square,video}");
+@source inline("backdrop-blur-{none,sm,md,lg,xl}");
+@source inline("blur-{none,sm,md,lg,xl}");
+@source inline("transition");
+@source inline("duration-{75,100,150,200,300,500,700,1000}");
+
+/*
+ * dark: trigger conditions (overriding the default prefers-color-scheme):
+ * - courseware editor: root node data-courseware-editor-theme="dark" or .dark
+ * - player etc.: an ancestor .dark (see the player subtree)
+ */
+@custom-variant dark (&:where(
+  [data-courseware-editor-theme="dark"],
+  [data-courseware-editor-theme="dark"] *,
+  .dark,
+  .dark *
+));
+
+[data-courseware-editor-theme="dark"] select {
+  color-scheme: dark;
+}
+
+[data-courseware-editor-theme="light"] select {
+  color-scheme: light;
+}
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+html,
+body {
+  @apply bg-white dark:bg-gray-950;
+
+  @media (prefers-color-scheme: dark) {
+    color-scheme: dark;
+  }
+}
+
+button {
+  cursor: pointer;
+}
+
+.pending-glow {
+  background: linear-gradient(
+    90deg,
+    #3c82f6 0%,
+    #3c82f6 20%,
+    #000 40%,
+    #000 60%,
+    #3c82f6 80%,
+    #3c82f6 100%
+  );
+  background-size: 300% 100%;
+  background-position: 0% 0%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  animation: glow-move 600ms linear infinite;
+  word-break: break-all;
+}
+
+/* Dark background: the middle of the gradient goes from black to white, otherwise contrast with dark bubbles is too low */
+@media (prefers-color-scheme: dark) {
+  .pending-glow {
+    background-image: linear-gradient(
+      90deg,
+      #3c82f6 0%,
+      #3c82f6 20%,
+      #ffffff 40%,
+      #ffffff 60%,
+      #3c82f6 80%,
+      #3c82f6 100%
+    );
+  }
+}
+
+.dark .pending-glow {
+  background-image: linear-gradient(
+    90deg,
+    #3c82f6 0%,
+    #3c82f6 20%,
+    #ffffff 40%,
+    #ffffff 60%,
+    #3c82f6 80%,
+    #3c82f6 100%
+  );
+}
+
+@keyframes glow-move {
+  0% {
+    background-position: 110% 0%;
+  }
+  100% {
+    background-position: 0% 0%;
+  }
+}
+
+/* Courseware assistant action collapse title: a shimmer while streaming execution (matching the sidebar slate bubbles) */
+@keyframes courseware-editor-ai-ops-title-shimmer {
+  0% {
+    background-position: 160% 0;
+  }
+  100% {
+    background-position: -60% 0;
+  }
+}
+
+.courseware-editor-ai-ops-title-shimmer {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+  /* Dark: slate-400 base, the shimmer reaches slate-300 */
+  background-image: linear-gradient(
+    90deg,
+    rgb(148 163 184) 0%,
+    rgb(148 163 184) 38%,
+    rgb(203 213 225) 50%,
+    rgb(148 163 184) 62%,
+    rgb(148 163 184) 100%
+  );
+  background-size: 220% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: courseware-editor-ai-ops-title-shimmer 2.2s ease-in-out infinite;
+}
+
+[data-courseware-editor-theme="dark"] .courseware-editor-ai-ops-title-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    rgb(148 163 184) 0%,
+    rgb(148 163 184) 38%,
+    rgb(203 213 225) 50%,
+    rgb(148 163 184) 62%,
+    rgb(148 163 184) 100%
+  );
+}
+
+[data-courseware-editor-theme="light"] .courseware-editor-ai-ops-title-shimmer {
+  /* slate-600 base, the shimmer reaches slate-700 */
+  background-image: linear-gradient(
+    90deg,
+    rgb(71 85 105) 0%,
+    rgb(71 85 105) 38%,
+    rgb(51 65 85) 50%,
+    rgb(71 85 105) 62%,
+    rgb(71 85 105) 100%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .courseware-editor-ai-ops-title-shimmer {
+    animation: none;
+    color: rgb(148 163 184);
+    -webkit-text-fill-color: rgb(148 163 184);
+    background: none;
+  }
+
+  [data-courseware-editor-theme="light"] .courseware-editor-ai-ops-title-shimmer {
+    color: rgb(71 85 105);
+    -webkit-text-fill-color: rgb(71 85 105);
+  }
+
+  [data-courseware-editor-theme="dark"] .courseware-editor-ai-ops-title-shimmer {
+    color: rgb(148 163 184);
+    -webkit-text-fill-color: rgb(148 163 184);
+  }
+}
+
+/* Elements frozen exclusively by the agent: an iridescent mask (canvas StageElement) */
+@keyframes courseware-editor-agent-frozen-shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.courseware-editor-agent-frozen-overlay {
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: linear-gradient(
+    125deg,
+    rgba(236, 72, 153, 0.42),
+    rgba(168, 85, 247, 0.38),
+    rgba(59, 130, 246, 0.4),
+    rgba(34, 211, 238, 0.38),
+    rgba(52, 211, 153, 0.36),
+    rgba(250, 204, 21, 0.34),
+    rgba(236, 72, 153, 0.42)
+  );
+  background-size: 320% 320%;
+  animation: courseware-editor-agent-frozen-shimmer 5s ease-in-out infinite;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.35),
+    inset 0 0 24px rgba(168, 85, 247, 0.12);
+  opacity: 0.72;
+}
+
+[data-courseware-editor-theme="light"] .courseware-editor-agent-frozen-overlay {
+  background: linear-gradient(
+    125deg,
+    rgba(219, 39, 119, 0.28),
+    rgba(126, 34, 206, 0.26),
+    rgba(37, 99, 235, 0.28),
+    rgba(8, 145, 178, 0.26),
+    rgba(5, 150, 105, 0.24),
+    rgba(202, 138, 4, 0.22),
+    rgba(219, 39, 119, 0.28)
+  );
+  opacity: 0.78;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .courseware-editor-agent-frozen-overlay {
+    animation: none;
+    background-size: 100% 100%;
+    opacity: 0.55;
+  }
+}
+
+/* Assistant message list: skip layout/paint outside the viewport; estimated heights reduce scroll jumps */
+.courseware-editor-ai-msg-item {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 120px;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(239, 68, 68, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+/* Live-join line panel: "checking" dot blink (Tailwind's pulse is shadowed by the global keyframes above). */
+@keyframes line-dot-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* Live-join line notice card entrance (prototype "rise"). */
+@keyframes line-notice-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Courseware editor top bar: the theme toggle icon mirrored horizontally (fixed 16×16 so scaling doesn't squash it and shift the layout) */
+@keyframes courseware-editor-theme-icon-flip {
+  0% {
+    transform: rotateY(0deg);
+  }
+  50% {
+    transform: rotateY(90deg);
+  }
+  100% {
+    transform: rotateY(0deg);
+  }
+}
+
+.courseware-editor-theme-icon-flip {
+  display: inline-flex;
+  height: 1rem;
+  width: 1rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  transform-origin: center center;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  animation: courseware-editor-theme-icon-flip 0.4s ease-in-out;
+  animation-fill-mode: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .courseware-editor-theme-icon-flip {
+    animation: none;
+  }
+}
+
+/* Locked section stripe pattern */
+.section-locked {
+  background: repeating-linear-gradient(45deg, #f8fafc, #f8fafc 10px, #f1f5f9 10px, #f1f5f9 20px);
+}
+
+@media (prefers-color-scheme: dark) {
+  .section-locked {
+    background: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03) 10px, rgba(255, 255, 255, 0.06) 10px, rgba(255, 255, 255, 0.06) 20px);
+  }
+}

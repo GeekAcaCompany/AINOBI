@@ -1,0 +1,80 @@
+{
+  "name": "@ainobi/api-contracts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The platform contract kernel adopted verbatim from the backend: the 43 zod DTO schema modules, the 33 domain enums, the error-code enum (HTTP×1000+business, ~150 codes), and the response envelope shape. One source of truth for backend and frontends; the golden OpenAPI remains the HTTP gate.",
+  "license": "AGPL-3.0-only",
+  "author": "GeekAca Ltd.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schemas/*": "./src/schemas/*",
+    "./enums/*": "./src/enums/*",
+    "./core/*": "./src/core/*",
+    "./utils/*": "./src/utils/*",
+    "./envelope.ts": "./src/envelope.ts",
+    "./serialize.ts": "./src/serialize.ts",
+    "./core/credit-errors": "./src/core/credit-errors.ts"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      },
+      "./schemas/*": {
+        "types": "./dist/schemas/*.d.ts",
+        "import": "./dist/schemas/*.js"
+      },
+      "./enums/*": {
+        "types": "./dist/enums/*.d.ts",
+        "import": "./dist/enums/*.js"
+      },
+      "./core/*": {
+        "types": "./dist/core/*.d.ts",
+        "import": "./dist/core/*.js"
+      },
+      "./utils/*": {
+        "types": "./dist/utils/*.d.ts",
+        "import": "./dist/utils/*.js"
+      },
+      "./envelope": {
+        "types": "./dist/envelope.d.ts",
+        "import": "./dist/envelope.js"
+      },
+      "./serialize": {
+        "types": "./dist/serialize.d.ts",
+        "import": "./dist/serialize.js"
+      },
+      "./core/credit-errors": {
+        "types": "./dist/core/credit-errors.d.ts",
+        "import": "./dist/core/credit-errors.js"
+      }
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "build": "node ../../scripts/build-package.mjs"
+  },
+  "ainobi": {
+    "visibility": "public",
+    "capabilities": [
+      "api-contracts"
+    ],
+    "origin": "adopted"
+  },
+  "dependencies": {
+    "zod": "^4.4.3",
+    "decimal.js": "^10.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5"
+  }
+}

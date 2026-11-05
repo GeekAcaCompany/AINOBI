@@ -1,0 +1,43 @@
+{
+  "name": "@ainobi/http",
+  "version": "0.1.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "author": "GeekAca Ltd.",
+  "type": "module",
+  "ainobi": {
+    "visibility": "public",
+    "capabilities": [
+      "http"
+    ],
+    "origin": "adopted"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "description": "HTTP kernel: the table-driven route registry (RouteDef, RouteRegistry, operationId synthesis, mount prefixes) generic over the host session type, plus the request-pipeline types it shares with the host server.",
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "build": "node ../../scripts/build-package.mjs"
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
+  }
+}

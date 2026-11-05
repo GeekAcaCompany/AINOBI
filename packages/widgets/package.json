@@ -1,0 +1,54 @@
+{
+  "name": "@ainobi/widgets",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AINOBI embedding SDK: the versioned postMessage embed protocol, a framework-agnostic iframe loader, the <ainobi-editor|player|avatar|login> custom elements, and the guest runtime the embedded pages use. Identity crosses only as one-time handoff codes over postMessage.",
+  "license": "AGPL-3.0-only",
+  "author": "GeekAca Ltd.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./guest": "./src/guest.ts",
+    "./protocol": "./src/protocol.ts"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      },
+      "./guest": {
+        "types": "./dist/guest.d.ts",
+        "import": "./dist/guest.js"
+      },
+      "./protocol": {
+        "types": "./dist/protocol.d.ts",
+        "import": "./dist/protocol.js"
+      },
+      "./bundle": "./dist/ainobi-widgets.js"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "build:bundle": "esbuild src/browser.ts --bundle --format=iife --outfile=dist/ainobi-widgets.js --minify --target=es2020",
+    "build": "node ../../scripts/build-package.mjs && esbuild src/browser.ts --bundle --format=iife --outfile=dist/ainobi-widgets.js --minify --target=es2020"
+  },
+  "ainobi": {
+    "visibility": "public",
+    "capabilities": [
+      "widgets",
+      "web-components"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "esbuild": "^0.24.0",
+    "jsdom": "^27.4.0"
+  }
+}

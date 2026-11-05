@@ -1,0 +1,15 @@
+{
+  "name": "ainobi-courseware",
+  "version": "0.1.0",
+  "description": "Author and edit AINOBI slide-based courseware via MCP tools and the ainobi CLI workflow.",
+  "author": {
+    "name": "AINOBI"
+  },
+  "skills": "./skills/",
+  "apps": "./.app.json",
+  "interface": {
+    "displayName": "AINOBI Courseware",
+    "shortDescription": "Create and edit AINOBI e-learning courseware scenes",
+    "longDescription": "Opens AINOBI courseware into a server-side workspace, runs validated ainobi CLI commands, and persists scenes with TTS/search host capabilities. Pair with the AINOBI MCP app for cloud courseware authoring in ChatGPT Desktop Codex / Work."
+  }
+}

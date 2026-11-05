@@ -1,0 +1,48 @@
+{
+  "name": "@ainobi/tts-minimax",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The minimax implementation of the tts capability port, adopted from the platform backend.",
+  "license": "AGPL-3.0-only",
+  "author": "GeekAca Ltd.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "build": "node ../../scripts/build-package.mjs"
+  },
+  "ainobi": {
+    "visibility": "public",
+    "capabilities": [
+      "tts",
+      "minimax"
+    ],
+    "origin": "adopted"
+  },
+  "dependencies": {
+    "@ainobi/api-contracts": "workspace:0.1.0",
+    "@ainobi/tts": "workspace:0.1.0",
+    "proxy-agent": "^5.0.0",
+    "ws": "^8.20.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "@types/ws": "^8.18.1"
+  }
+}

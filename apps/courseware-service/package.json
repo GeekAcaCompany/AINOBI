@@ -1,0 +1,72 @@
+{
+  "name": "ainobi-courseware-service",
+  "version": "0.0.0",
+  "description": "Ainobi Courseware Service",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "AGPL-3.0-only",
+  "private": true,
+  "author": "GeekAca Ltd.",
+  "directories": {
+    "dist": "dist"
+  },
+  "files": [
+    "dist/"
+  ],
+  "scripts": {
+    "dev": "node scripts/pack-codex-plugin.js && tsup --watch --onSuccess \"node --enable-source-maps --no-node-snapshot dist/index.js\"",
+    "start": "node --enable-source-maps --no-node-snapshot dist/index.js",
+    "build": "node scripts/pack-codex-plugin.js && tsup",
+    "typecheck": "tsc --noEmit -p .",
+    "pack:codex-plugin": "node scripts/pack-codex-plugin.js",
+    "test": "node scripts/run-tests.mjs"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^3.0.67",
+    "@ainobi/agent-runtime": "workspace:*",
+    "@ainobi/backend-client": "workspace:*",
+    "@ainobi/billing": "workspace:*",
+    "@ainobi/courseware-cli": "workspace:*",
+    "@ainobi/courseware-core": "workspace:*",
+    "@ainobi/http": "workspace:*",
+    "@anthropic-ai/claude-agent-sdk": "0.2.141",
+    "@aws-sdk/client-s3": "^3.1054.0",
+    "@aws-sdk/s3-request-presigner": "^3.1054.0",
+    "@breezystack/lamejs": "^1.2.7",
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@tavily/core": "^0.7.3",
+    "@the-next-ai/ai-gateway": "^1.0.17",
+    "ali-oss": "^6.23.0",
+    "busboy": "^1.6.0",
+    "dotenv": "^16.4.1",
+    "fflate": "^0.8.2",
+    "ioredis": "^5.7.0",
+    "jsonrepair": "^3.14.0",
+    "kuroshiro": "^1.2.0",
+    "kuroshiro-analyzer-kuromoji": "^1.1.0",
+    "markitdown-ts": "^0.0.10",
+    "openai": "^6.25.0",
+    "pg": "^8.15.6",
+    "pinyin-pro": "^3.28.1",
+    "proxy-agent": "^5.0.0",
+    "reflect-metadata": "^0.2.2",
+    "tsx": "^4.19.2",
+    "typeorm": "^0.3.23",
+    "undici": "^7.16.0",
+    "ws": "^8.20.1",
+    "yup": "^1.4.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@ainobi/db": "workspace:*",
+    "@alicloud/fc20230330": "^4.3.0",
+    "@swc/core": "^1.11.24",
+    "@types/busboy": "^1.5.4",
+    "@types/node": "^25.7.0",
+    "minimist": "^1.2.8",
+    "ts-node": "^10.9.2",
+    "tsup": "8.0.2",
+    "typescript": "^5.6.2"
+  }
+}

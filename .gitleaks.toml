@@ -1,0 +1,94 @@
+# Secret scan rules for the public repository, used by .github/workflows/secret-scan.yml and `pnpm scan:secrets`.
+# Keep gitleaks at the pinned 8.18.4: later versions silently drop custom rules defined beside [extend] useDefault.
+# Allow a path or value only after checking that it is not a secret, and say why.
+title = "AINOBI secret scan"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Generated or vendored files, and values checked by hand"
+paths = [
+  '''(^|/)\.gitleaks\.toml$''',
+  '''(^|/)pnpm-lock\.yaml$''',
+  # Minified third-party builds: their identifiers read as high-entropy strings.
+  '''(^|/)packages/inochi2d/dist/''',
+  '''(^|/)apps/studio/public/live2dcubismcore\.min\.js$''',
+]
+regexes = [
+  '''\$\{\{[^}]*\}\}''',
+  '''(?i)(placeholder|your[_-]?key|changeme|replace[_-]?me|<REDACTED>)''',
+  # Upper-case setting names read as `key: NAME`, not credential values.
+  '''^[A-Z]+(_[A-Z0-9_]+)+$''',
+]
+
+[[rules]]
+id = "cloudflare-api-token"
+description = "Cloudflare API token"
+regex = '''cfat_[A-Za-z0-9]{20,}'''
+tags = ["cloudflare"]
+
+[[rules]]
+id = "xai-key"
+description = "xAI API key"
+regex = '''xai-[0-9A-Za-z-]{16,}'''
+tags = ["xai"]
+
+[[rules]]
+id = "tavily-key"
+description = "Tavily API key"
+regex = '''tvly-[0-9A-Za-z-]{16,}'''
+tags = ["tavily"]
+
+[[rules]]
+id = "dashscope-key"
+description = "DashScope style key"
+regex = '''sk-ws-[0-9A-Za-z-]{16,}'''
+tags = ["dashscope"]
+
+[[rules]]
+id = "aliyun-accesskey"
+description = "Aliyun AccessKey ID"
+regex = '''LTAI[0-9A-Za-z]{12,}'''
+tags = ["aliyun"]
+
+[[rules]]
+id = "aws-accesskey"
+description = "AWS access key ID, also inside signed URLs"
+regex = '''(?:AKIA|ASIA)[0-9A-Z]{16}'''
+tags = ["aws"]
+
+[[rules]]
+id = "google-new-style-key"
+description = "Google API key, new format"
+regex = '''\bAQ\.[A-Za-z0-9_-]{40,}'''
+tags = ["google"]
+
+[[rules]]
+id = "ainobi-agent-key"
+description = "AINOBI agent credential"
+regex = '''ainobi_ak_[0-9a-f]{32}_[A-Za-z0-9_-]{20,}'''
+tags = ["ainobi"]
+
+[[rules]]
+id = "internal-secret-assignment"
+description = "Internal token or password assigned a literal value"
+regex = '''(?i)(internal_token|token_secret|shared_secret|secret_key|access_key_secret|_password)["']?\s*[:=]\s*["'](?:[0-9a-f]{16,}|[0-9a-f-]{36})["']'''
+tags = ["ainobi"]
+
+[[rules]]
+id = "hardcoded-credential-default"
+description = "Credential-named setting read with a literal fallback"
+# The secret is the literal: the setting name alone would be excused as an upper-case identifier.
+regex = '''env\(\s*["'][A-Z0-9_]*(?:PASSWORD|SECRET|TOKEN|API_KEY)[A-Z0-9_]*["']\s*,\s*["']([^"'\s]{4,})["']\s*\)'''
+secretGroup = 1
+tags = ["config"]
+[rules.allowlist]
+# Numeric settings whose names contain TOKEN are budgets and limits.
+regexes = ['''^[0-9]+$''']
+
+[[rules]]
+id = "internal-infrastructure"
+description = "A Function Compute host, which names a private deployment"
+regex = '''[a-z0-9-]+\.fcapp\.run'''
+tags = ["ainobi"]

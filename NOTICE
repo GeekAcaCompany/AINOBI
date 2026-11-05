@@ -1,0 +1,16 @@
+AINOBI
+Copyright (c) 2026 GeekAca Ltd. (株式会社GeekAca) and contributors
+
+This product is licensed under the GNU Affero General Public License v3.0 only
+(AGPL-3.0-only); see LICENSE.
+
+The AINOBI name and logo are trademarks of GeekAca Ltd. and are not covered by that
+license; see TRADEMARKS.md.
+
+Except for third-party material recorded in THIRD_PARTY_NOTICES.md, templates and
+example courseware under examples/ are dedicated to the public domain under
+CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/legalcode). This file
+is the only statement of that dedication; the repository carries a single
+LICENSE file at its root and no per-directory license files.
+
+Third-party components are listed with their licenses in THIRD_PARTY_NOTICES.md.

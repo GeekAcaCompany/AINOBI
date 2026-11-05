@@ -1,0 +1,10 @@
+{
+  "name": "ainobi-courseware-mcp",
+  "description": "AINOBI courseware MCP connector. Point ChatGPT Developer Mode at the hosted /mcp URL, set Authorization Bearer to your org automation key (ainobi_ak_*), then optionally replace this entry with the issued plugin_asdk_app… connection.",
+  "mcpServers": {
+    "ainobi-courseware": {
+      "url": "{{MCP_URL}}",
+      "description": "Hosted AINOBI courseware-agent MCP. Auth: Authorization Bearer <org Agent ainobi_ak_* | teacher access_token>."
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "name": "@ainobi/studio",
+  "version": "0.1.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "author": "GeekAca Ltd.",
+  "type": "module",
+  "description": "A complete local courseware system on Node.js alone: list, edit, and preview courseware, with an agent authoring through the same service.",
+  "scripts": {
+    "start": "node server/start.mjs",
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc -p .",
+    "test": "vitest run",
+    "schema": "node scripts/generate-schema.mjs"
+  },
+  "dependencies": {
+    "@ainobi/avatar": "workspace:*",
+    "@ainobi/avatar-generator": "workspace:*",
+    "@ainobi/courseware-editor": "workspace:*",
+    "@ainobi/courseware-player": "workspace:*",
+    "@ainobi/lite-stores": "workspace:*",
+    "@ainobi/tts": "workspace:*",
+    "@ainobi/widgets": "workspace:*",
+    "@tanstack/react-query": "^5.62.11",
+    "lucide-react": "^0.508.0",
+    "pg": "^8.13.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-hot-toast": "^2.5.2",
+    "react-router": "^7.7.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.4",
+    "@types/node": "22.20.5",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "@vitejs/plugin-react": "^5.1.2",
+    "tailwindcss": "^4.1.4",
+    "typescript": "7.0.2",
+    "vite": "6.3.3",
+    "vitest": "^4.1.11"
+  }
+}

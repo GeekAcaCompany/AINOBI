@@ -1,0 +1,1001 @@
+{
+  "name": "@ainobi/courseware-player",
+  "version": "0.1.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "author": "GeekAca Ltd.",
+  "type": "module",
+  "ainobi": {
+    "visibility": "public",
+    "capabilities": [
+      "courseware-player"
+    ]
+  },
+  "description": "AINOBI courseware playback for React: the stage, timeline, narration, quizzes, the preview and render pages, and the courseware API client.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./api/courseware": "./src/api/courseware.ts",
+    "./api/courseware_agent": "./src/api/courseware_agent.ts",
+    "./api/courseware_assets": "./src/api/courseware_assets.ts",
+    "./api/courseware_content_templates": "./src/api/courseware_content_templates.ts",
+    "./api/courseware_design_templates": "./src/api/courseware_design_templates.ts",
+    "./api/courseware_list": "./src/api/courseware_list.ts",
+    "./api/courseware_quiz_answer_recordings": "./src/api/courseware_quiz_answer_recordings.ts",
+    "./api/courseware_section_binding": "./src/api/courseware_section_binding.ts",
+    "./api/org-path": "./src/api/org-path.ts",
+    "./components/CoursewareRasterImage": "./src/components/CoursewareRasterImage.tsx",
+    "./components/CoursewareShapeContent": "./src/components/CoursewareShapeContent.tsx",
+    "./components/CoursewareSvgContent": "./src/components/CoursewareSvgContent.tsx",
+    "./components/MarkdownRenderer": "./src/components/MarkdownRenderer.tsx",
+    "./components/MicAnalyserWaveform": "./src/components/MicAnalyserWaveform.tsx",
+    "./components/courseware-ai-assistant/CoursewareAiAssistantMessageBody": "./src/components/courseware-ai-assistant/CoursewareAiAssistantMessageBody.tsx",
+    "./components/courseware-editor/AiPanelHighlightComposer": "./src/components/courseware-editor/AiPanelHighlightComposer.tsx",
+    "./components/courseware-editor/AiPanelMentionBubbles": "./src/components/courseware-editor/AiPanelMentionBubbles.tsx",
+    "./components/courseware-editor/AssetListImagePreview": "./src/components/courseware-editor/AssetListImagePreview.tsx",
+    "./components/courseware-editor/ContentTemplatePickerModal": "./src/components/courseware-editor/ContentTemplatePickerModal.tsx",
+    "./components/courseware-editor/CoursewareAssetLibraryPicker": "./src/components/courseware-editor/CoursewareAssetLibraryPicker.tsx",
+    "./components/courseware-editor/CoursewareEditorAiPanel": "./src/components/courseware-editor/CoursewareEditorAiPanel.tsx",
+    "./components/courseware-editor/CoursewareLibraryPickerModal": "./src/components/courseware-editor/CoursewareLibraryPickerModal.tsx",
+    "./components/courseware-editor/CoursewareManualMarkInputBubble": "./src/components/courseware-editor/CoursewareManualMarkInputBubble.tsx",
+    "./components/courseware-editor/DeletePageConfirmBubble": "./src/components/courseware-editor/DeletePageConfirmBubble.tsx",
+    "./components/courseware-editor/DesignTemplatePickerModal": "./src/components/courseware-editor/DesignTemplatePickerModal.tsx",
+    "./components/courseware-editor/ExtractContentTemplateModal": "./src/components/courseware-editor/ExtractContentTemplateModal.tsx",
+    "./components/courseware-editor/ExtractDesignTemplateModal": "./src/components/courseware-editor/ExtractDesignTemplateModal.tsx",
+    "./components/courseware-editor/TemplateExtractLanguageSelect": "./src/components/courseware-editor/TemplateExtractLanguageSelect.tsx",
+    "./components/courseware/CanvasAudioStageWidget": "./src/components/courseware/CanvasAudioStageWidget.tsx",
+    "./components/courseware/CoursewareHtmlStageEmbed": "./src/components/courseware/CoursewareHtmlStageEmbed.tsx",
+    "./components/courseware/GlobalAudioTracks": "./src/components/courseware/GlobalAudioTracks.tsx",
+    "./components/courseware/HyperframesSceneMediaDeclarations": "./src/components/courseware/HyperframesSceneMediaDeclarations.tsx",
+    "./components/courseware/PPTRenderer": "./src/components/courseware/PPTRenderer.tsx",
+    "./components/courseware/SlideBackgroundHtmlLayer": "./src/components/courseware/SlideBackgroundHtmlLayer.tsx",
+    "./components/courseware/quiz-score-summary/QuizGradeDescription": "./src/components/courseware/quiz-score-summary/QuizGradeDescription.tsx",
+    "./components/courseware/quiz-score-summary/QuizGradeLabel": "./src/components/courseware/quiz-score-summary/QuizGradeLabel.tsx",
+    "./components/courseware/quiz-score-summary/QuizScoreSummaryContainer": "./src/components/courseware/quiz-score-summary/QuizScoreSummaryContainer.tsx",
+    "./components/courseware/quiz-score-summary/QuizScoreSummaryContext": "./src/components/courseware/quiz-score-summary/QuizScoreSummaryContext.tsx",
+    "./components/courseware/quiz-score-summary/QuizScoreSummaryRenderer": "./src/components/courseware/quiz-score-summary/QuizScoreSummaryRenderer.tsx",
+    "./components/courseware/quiz-score-summary/QuizTotalScore": "./src/components/courseware/quiz-score-summary/QuizTotalScore.tsx",
+    "./components/courseware/quiz-score-summary/index": "./src/components/courseware/quiz-score-summary/index.ts",
+    "./components/courseware/quiz-score-summary/resolve-score-summary-slot-content": "./src/components/courseware/quiz-score-summary/resolve-score-summary-slot-content.ts",
+    "./components/courseware/quiz/QuizContainer": "./src/components/courseware/quiz/QuizContainer.tsx",
+    "./components/courseware/quiz/QuizContinueButton": "./src/components/courseware/quiz/QuizContinueButton.tsx",
+    "./components/courseware/quiz/QuizExplanation": "./src/components/courseware/quiz/QuizExplanation.tsx",
+    "./components/courseware/quiz/QuizFeedback": "./src/components/courseware/quiz/QuizFeedback.tsx",
+    "./components/courseware/quiz/QuizFormContext": "./src/components/courseware/quiz/QuizFormContext.tsx",
+    "./components/courseware/quiz/QuizInput": "./src/components/courseware/quiz/QuizInput.tsx",
+    "./components/courseware/quiz/QuizMedia": "./src/components/courseware/quiz/QuizMedia.tsx",
+    "./components/courseware/quiz/QuizOption": "./src/components/courseware/quiz/QuizOption.tsx",
+    "./components/courseware/quiz/QuizOptionGroup": "./src/components/courseware/quiz/QuizOptionGroup.tsx",
+    "./components/courseware/quiz/QuizRecordingPlayback": "./src/components/courseware/quiz/QuizRecordingPlayback.tsx",
+    "./components/courseware/quiz/QuizRecordingTimer": "./src/components/courseware/quiz/QuizRecordingTimer.tsx",
+    "./components/courseware/quiz/QuizRecordingTimerScope": "./src/components/courseware/quiz/QuizRecordingTimerScope.tsx",
+    "./components/courseware/quiz/QuizReferenceAudio": "./src/components/courseware/quiz/QuizReferenceAudio.tsx",
+    "./components/courseware/quiz/QuizRenderer": "./src/components/courseware/quiz/QuizRenderer.tsx",
+    "./components/courseware/quiz/QuizResubmitButton": "./src/components/courseware/quiz/QuizResubmitButton.tsx",
+    "./components/courseware/quiz/QuizScore": "./src/components/courseware/quiz/QuizScore.tsx",
+    "./components/courseware/quiz/QuizShadowingControl": "./src/components/courseware/quiz/QuizShadowingControl.tsx",
+    "./components/courseware/quiz/QuizShadowingControlAst": "./src/components/courseware/quiz/QuizShadowingControlAst.tsx",
+    "./components/courseware/quiz/QuizSkipButton": "./src/components/courseware/quiz/QuizSkipButton.tsx",
+    "./components/courseware/quiz/QuizSubmitButton": "./src/components/courseware/quiz/QuizSubmitButton.tsx",
+    "./components/courseware/quiz/QuizTextarea": "./src/components/courseware/quiz/QuizTextarea.tsx",
+    "./components/courseware/quiz/QuizTitle": "./src/components/courseware/quiz/QuizTitle.tsx",
+    "./components/courseware/quiz/index": "./src/components/courseware/quiz/index.ts",
+    "./components/courseware/quiz/quiz-button-appearance": "./src/components/courseware/quiz/quiz-button-appearance.ts",
+    "./components/courseware/quiz/quiz-option-appearance": "./src/components/courseware/quiz/quiz-option-appearance.ts",
+    "./components/courseware/quiz/quiz-recording-format": "./src/components/courseware/quiz/quiz-recording-format.ts",
+    "./components/courseware/quiz/quiz-style-allowlist": "./src/components/courseware/quiz/quiz-style-allowlist.ts",
+    "./components/courseware/quiz/quiz-style-merge": "./src/components/courseware/quiz/quiz-style-merge.ts",
+    "./components/courseware/rich/RichRenderer": "./src/components/courseware/rich/RichRenderer.tsx",
+    "./enums/live_classroom": "./src/enums/live_classroom.ts",
+    "./enums/teacher": "./src/enums/teacher.ts",
+    "./enums/tts": "./src/enums/tts.ts",
+    "./hooks/useI18nNew": "./src/hooks/useI18nNew.tsx",
+    "./hooks/useNarrationSegmentPlayback": "./src/hooks/useNarrationSegmentPlayback.ts",
+    "./hooks/usePlaybackPlayheadMs": "./src/hooks/usePlaybackPlayheadMs.ts",
+    "./hooks/useSyncedCanvasAudioElement": "./src/hooks/useSyncedCanvasAudioElement.ts",
+    "./hooks/useSyncedNarrationAudio": "./src/hooks/useSyncedNarrationAudio.ts",
+    "./host/ai-teacher-api": "./src/host/ai-teacher-api.ts",
+    "./host/auth": "./src/host/auth.ts",
+    "./host/config": "./src/host/config.ts",
+    "./host/course-api": "./src/host/course-api.ts",
+    "./host/course-section-api": "./src/host/course-section-api.ts",
+    "./host/embed": "./src/host/embed.ts",
+    "./host/feature-gate": "./src/host/feature-gate.ts",
+    "./host/host": "./src/host/host.ts",
+    "./host/interaction-agent": "./src/host/interaction-agent.ts",
+    "./host/logger": "./src/host/logger.ts",
+    "./host/org-identity": "./src/host/org-identity.ts",
+    "./host/protected-route": "./src/host/protected-route.ts",
+    "./host/public-course-api": "./src/host/public-course-api.ts",
+    "./host/requester": "./src/host/requester.ts",
+    "./host/session-manager": "./src/host/session-manager.ts",
+    "./host/tts-api": "./src/host/tts-api.ts",
+    "./host/whisper-dictation": "./src/host/whisper-dictation.ts",
+    "./lib/course-access": "./src/lib/course-access.ts",
+    "./lib/course-navigation": "./src/lib/course-navigation.ts",
+    "./lib/courseware-access": "./src/lib/courseware-access.ts",
+    "./lib/courseware-editor-theme": "./src/lib/courseware-editor-theme.ts",
+    "./lib/courseware-preview-section-context": "./src/lib/courseware-preview-section-context.ts",
+    "./lib/courseware-renderer/build-flow-pause-ack-set": "./src/lib/courseware-renderer/build-flow-pause-ack-set.ts",
+    "./lib/courseware-renderer/build-renderer-quiz-state": "./src/lib/courseware-renderer/build-renderer-quiz-state.ts",
+    "./lib/courseware-renderer/collect-scene-playback-asset-urls": "./src/lib/courseware-renderer/collect-scene-playback-asset-urls.ts",
+    "./lib/courseware-renderer/hyperframes-media-declarations": "./src/lib/courseware-renderer/hyperframes-media-declarations.ts",
+    "./lib/courseware-renderer/hyperframes-media-diagnostics": "./src/lib/courseware-renderer/hyperframes-media-diagnostics.ts",
+    "./lib/courseware-renderer/playback-timing": "./src/lib/courseware-renderer/playback-timing.ts",
+    "./lib/courseware-renderer/post-message": "./src/lib/courseware-renderer/post-message.ts",
+    "./lib/courseware-renderer/preload-scene-playback-assets": "./src/lib/courseware-renderer/preload-scene-playback-assets.ts",
+    "./lib/courseware-renderer/scene-loader": "./src/lib/courseware-renderer/scene-loader.ts",
+    "./lib/courseware-renderer/slide-transition": "./src/lib/courseware-renderer/slide-transition.ts",
+    "./lib/coursewareEditorSceneStorage": "./src/lib/coursewareEditorSceneStorage.ts",
+    "./lib/coursewarePreviewSceneStorage": "./src/lib/coursewarePreviewSceneStorage.ts",
+    "./lib/courseware/agent-chat-models": "./src/lib/courseware/agent-chat-models.ts",
+    "./lib/courseware/ai-asset-mentions": "./src/lib/courseware/ai-asset-mentions.ts",
+    "./lib/courseware/ai-assistant-content": "./src/lib/courseware/ai-assistant-content.ts",
+    "./lib/courseware/ai-chat-message-window": "./src/lib/courseware/ai-chat-message-window.ts",
+    "./lib/courseware/ai-content-template-mentions": "./src/lib/courseware/ai-content-template-mentions.ts",
+    "./lib/courseware/ai-courseware-mentions": "./src/lib/courseware/ai-courseware-mentions.ts",
+    "./lib/courseware/ai-design-template-mentions": "./src/lib/courseware/ai-design-template-mentions.ts",
+    "./lib/courseware/ai-manual-marks": "./src/lib/courseware/ai-manual-marks.ts",
+    "./lib/courseware/ai-mention-recents": "./src/lib/courseware/ai-mention-recents.ts",
+    "./lib/courseware/ai-panel-composer": "./src/lib/courseware/ai-panel-composer.ts",
+    "./lib/courseware/asset-presign-enabled": "./src/lib/courseware/asset-presign-enabled.ts",
+    "./lib/courseware/blank-courseware-content": "./src/lib/courseware/blank-courseware-content.ts",
+    "./lib/courseware/build-courseware-scene-json-url": "./src/lib/courseware/build-courseware-scene-json-url.ts",
+    "./lib/courseware/chunked-asset-upload": "./src/lib/courseware/chunked-asset-upload.ts",
+    "./lib/courseware/chunked-quiz-answer-recording-upload": "./src/lib/courseware/chunked-quiz-answer-recording-upload.ts",
+    "./lib/courseware/editor-clipboard": "./src/lib/courseware/editor-clipboard.ts",
+    "./lib/courseware/editor-paste": "./src/lib/courseware/editor-paste.ts",
+    "./lib/courseware/first-slide-fingerprint": "./src/lib/courseware/first-slide-fingerprint.ts",
+    "./lib/courseware/html-asset-rewrite": "./src/lib/courseware/html-asset-rewrite.ts",
+    "./lib/courseware/html-source-autofit-cache": "./src/lib/courseware/html-source-autofit-cache.ts",
+    "./lib/courseware/index": "./src/lib/courseware/index.ts",
+    "./lib/courseware/narration-audio-duration": "./src/lib/courseware/narration-audio-duration.ts",
+    "./lib/courseware/narration-pending-start": "./src/lib/courseware/narration-pending-start.ts",
+    "./lib/courseware/narration-preload": "./src/lib/courseware/narration-preload.ts",
+    "./lib/courseware/narration-segments": "./src/lib/courseware/narration-segments.ts",
+    "./lib/courseware/oss-internal-reachability-probe": "./src/lib/courseware/oss-internal-reachability-probe.ts",
+    "./lib/courseware/plan-draft-handoff": "./src/lib/courseware/plan-draft-handoff.ts",
+    "./lib/courseware/playback-resume": "./src/lib/courseware/playback-resume.ts",
+    "./lib/courseware/presign-scene": "./src/lib/courseware/presign-scene.ts",
+    "./lib/courseware/quiz-ast-editor": "./src/lib/courseware/quiz-ast-editor.ts",
+    "./lib/courseware/quiz-attempt-session": "./src/lib/courseware/quiz-attempt-session.ts",
+    "./lib/courseware/quiz-attempt-sync": "./src/lib/courseware/quiz-attempt-sync.ts",
+    "./lib/courseware/quiz-submit-feedback": "./src/lib/courseware/quiz-submit-feedback.ts",
+    "./lib/courseware/resolve-scene-ai-teacher-id": "./src/lib/courseware/resolve-scene-ai-teacher-id.ts",
+    "./lib/courseware/sanitize-asset-filename": "./src/lib/courseware/sanitize-asset-filename.ts",
+    "./lib/courseware/scene-load-repair": "./src/lib/courseware/scene-load-repair.ts",
+    "./lib/courseware/scene-merge": "./src/lib/courseware/scene-merge.ts",
+    "./lib/courseware/scene-persist-guard": "./src/lib/courseware/scene-persist-guard.ts",
+    "./lib/courseware/slide-background-image": "./src/lib/courseware/slide-background-image.ts",
+    "./lib/courseware/slide-cover-capture": "./src/lib/courseware/slide-cover-capture.ts",
+    "./lib/courseware/slide-cover-layout": "./src/lib/courseware/slide-cover-layout.ts",
+    "./lib/courseware/slide-cover-readiness": "./src/lib/courseware/slide-cover-readiness.ts",
+    "./lib/courseware/slide-display-name": "./src/lib/courseware/slide-display-name.ts",
+    "./lib/courseware/slide-snapshot-time": "./src/lib/courseware/slide-snapshot-time.ts",
+    "./lib/courseware/svg-edit": "./src/lib/courseware/svg-edit.ts",
+    "./lib/courseware/svg-text-style": "./src/lib/courseware/svg-text-style.ts",
+    "./lib/courseware/template-extract-language": "./src/lib/courseware/template-extract-language.ts",
+    "./lib/editorAgentSessions": "./src/lib/editorAgentSessions.ts",
+    "./lib/editorAgentThreadStorage": "./src/lib/editorAgentThreadStorage.ts",
+    "./lib/fix-recorded-webm-blob": "./src/lib/fix-recorded-webm-blob.ts",
+    "./lib/i18n/coursewareRoutesI18n": "./src/lib/i18n/coursewareRoutesI18n.ts",
+    "./lib/i18n/index": "./src/lib/i18n/index.ts",
+    "./lib/i18n/languages/en_new.json": "./src/lib/i18n/languages/en_new.json",
+    "./lib/i18n/languages/ja_new.json": "./src/lib/i18n/languages/ja_new.json",
+    "./lib/i18n/languages/zh_new.json": "./src/lib/i18n/languages/zh_new.json",
+    "./lib/i18n/messages/coursewareRoutes.en.json": "./src/lib/i18n/messages/coursewareRoutes.en.json",
+    "./lib/i18n/messages/coursewareRoutes.ja.json": "./src/lib/i18n/messages/coursewareRoutes.ja.json",
+    "./lib/i18n/messages/coursewareRoutes.zh.json": "./src/lib/i18n/messages/coursewareRoutes.zh.json",
+    "./lib/i18n/ui-language-preference": "./src/lib/i18n/ui-language-preference.ts",
+    "./lib/measure-blob-audio-duration": "./src/lib/measure-blob-audio-duration.ts",
+    "./lib/safe-storage": "./src/lib/safe-storage.ts",
+    "./routes/courseware-preview": "./src/routes/courseware-preview.tsx",
+    "./routes/courseware-renderer": "./src/routes/courseware-renderer.tsx",
+    "./schemas/ai_teacher": "./src/schemas/ai_teacher.ts",
+    "./schemas/base_user": "./src/schemas/base_user.ts",
+    "./schemas/course": "./src/schemas/course.ts",
+    "./schemas/course_knowledge_file": "./src/schemas/course_knowledge_file.ts",
+    "./schemas/course_section": "./src/schemas/course_section.ts",
+    "./schemas/course_tree": "./src/schemas/course_tree.ts",
+    "./schemas/live_classroom": "./src/schemas/live_classroom.ts",
+    "./schemas/response/course_tree": "./src/schemas/response/course_tree.ts",
+    "./schemas/teacher": "./src/schemas/teacher.ts",
+    "./schemas/tts": "./src/schemas/tts.ts",
+    "./styles/app.css": "./src/styles/app.css",
+    "./host/simple-requester": "./src/host/simple-requester.ts",
+    "./host/create-ai-teacher": "./src/host/create-ai-teacher.ts"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      },
+      "./api/courseware": {
+        "types": "./dist/api/courseware.d.ts",
+        "import": "./dist/api/courseware.js"
+      },
+      "./api/courseware_agent": {
+        "types": "./dist/api/courseware_agent.d.ts",
+        "import": "./dist/api/courseware_agent.js"
+      },
+      "./api/courseware_assets": {
+        "types": "./dist/api/courseware_assets.d.ts",
+        "import": "./dist/api/courseware_assets.js"
+      },
+      "./api/courseware_content_templates": {
+        "types": "./dist/api/courseware_content_templates.d.ts",
+        "import": "./dist/api/courseware_content_templates.js"
+      },
+      "./api/courseware_design_templates": {
+        "types": "./dist/api/courseware_design_templates.d.ts",
+        "import": "./dist/api/courseware_design_templates.js"
+      },
+      "./api/courseware_list": {
+        "types": "./dist/api/courseware_list.d.ts",
+        "import": "./dist/api/courseware_list.js"
+      },
+      "./api/courseware_quiz_answer_recordings": {
+        "types": "./dist/api/courseware_quiz_answer_recordings.d.ts",
+        "import": "./dist/api/courseware_quiz_answer_recordings.js"
+      },
+      "./api/courseware_section_binding": {
+        "types": "./dist/api/courseware_section_binding.d.ts",
+        "import": "./dist/api/courseware_section_binding.js"
+      },
+      "./api/org-path": {
+        "types": "./dist/api/org-path.d.ts",
+        "import": "./dist/api/org-path.js"
+      },
+      "./components/CoursewareRasterImage": {
+        "types": "./dist/components/CoursewareRasterImage.d.ts",
+        "import": "./dist/components/CoursewareRasterImage.js"
+      },
+      "./components/CoursewareShapeContent": {
+        "types": "./dist/components/CoursewareShapeContent.d.ts",
+        "import": "./dist/components/CoursewareShapeContent.js"
+      },
+      "./components/CoursewareSvgContent": {
+        "types": "./dist/components/CoursewareSvgContent.d.ts",
+        "import": "./dist/components/CoursewareSvgContent.js"
+      },
+      "./components/MarkdownRenderer": {
+        "types": "./dist/components/MarkdownRenderer.d.ts",
+        "import": "./dist/components/MarkdownRenderer.js"
+      },
+      "./components/MicAnalyserWaveform": {
+        "types": "./dist/components/MicAnalyserWaveform.d.ts",
+        "import": "./dist/components/MicAnalyserWaveform.js"
+      },
+      "./components/courseware-ai-assistant/CoursewareAiAssistantMessageBody": {
+        "types": "./dist/components/courseware-ai-assistant/CoursewareAiAssistantMessageBody.d.ts",
+        "import": "./dist/components/courseware-ai-assistant/CoursewareAiAssistantMessageBody.js"
+      },
+      "./components/courseware-editor/AiPanelHighlightComposer": {
+        "types": "./dist/components/courseware-editor/AiPanelHighlightComposer.d.ts",
+        "import": "./dist/components/courseware-editor/AiPanelHighlightComposer.js"
+      },
+      "./components/courseware-editor/AiPanelMentionBubbles": {
+        "types": "./dist/components/courseware-editor/AiPanelMentionBubbles.d.ts",
+        "import": "./dist/components/courseware-editor/AiPanelMentionBubbles.js"
+      },
+      "./components/courseware-editor/AssetListImagePreview": {
+        "types": "./dist/components/courseware-editor/AssetListImagePreview.d.ts",
+        "import": "./dist/components/courseware-editor/AssetListImagePreview.js"
+      },
+      "./components/courseware-editor/ContentTemplatePickerModal": {
+        "types": "./dist/components/courseware-editor/ContentTemplatePickerModal.d.ts",
+        "import": "./dist/components/courseware-editor/ContentTemplatePickerModal.js"
+      },
+      "./components/courseware-editor/CoursewareAssetLibraryPicker": {
+        "types": "./dist/components/courseware-editor/CoursewareAssetLibraryPicker.d.ts",
+        "import": "./dist/components/courseware-editor/CoursewareAssetLibraryPicker.js"
+      },
+      "./components/courseware-editor/CoursewareEditorAiPanel": {
+        "types": "./dist/components/courseware-editor/CoursewareEditorAiPanel.d.ts",
+        "import": "./dist/components/courseware-editor/CoursewareEditorAiPanel.js"
+      },
+      "./components/courseware-editor/CoursewareLibraryPickerModal": {
+        "types": "./dist/components/courseware-editor/CoursewareLibraryPickerModal.d.ts",
+        "import": "./dist/components/courseware-editor/CoursewareLibraryPickerModal.js"
+      },
+      "./components/courseware-editor/CoursewareManualMarkInputBubble": {
+        "types": "./dist/components/courseware-editor/CoursewareManualMarkInputBubble.d.ts",
+        "import": "./dist/components/courseware-editor/CoursewareManualMarkInputBubble.js"
+      },
+      "./components/courseware-editor/DeletePageConfirmBubble": {
+        "types": "./dist/components/courseware-editor/DeletePageConfirmBubble.d.ts",
+        "import": "./dist/components/courseware-editor/DeletePageConfirmBubble.js"
+      },
+      "./components/courseware-editor/DesignTemplatePickerModal": {
+        "types": "./dist/components/courseware-editor/DesignTemplatePickerModal.d.ts",
+        "import": "./dist/components/courseware-editor/DesignTemplatePickerModal.js"
+      },
+      "./components/courseware-editor/ExtractContentTemplateModal": {
+        "types": "./dist/components/courseware-editor/ExtractContentTemplateModal.d.ts",
+        "import": "./dist/components/courseware-editor/ExtractContentTemplateModal.js"
+      },
+      "./components/courseware-editor/ExtractDesignTemplateModal": {
+        "types": "./dist/components/courseware-editor/ExtractDesignTemplateModal.d.ts",
+        "import": "./dist/components/courseware-editor/ExtractDesignTemplateModal.js"
+      },
+      "./components/courseware-editor/TemplateExtractLanguageSelect": {
+        "types": "./dist/components/courseware-editor/TemplateExtractLanguageSelect.d.ts",
+        "import": "./dist/components/courseware-editor/TemplateExtractLanguageSelect.js"
+      },
+      "./components/courseware/CanvasAudioStageWidget": {
+        "types": "./dist/components/courseware/CanvasAudioStageWidget.d.ts",
+        "import": "./dist/components/courseware/CanvasAudioStageWidget.js"
+      },
+      "./components/courseware/CoursewareHtmlStageEmbed": {
+        "types": "./dist/components/courseware/CoursewareHtmlStageEmbed.d.ts",
+        "import": "./dist/components/courseware/CoursewareHtmlStageEmbed.js"
+      },
+      "./components/courseware/GlobalAudioTracks": {
+        "types": "./dist/components/courseware/GlobalAudioTracks.d.ts",
+        "import": "./dist/components/courseware/GlobalAudioTracks.js"
+      },
+      "./components/courseware/HyperframesSceneMediaDeclarations": {
+        "types": "./dist/components/courseware/HyperframesSceneMediaDeclarations.d.ts",
+        "import": "./dist/components/courseware/HyperframesSceneMediaDeclarations.js"
+      },
+      "./components/courseware/PPTRenderer": {
+        "types": "./dist/components/courseware/PPTRenderer.d.ts",
+        "import": "./dist/components/courseware/PPTRenderer.js"
+      },
+      "./components/courseware/SlideBackgroundHtmlLayer": {
+        "types": "./dist/components/courseware/SlideBackgroundHtmlLayer.d.ts",
+        "import": "./dist/components/courseware/SlideBackgroundHtmlLayer.js"
+      },
+      "./components/courseware/quiz-score-summary/QuizGradeDescription": {
+        "types": "./dist/components/courseware/quiz-score-summary/QuizGradeDescription.d.ts",
+        "import": "./dist/components/courseware/quiz-score-summary/QuizGradeDescription.js"
+      },
+      "./components/courseware/quiz-score-summary/QuizGradeLabel": {
+        "types": "./dist/components/courseware/quiz-score-summary/QuizGradeLabel.d.ts",
+        "import": "./dist/components/courseware/quiz-score-summary/QuizGradeLabel.js"
+      },
+      "./components/courseware/quiz-score-summary/QuizScoreSummaryContainer": {
+        "types": "./dist/components/courseware/quiz-score-summary/QuizScoreSummaryContainer.d.ts",
+        "import": "./dist/components/courseware/quiz-score-summary/QuizScoreSummaryContainer.js"
+      },
+      "./components/courseware/quiz-score-summary/QuizScoreSummaryContext": {
+        "types": "./dist/components/courseware/quiz-score-summary/QuizScoreSummaryContext.d.ts",
+        "import": "./dist/components/courseware/quiz-score-summary/QuizScoreSummaryContext.js"
+      },
+      "./components/courseware/quiz-score-summary/QuizScoreSummaryRenderer": {
+        "types": "./dist/components/courseware/quiz-score-summary/QuizScoreSummaryRenderer.d.ts",
+        "import": "./dist/components/courseware/quiz-score-summary/QuizScoreSummaryRenderer.js"
+      },
+      "./components/courseware/quiz-score-summary/QuizTotalScore": {
+        "types": "./dist/components/courseware/quiz-score-summary/QuizTotalScore.d.ts",
+        "import": "./dist/components/courseware/quiz-score-summary/QuizTotalScore.js"
+      },
+      "./components/courseware/quiz-score-summary/index": {
+        "types": "./dist/components/courseware/quiz-score-summary/index.d.ts",
+        "import": "./dist/components/courseware/quiz-score-summary/index.js"
+      },
+      "./components/courseware/quiz-score-summary/resolve-score-summary-slot-content": {
+        "types": "./dist/components/courseware/quiz-score-summary/resolve-score-summary-slot-content.d.ts",
+        "import": "./dist/components/courseware/quiz-score-summary/resolve-score-summary-slot-content.js"
+      },
+      "./components/courseware/quiz/QuizContainer": {
+        "types": "./dist/components/courseware/quiz/QuizContainer.d.ts",
+        "import": "./dist/components/courseware/quiz/QuizContainer.js"
+      },
+      "./components/courseware/quiz/QuizContinueButton": {
+        "types": "./dist/components/courseware/quiz/QuizContinueButton.d.ts",
+        "import": "./dist/components/courseware/quiz/QuizContinueButton.js"
+      },
+      "./components/courseware/quiz/QuizExplanation": {
+        "types": "./dist/components/courseware/quiz/QuizExplanation.d.ts",
+        "import": "./dist/components/courseware/quiz/QuizExplanation.js"
+      },
+      "./components/courseware/quiz/QuizFeedback": {
+        "types": "./dist/components/courseware/quiz/QuizFeedback.d.ts",
+        "import": "./dist/components/courseware/quiz/QuizFeedback.js"
+      },
+      "./components/courseware/quiz/QuizFormContext": {
+        "types": "./dist/components/courseware/quiz/QuizFormContext.d.ts",
+        "import": "./dist/components/courseware/quiz/QuizFormContext.js"
+      },
+      "./components/courseware/quiz/QuizInput": {
+        "types": "./dist/components/courseware/quiz/QuizInput.d.ts",
+        "import": "./dist/components/courseware/quiz/QuizInput.js"
+      },
+      "./components/courseware/quiz/QuizMedia": {
+        "types": "./dist/components/courseware/quiz/QuizMedia.d.ts",
+        "import": "./dist/components/courseware/quiz/QuizMedia.js"
+      },
+      "./components/courseware/quiz/QuizOption": {
+        "types": "./dist/components/courseware/quiz/QuizOption.d.ts",
+        "import": "./dist/components/courseware/quiz/QuizOption.js"
+      },
+      "./components/courseware/quiz/QuizOptionGroup": {
+        "types": "./dist/components/courseware/quiz/QuizOptionGroup.d.ts",
+        "import": "./dist/components/courseware/quiz/QuizOptionGroup.js"
+      },
+      "./components/courseware/quiz/QuizRecordingPlayback": {
+        "types": "./dist/components/courseware/quiz/QuizRecordingPlayback.d.ts",
+        "import": "./dist/components/courseware/quiz/QuizRecordingPlayback.js"
+      },
+      "./components/courseware/quiz/QuizRecordingTimer": {
+        "types": "./dist/components/courseware/quiz/QuizRecordingTimer.d.ts",
+        "import": "./dist/components/courseware/quiz/QuizRecordingTimer.js"
+      },
+      "./components/courseware/quiz/QuizRecordingTimerScope": {
+        "types": "./dist/components/courseware/quiz/QuizRecordingTimerScope.d.ts",
+        "import": "./dist/components/courseware/quiz/QuizRecordingTimerScope.js"
+      },
+      "./components/courseware/quiz/QuizReferenceAudio": {
+        "types": "./dist/components/courseware/quiz/QuizReferenceAudio.d.ts",
+        "import": "./dist/components/courseware/quiz/QuizReferenceAudio.js"
+      },
+      "./components/courseware/quiz/QuizRenderer": {
+        "types": "./dist/components/courseware/quiz/QuizRenderer.d.ts",
+        "import": "./dist/components/courseware/quiz/QuizRenderer.js"
+      },
+      "./components/courseware/quiz/QuizResubmitButton": {
+        "types": "./dist/components/courseware/quiz/QuizResubmitButton.d.ts",
+        "import": "./dist/components/courseware/quiz/QuizResubmitButton.js"
+      },
+      "./components/courseware/quiz/QuizScore": {
+        "types": "./dist/components/courseware/quiz/QuizScore.d.ts",
+        "import": "./dist/components/courseware/quiz/QuizScore.js"
+      },
+      "./components/courseware/quiz/QuizShadowingControl": {
+        "types": "./dist/components/courseware/quiz/QuizShadowingControl.d.ts",
+        "import": "./dist/components/courseware/quiz/QuizShadowingControl.js"
+      },
+      "./components/courseware/quiz/QuizShadowingControlAst": {
+        "types": "./dist/components/courseware/quiz/QuizShadowingControlAst.d.ts",
+        "import": "./dist/components/courseware/quiz/QuizShadowingControlAst.js"
+      },
+      "./components/courseware/quiz/QuizSkipButton": {
+        "types": "./dist/components/courseware/quiz/QuizSkipButton.d.ts",
+        "import": "./dist/components/courseware/quiz/QuizSkipButton.js"
+      },
+      "./components/courseware/quiz/QuizSubmitButton": {
+        "types": "./dist/components/courseware/quiz/QuizSubmitButton.d.ts",
+        "import": "./dist/components/courseware/quiz/QuizSubmitButton.js"
+      },
+      "./components/courseware/quiz/QuizTextarea": {
+        "types": "./dist/components/courseware/quiz/QuizTextarea.d.ts",
+        "import": "./dist/components/courseware/quiz/QuizTextarea.js"
+      },
+      "./components/courseware/quiz/QuizTitle": {
+        "types": "./dist/components/courseware/quiz/QuizTitle.d.ts",
+        "import": "./dist/components/courseware/quiz/QuizTitle.js"
+      },
+      "./components/courseware/quiz/index": {
+        "types": "./dist/components/courseware/quiz/index.d.ts",
+        "import": "./dist/components/courseware/quiz/index.js"
+      },
+      "./components/courseware/quiz/quiz-button-appearance": {
+        "types": "./dist/components/courseware/quiz/quiz-button-appearance.d.ts",
+        "import": "./dist/components/courseware/quiz/quiz-button-appearance.js"
+      },
+      "./components/courseware/quiz/quiz-option-appearance": {
+        "types": "./dist/components/courseware/quiz/quiz-option-appearance.d.ts",
+        "import": "./dist/components/courseware/quiz/quiz-option-appearance.js"
+      },
+      "./components/courseware/quiz/quiz-recording-format": {
+        "types": "./dist/components/courseware/quiz/quiz-recording-format.d.ts",
+        "import": "./dist/components/courseware/quiz/quiz-recording-format.js"
+      },
+      "./components/courseware/quiz/quiz-style-allowlist": {
+        "types": "./dist/components/courseware/quiz/quiz-style-allowlist.d.ts",
+        "import": "./dist/components/courseware/quiz/quiz-style-allowlist.js"
+      },
+      "./components/courseware/quiz/quiz-style-merge": {
+        "types": "./dist/components/courseware/quiz/quiz-style-merge.d.ts",
+        "import": "./dist/components/courseware/quiz/quiz-style-merge.js"
+      },
+      "./components/courseware/rich/RichRenderer": {
+        "types": "./dist/components/courseware/rich/RichRenderer.d.ts",
+        "import": "./dist/components/courseware/rich/RichRenderer.js"
+      },
+      "./enums/live_classroom": {
+        "types": "./dist/enums/live_classroom.d.ts",
+        "import": "./dist/enums/live_classroom.js"
+      },
+      "./enums/teacher": {
+        "types": "./dist/enums/teacher.d.ts",
+        "import": "./dist/enums/teacher.js"
+      },
+      "./enums/tts": {
+        "types": "./dist/enums/tts.d.ts",
+        "import": "./dist/enums/tts.js"
+      },
+      "./hooks/useI18nNew": {
+        "types": "./dist/hooks/useI18nNew.d.ts",
+        "import": "./dist/hooks/useI18nNew.js"
+      },
+      "./hooks/useNarrationSegmentPlayback": {
+        "types": "./dist/hooks/useNarrationSegmentPlayback.d.ts",
+        "import": "./dist/hooks/useNarrationSegmentPlayback.js"
+      },
+      "./hooks/usePlaybackPlayheadMs": {
+        "types": "./dist/hooks/usePlaybackPlayheadMs.d.ts",
+        "import": "./dist/hooks/usePlaybackPlayheadMs.js"
+      },
+      "./hooks/useSyncedCanvasAudioElement": {
+        "types": "./dist/hooks/useSyncedCanvasAudioElement.d.ts",
+        "import": "./dist/hooks/useSyncedCanvasAudioElement.js"
+      },
+      "./hooks/useSyncedNarrationAudio": {
+        "types": "./dist/hooks/useSyncedNarrationAudio.d.ts",
+        "import": "./dist/hooks/useSyncedNarrationAudio.js"
+      },
+      "./host/ai-teacher-api": {
+        "types": "./dist/host/ai-teacher-api.d.ts",
+        "import": "./dist/host/ai-teacher-api.js"
+      },
+      "./host/auth": {
+        "types": "./dist/host/auth.d.ts",
+        "import": "./dist/host/auth.js"
+      },
+      "./host/config": {
+        "types": "./dist/host/config.d.ts",
+        "import": "./dist/host/config.js"
+      },
+      "./host/course-api": {
+        "types": "./dist/host/course-api.d.ts",
+        "import": "./dist/host/course-api.js"
+      },
+      "./host/course-section-api": {
+        "types": "./dist/host/course-section-api.d.ts",
+        "import": "./dist/host/course-section-api.js"
+      },
+      "./host/embed": {
+        "types": "./dist/host/embed.d.ts",
+        "import": "./dist/host/embed.js"
+      },
+      "./host/feature-gate": {
+        "types": "./dist/host/feature-gate.d.ts",
+        "import": "./dist/host/feature-gate.js"
+      },
+      "./host/host": {
+        "types": "./dist/host/host.d.ts",
+        "import": "./dist/host/host.js"
+      },
+      "./host/interaction-agent": {
+        "types": "./dist/host/interaction-agent.d.ts",
+        "import": "./dist/host/interaction-agent.js"
+      },
+      "./host/logger": {
+        "types": "./dist/host/logger.d.ts",
+        "import": "./dist/host/logger.js"
+      },
+      "./host/org-identity": {
+        "types": "./dist/host/org-identity.d.ts",
+        "import": "./dist/host/org-identity.js"
+      },
+      "./host/protected-route": {
+        "types": "./dist/host/protected-route.d.ts",
+        "import": "./dist/host/protected-route.js"
+      },
+      "./host/public-course-api": {
+        "types": "./dist/host/public-course-api.d.ts",
+        "import": "./dist/host/public-course-api.js"
+      },
+      "./host/requester": {
+        "types": "./dist/host/requester.d.ts",
+        "import": "./dist/host/requester.js"
+      },
+      "./host/session-manager": {
+        "types": "./dist/host/session-manager.d.ts",
+        "import": "./dist/host/session-manager.js"
+      },
+      "./host/tts-api": {
+        "types": "./dist/host/tts-api.d.ts",
+        "import": "./dist/host/tts-api.js"
+      },
+      "./host/whisper-dictation": {
+        "types": "./dist/host/whisper-dictation.d.ts",
+        "import": "./dist/host/whisper-dictation.js"
+      },
+      "./lib/course-access": {
+        "types": "./dist/lib/course-access.d.ts",
+        "import": "./dist/lib/course-access.js"
+      },
+      "./lib/course-navigation": {
+        "types": "./dist/lib/course-navigation.d.ts",
+        "import": "./dist/lib/course-navigation.js"
+      },
+      "./lib/courseware-access": {
+        "types": "./dist/lib/courseware-access.d.ts",
+        "import": "./dist/lib/courseware-access.js"
+      },
+      "./lib/courseware-editor-theme": {
+        "types": "./dist/lib/courseware-editor-theme.d.ts",
+        "import": "./dist/lib/courseware-editor-theme.js"
+      },
+      "./lib/courseware-preview-section-context": {
+        "types": "./dist/lib/courseware-preview-section-context.d.ts",
+        "import": "./dist/lib/courseware-preview-section-context.js"
+      },
+      "./lib/courseware-renderer/build-flow-pause-ack-set": {
+        "types": "./dist/lib/courseware-renderer/build-flow-pause-ack-set.d.ts",
+        "import": "./dist/lib/courseware-renderer/build-flow-pause-ack-set.js"
+      },
+      "./lib/courseware-renderer/build-renderer-quiz-state": {
+        "types": "./dist/lib/courseware-renderer/build-renderer-quiz-state.d.ts",
+        "import": "./dist/lib/courseware-renderer/build-renderer-quiz-state.js"
+      },
+      "./lib/courseware-renderer/collect-scene-playback-asset-urls": {
+        "types": "./dist/lib/courseware-renderer/collect-scene-playback-asset-urls.d.ts",
+        "import": "./dist/lib/courseware-renderer/collect-scene-playback-asset-urls.js"
+      },
+      "./lib/courseware-renderer/hyperframes-media-declarations": {
+        "types": "./dist/lib/courseware-renderer/hyperframes-media-declarations.d.ts",
+        "import": "./dist/lib/courseware-renderer/hyperframes-media-declarations.js"
+      },
+      "./lib/courseware-renderer/hyperframes-media-diagnostics": {
+        "types": "./dist/lib/courseware-renderer/hyperframes-media-diagnostics.d.ts",
+        "import": "./dist/lib/courseware-renderer/hyperframes-media-diagnostics.js"
+      },
+      "./lib/courseware-renderer/playback-timing": {
+        "types": "./dist/lib/courseware-renderer/playback-timing.d.ts",
+        "import": "./dist/lib/courseware-renderer/playback-timing.js"
+      },
+      "./lib/courseware-renderer/post-message": {
+        "types": "./dist/lib/courseware-renderer/post-message.d.ts",
+        "import": "./dist/lib/courseware-renderer/post-message.js"
+      },
+      "./lib/courseware-renderer/preload-scene-playback-assets": {
+        "types": "./dist/lib/courseware-renderer/preload-scene-playback-assets.d.ts",
+        "import": "./dist/lib/courseware-renderer/preload-scene-playback-assets.js"
+      },
+      "./lib/courseware-renderer/scene-loader": {
+        "types": "./dist/lib/courseware-renderer/scene-loader.d.ts",
+        "import": "./dist/lib/courseware-renderer/scene-loader.js"
+      },
+      "./lib/courseware-renderer/slide-transition": {
+        "types": "./dist/lib/courseware-renderer/slide-transition.d.ts",
+        "import": "./dist/lib/courseware-renderer/slide-transition.js"
+      },
+      "./lib/coursewareEditorSceneStorage": {
+        "types": "./dist/lib/coursewareEditorSceneStorage.d.ts",
+        "import": "./dist/lib/coursewareEditorSceneStorage.js"
+      },
+      "./lib/coursewarePreviewSceneStorage": {
+        "types": "./dist/lib/coursewarePreviewSceneStorage.d.ts",
+        "import": "./dist/lib/coursewarePreviewSceneStorage.js"
+      },
+      "./lib/courseware/agent-chat-models": {
+        "types": "./dist/lib/courseware/agent-chat-models.d.ts",
+        "import": "./dist/lib/courseware/agent-chat-models.js"
+      },
+      "./lib/courseware/ai-asset-mentions": {
+        "types": "./dist/lib/courseware/ai-asset-mentions.d.ts",
+        "import": "./dist/lib/courseware/ai-asset-mentions.js"
+      },
+      "./lib/courseware/ai-assistant-content": {
+        "types": "./dist/lib/courseware/ai-assistant-content.d.ts",
+        "import": "./dist/lib/courseware/ai-assistant-content.js"
+      },
+      "./lib/courseware/ai-chat-message-window": {
+        "types": "./dist/lib/courseware/ai-chat-message-window.d.ts",
+        "import": "./dist/lib/courseware/ai-chat-message-window.js"
+      },
+      "./lib/courseware/ai-content-template-mentions": {
+        "types": "./dist/lib/courseware/ai-content-template-mentions.d.ts",
+        "import": "./dist/lib/courseware/ai-content-template-mentions.js"
+      },
+      "./lib/courseware/ai-courseware-mentions": {
+        "types": "./dist/lib/courseware/ai-courseware-mentions.d.ts",
+        "import": "./dist/lib/courseware/ai-courseware-mentions.js"
+      },
+      "./lib/courseware/ai-design-template-mentions": {
+        "types": "./dist/lib/courseware/ai-design-template-mentions.d.ts",
+        "import": "./dist/lib/courseware/ai-design-template-mentions.js"
+      },
+      "./lib/courseware/ai-manual-marks": {
+        "types": "./dist/lib/courseware/ai-manual-marks.d.ts",
+        "import": "./dist/lib/courseware/ai-manual-marks.js"
+      },
+      "./lib/courseware/ai-mention-recents": {
+        "types": "./dist/lib/courseware/ai-mention-recents.d.ts",
+        "import": "./dist/lib/courseware/ai-mention-recents.js"
+      },
+      "./lib/courseware/ai-panel-composer": {
+        "types": "./dist/lib/courseware/ai-panel-composer.d.ts",
+        "import": "./dist/lib/courseware/ai-panel-composer.js"
+      },
+      "./lib/courseware/asset-presign-enabled": {
+        "types": "./dist/lib/courseware/asset-presign-enabled.d.ts",
+        "import": "./dist/lib/courseware/asset-presign-enabled.js"
+      },
+      "./lib/courseware/blank-courseware-content": {
+        "types": "./dist/lib/courseware/blank-courseware-content.d.ts",
+        "import": "./dist/lib/courseware/blank-courseware-content.js"
+      },
+      "./lib/courseware/build-courseware-scene-json-url": {
+        "types": "./dist/lib/courseware/build-courseware-scene-json-url.d.ts",
+        "import": "./dist/lib/courseware/build-courseware-scene-json-url.js"
+      },
+      "./lib/courseware/chunked-asset-upload": {
+        "types": "./dist/lib/courseware/chunked-asset-upload.d.ts",
+        "import": "./dist/lib/courseware/chunked-asset-upload.js"
+      },
+      "./lib/courseware/chunked-quiz-answer-recording-upload": {
+        "types": "./dist/lib/courseware/chunked-quiz-answer-recording-upload.d.ts",
+        "import": "./dist/lib/courseware/chunked-quiz-answer-recording-upload.js"
+      },
+      "./lib/courseware/editor-clipboard": {
+        "types": "./dist/lib/courseware/editor-clipboard.d.ts",
+        "import": "./dist/lib/courseware/editor-clipboard.js"
+      },
+      "./lib/courseware/editor-paste": {
+        "types": "./dist/lib/courseware/editor-paste.d.ts",
+        "import": "./dist/lib/courseware/editor-paste.js"
+      },
+      "./lib/courseware/first-slide-fingerprint": {
+        "types": "./dist/lib/courseware/first-slide-fingerprint.d.ts",
+        "import": "./dist/lib/courseware/first-slide-fingerprint.js"
+      },
+      "./lib/courseware/html-asset-rewrite": {
+        "types": "./dist/lib/courseware/html-asset-rewrite.d.ts",
+        "import": "./dist/lib/courseware/html-asset-rewrite.js"
+      },
+      "./lib/courseware/html-source-autofit-cache": {
+        "types": "./dist/lib/courseware/html-source-autofit-cache.d.ts",
+        "import": "./dist/lib/courseware/html-source-autofit-cache.js"
+      },
+      "./lib/courseware/index": {
+        "types": "./dist/lib/courseware/index.d.ts",
+        "import": "./dist/lib/courseware/index.js"
+      },
+      "./lib/courseware/narration-audio-duration": {
+        "types": "./dist/lib/courseware/narration-audio-duration.d.ts",
+        "import": "./dist/lib/courseware/narration-audio-duration.js"
+      },
+      "./lib/courseware/narration-pending-start": {
+        "types": "./dist/lib/courseware/narration-pending-start.d.ts",
+        "import": "./dist/lib/courseware/narration-pending-start.js"
+      },
+      "./lib/courseware/narration-preload": {
+        "types": "./dist/lib/courseware/narration-preload.d.ts",
+        "import": "./dist/lib/courseware/narration-preload.js"
+      },
+      "./lib/courseware/narration-segments": {
+        "types": "./dist/lib/courseware/narration-segments.d.ts",
+        "import": "./dist/lib/courseware/narration-segments.js"
+      },
+      "./lib/courseware/oss-internal-reachability-probe": {
+        "types": "./dist/lib/courseware/oss-internal-reachability-probe.d.ts",
+        "import": "./dist/lib/courseware/oss-internal-reachability-probe.js"
+      },
+      "./lib/courseware/plan-draft-handoff": {
+        "types": "./dist/lib/courseware/plan-draft-handoff.d.ts",
+        "import": "./dist/lib/courseware/plan-draft-handoff.js"
+      },
+      "./lib/courseware/playback-resume": {
+        "types": "./dist/lib/courseware/playback-resume.d.ts",
+        "import": "./dist/lib/courseware/playback-resume.js"
+      },
+      "./lib/courseware/presign-scene": {
+        "types": "./dist/lib/courseware/presign-scene.d.ts",
+        "import": "./dist/lib/courseware/presign-scene.js"
+      },
+      "./lib/courseware/quiz-ast-editor": {
+        "types": "./dist/lib/courseware/quiz-ast-editor.d.ts",
+        "import": "./dist/lib/courseware/quiz-ast-editor.js"
+      },
+      "./lib/courseware/quiz-attempt-session": {
+        "types": "./dist/lib/courseware/quiz-attempt-session.d.ts",
+        "import": "./dist/lib/courseware/quiz-attempt-session.js"
+      },
+      "./lib/courseware/quiz-attempt-sync": {
+        "types": "./dist/lib/courseware/quiz-attempt-sync.d.ts",
+        "import": "./dist/lib/courseware/quiz-attempt-sync.js"
+      },
+      "./lib/courseware/quiz-submit-feedback": {
+        "types": "./dist/lib/courseware/quiz-submit-feedback.d.ts",
+        "import": "./dist/lib/courseware/quiz-submit-feedback.js"
+      },
+      "./lib/courseware/resolve-scene-ai-teacher-id": {
+        "types": "./dist/lib/courseware/resolve-scene-ai-teacher-id.d.ts",
+        "import": "./dist/lib/courseware/resolve-scene-ai-teacher-id.js"
+      },
+      "./lib/courseware/sanitize-asset-filename": {
+        "types": "./dist/lib/courseware/sanitize-asset-filename.d.ts",
+        "import": "./dist/lib/courseware/sanitize-asset-filename.js"
+      },
+      "./lib/courseware/scene-load-repair": {
+        "types": "./dist/lib/courseware/scene-load-repair.d.ts",
+        "import": "./dist/lib/courseware/scene-load-repair.js"
+      },
+      "./lib/courseware/scene-merge": {
+        "types": "./dist/lib/courseware/scene-merge.d.ts",
+        "import": "./dist/lib/courseware/scene-merge.js"
+      },
+      "./lib/courseware/scene-persist-guard": {
+        "types": "./dist/lib/courseware/scene-persist-guard.d.ts",
+        "import": "./dist/lib/courseware/scene-persist-guard.js"
+      },
+      "./lib/courseware/slide-background-image": {
+        "types": "./dist/lib/courseware/slide-background-image.d.ts",
+        "import": "./dist/lib/courseware/slide-background-image.js"
+      },
+      "./lib/courseware/slide-cover-capture": {
+        "types": "./dist/lib/courseware/slide-cover-capture.d.ts",
+        "import": "./dist/lib/courseware/slide-cover-capture.js"
+      },
+      "./lib/courseware/slide-cover-layout": {
+        "types": "./dist/lib/courseware/slide-cover-layout.d.ts",
+        "import": "./dist/lib/courseware/slide-cover-layout.js"
+      },
+      "./lib/courseware/slide-cover-readiness": {
+        "types": "./dist/lib/courseware/slide-cover-readiness.d.ts",
+        "import": "./dist/lib/courseware/slide-cover-readiness.js"
+      },
+      "./lib/courseware/slide-display-name": {
+        "types": "./dist/lib/courseware/slide-display-name.d.ts",
+        "import": "./dist/lib/courseware/slide-display-name.js"
+      },
+      "./lib/courseware/slide-snapshot-time": {
+        "types": "./dist/lib/courseware/slide-snapshot-time.d.ts",
+        "import": "./dist/lib/courseware/slide-snapshot-time.js"
+      },
+      "./lib/courseware/svg-edit": {
+        "types": "./dist/lib/courseware/svg-edit.d.ts",
+        "import": "./dist/lib/courseware/svg-edit.js"
+      },
+      "./lib/courseware/svg-text-style": {
+        "types": "./dist/lib/courseware/svg-text-style.d.ts",
+        "import": "./dist/lib/courseware/svg-text-style.js"
+      },
+      "./lib/courseware/template-extract-language": {
+        "types": "./dist/lib/courseware/template-extract-language.d.ts",
+        "import": "./dist/lib/courseware/template-extract-language.js"
+      },
+      "./lib/editorAgentSessions": {
+        "types": "./dist/lib/editorAgentSessions.d.ts",
+        "import": "./dist/lib/editorAgentSessions.js"
+      },
+      "./lib/editorAgentThreadStorage": {
+        "types": "./dist/lib/editorAgentThreadStorage.d.ts",
+        "import": "./dist/lib/editorAgentThreadStorage.js"
+      },
+      "./lib/fix-recorded-webm-blob": {
+        "types": "./dist/lib/fix-recorded-webm-blob.d.ts",
+        "import": "./dist/lib/fix-recorded-webm-blob.js"
+      },
+      "./lib/i18n/coursewareRoutesI18n": {
+        "types": "./dist/lib/i18n/coursewareRoutesI18n.d.ts",
+        "import": "./dist/lib/i18n/coursewareRoutesI18n.js"
+      },
+      "./lib/i18n/index": {
+        "types": "./dist/lib/i18n/index.d.ts",
+        "import": "./dist/lib/i18n/index.js"
+      },
+      "./lib/i18n/languages/en_new.json": "./dist/lib/i18n/languages/en_new.json",
+      "./lib/i18n/languages/ja_new.json": "./dist/lib/i18n/languages/ja_new.json",
+      "./lib/i18n/languages/zh_new.json": "./dist/lib/i18n/languages/zh_new.json",
+      "./lib/i18n/messages/coursewareRoutes.en.json": "./dist/lib/i18n/messages/coursewareRoutes.en.json",
+      "./lib/i18n/messages/coursewareRoutes.ja.json": "./dist/lib/i18n/messages/coursewareRoutes.ja.json",
+      "./lib/i18n/messages/coursewareRoutes.zh.json": "./dist/lib/i18n/messages/coursewareRoutes.zh.json",
+      "./lib/i18n/ui-language-preference": {
+        "types": "./dist/lib/i18n/ui-language-preference.d.ts",
+        "import": "./dist/lib/i18n/ui-language-preference.js"
+      },
+      "./lib/measure-blob-audio-duration": {
+        "types": "./dist/lib/measure-blob-audio-duration.d.ts",
+        "import": "./dist/lib/measure-blob-audio-duration.js"
+      },
+      "./lib/safe-storage": {
+        "types": "./dist/lib/safe-storage.d.ts",
+        "import": "./dist/lib/safe-storage.js"
+      },
+      "./routes/courseware-preview": {
+        "types": "./dist/routes/courseware-preview.d.ts",
+        "import": "./dist/routes/courseware-preview.js"
+      },
+      "./routes/courseware-renderer": {
+        "types": "./dist/routes/courseware-renderer.d.ts",
+        "import": "./dist/routes/courseware-renderer.js"
+      },
+      "./schemas/ai_teacher": {
+        "types": "./dist/schemas/ai_teacher.d.ts",
+        "import": "./dist/schemas/ai_teacher.js"
+      },
+      "./schemas/base_user": {
+        "types": "./dist/schemas/base_user.d.ts",
+        "import": "./dist/schemas/base_user.js"
+      },
+      "./schemas/course": {
+        "types": "./dist/schemas/course.d.ts",
+        "import": "./dist/schemas/course.js"
+      },
+      "./schemas/course_knowledge_file": {
+        "types": "./dist/schemas/course_knowledge_file.d.ts",
+        "import": "./dist/schemas/course_knowledge_file.js"
+      },
+      "./schemas/course_section": {
+        "types": "./dist/schemas/course_section.d.ts",
+        "import": "./dist/schemas/course_section.js"
+      },
+      "./schemas/course_tree": {
+        "types": "./dist/schemas/course_tree.d.ts",
+        "import": "./dist/schemas/course_tree.js"
+      },
+      "./schemas/live_classroom": {
+        "types": "./dist/schemas/live_classroom.d.ts",
+        "import": "./dist/schemas/live_classroom.js"
+      },
+      "./schemas/response/course_tree": {
+        "types": "./dist/schemas/response/course_tree.d.ts",
+        "import": "./dist/schemas/response/course_tree.js"
+      },
+      "./schemas/teacher": {
+        "types": "./dist/schemas/teacher.d.ts",
+        "import": "./dist/schemas/teacher.js"
+      },
+      "./schemas/tts": {
+        "types": "./dist/schemas/tts.d.ts",
+        "import": "./dist/schemas/tts.js"
+      },
+      "./styles/app.css": "./dist/styles/app.css",
+      "./host/simple-requester": {
+        "types": "./dist/host/simple-requester.d.ts",
+        "import": "./dist/host/simple-requester.js"
+      },
+      "./host/create-ai-teacher": {
+        "types": "./dist/host/create-ai-teacher.d.ts",
+        "import": "./dist/host/create-ai-teacher.js"
+      }
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "test": "vitest run",
+    "build": "node ../../scripts/build-package.mjs"
+  },
+  "dependencies": {
+    "@ainobi/api-contracts": "workspace:0.1.0",
+    "@ainobi/avatar": "workspace:0.1.0",
+    "@ainobi/courseware-core": "workspace:0.1.0",
+    "@ainobi/web-kit": "workspace:0.1.0",
+    "@fix-webm-duration/fix": "^1.0.1",
+    "fast-json-patch": "^3.1.1",
+    "html-to-image": "^1.11.13",
+    "katex": "^0.16.0",
+    "lucide-react": "^0.542.0",
+    "react-hot-toast": "^2.5.2",
+    "react-markdown": "^10.1.0",
+    "rehype-katex": "^7.0.1",
+    "rehype-raw": "^7.0.0",
+    "rehype-sanitize": "^6.0.0",
+    "remark-gfm": "^4.0.1",
+    "remark-math": "^6.0.0",
+    "spark-md5": "^3.0.2",
+    "yup": "^1.7.0"
+  },
+  "peerDependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router": "^7.7.1"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/lodash-es": "^4.17.12",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "@types/spark-md5": "^3.0.5",
+    "@types/three": "^0.146.0",
+    "@vitejs/plugin-react": "^5.1.2",
+    "jsdom": "^27.3.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router": "^7.7.1"
+  }
+}

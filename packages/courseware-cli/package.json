@@ -1,0 +1,214 @@
+{
+  "name": "@ainobi/courseware-cli",
+  "version": "0.1.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "author": "GeekAca Ltd.",
+  "type": "module",
+  "ainobi": {
+    "visibility": "public",
+    "capabilities": [
+      "courseware-cli"
+    ],
+    "origin": "adopted"
+  },
+  "description": "AI Agent friendly CLI for AINOBI courseware (scene/slide/element CRUD with strict validation).",
+  "bin": {
+    "ainobi": "./bin/ainobi.mjs"
+  },
+  "exports": {
+    "./cli/ai-teachers.ts": "./cli/ai-teachers.ts",
+    "./cli/args.ts": "./cli/args.ts",
+    "./cli/asset-extension.ts": "./cli/asset-extension.ts",
+    "./cli/asset-url-persistence.ts": "./cli/asset-url-persistence.ts",
+    "./cli/assets.ts": "./cli/assets.ts",
+    "./cli/cli-text.ts": "./cli/cli-text.ts",
+    "./cli/content-template-extract.ts": "./cli/content-template-extract.ts",
+    "./cli/courseware-persistence-org.ts": "./cli/courseware-persistence-org.ts",
+    "./cli/design-template-document-slides.ts": "./cli/design-template-document-slides.ts",
+    "./cli/design-template-extract.ts": "./cli/design-template-extract.ts",
+    "./cli/doc-extensions.ts": "./cli/doc-extensions.ts",
+    "./cli/env.ts": "./cli/env.ts",
+    "./cli/errors.ts": "./cli/errors.ts",
+    "./cli/ids.ts": "./cli/ids.ts",
+    "./cli/image-generate.ts": "./cli/image-generate.ts",
+    "./cli/image-replicate-html.ts": "./cli/image-replicate-html.ts",
+    "./cli/json-patch.ts": "./cli/json-patch.ts",
+    "./cli/markitdown-convert.ts": "./cli/markitdown-convert.ts",
+    "./cli/narration-language-detect.ts": "./cli/narration-language-detect.ts",
+    "./cli/oci-s3-storage.ts": "./cli/oci-s3-storage.ts",
+    "./cli/prompt-optimize.ts": "./cli/prompt-optimize.ts",
+    "./cli/scene-persistence-normalize.ts": "./cli/scene-persistence-normalize.ts",
+    "./cli/scene-sync-diff.ts": "./cli/scene-sync-diff.ts",
+    "./cli/template-extract-language.ts": "./cli/template-extract-language.ts",
+    "./cli/tts-catalog.ts": "./cli/tts-catalog.ts",
+    "./cli/tts-pronunciation-apply.ts": "./cli/tts-pronunciation-apply.ts",
+    "./cli/tts-style-presets.ts": "./cli/tts-style-presets.ts",
+    "./cli/tts.ts": "./cli/tts.ts",
+    "./cli/url-policy.ts": "./cli/url-policy.ts",
+    "./polyfill/pdf-node-globals.ts": "./polyfill/pdf-node-globals.ts",
+    "./bin/ainobi.mjs": "./bin/ainobi.mjs",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CONFIGURATION.md"
+  ],
+  "publishConfig": {
+    "bin": {
+      "ainobi": "./dist/cli/index.js"
+    },
+    "exports": {
+      "./cli/ai-teachers": {
+        "types": "./dist/cli/ai-teachers.d.ts",
+        "import": "./dist/cli/ai-teachers.js"
+      },
+      "./cli/args": {
+        "types": "./dist/cli/args.d.ts",
+        "import": "./dist/cli/args.js"
+      },
+      "./cli/asset-extension": {
+        "types": "./dist/cli/asset-extension.d.ts",
+        "import": "./dist/cli/asset-extension.js"
+      },
+      "./cli/asset-url-persistence": {
+        "types": "./dist/cli/asset-url-persistence.d.ts",
+        "import": "./dist/cli/asset-url-persistence.js"
+      },
+      "./cli/assets": {
+        "types": "./dist/cli/assets.d.ts",
+        "import": "./dist/cli/assets.js"
+      },
+      "./cli/cli-text": {
+        "types": "./dist/cli/cli-text.d.ts",
+        "import": "./dist/cli/cli-text.js"
+      },
+      "./cli/content-template-extract": {
+        "types": "./dist/cli/content-template-extract.d.ts",
+        "import": "./dist/cli/content-template-extract.js"
+      },
+      "./cli/courseware-persistence-org": {
+        "types": "./dist/cli/courseware-persistence-org.d.ts",
+        "import": "./dist/cli/courseware-persistence-org.js"
+      },
+      "./cli/design-template-document-slides": {
+        "types": "./dist/cli/design-template-document-slides.d.ts",
+        "import": "./dist/cli/design-template-document-slides.js"
+      },
+      "./cli/design-template-extract": {
+        "types": "./dist/cli/design-template-extract.d.ts",
+        "import": "./dist/cli/design-template-extract.js"
+      },
+      "./cli/doc-extensions": {
+        "types": "./dist/cli/doc-extensions.d.ts",
+        "import": "./dist/cli/doc-extensions.js"
+      },
+      "./cli/env": {
+        "types": "./dist/cli/env.d.ts",
+        "import": "./dist/cli/env.js"
+      },
+      "./cli/errors": {
+        "types": "./dist/cli/errors.d.ts",
+        "import": "./dist/cli/errors.js"
+      },
+      "./cli/ids": {
+        "types": "./dist/cli/ids.d.ts",
+        "import": "./dist/cli/ids.js"
+      },
+      "./cli/image-generate": {
+        "types": "./dist/cli/image-generate.d.ts",
+        "import": "./dist/cli/image-generate.js"
+      },
+      "./cli/image-replicate-html": {
+        "types": "./dist/cli/image-replicate-html.d.ts",
+        "import": "./dist/cli/image-replicate-html.js"
+      },
+      "./cli/json-patch": {
+        "types": "./dist/cli/json-patch.d.ts",
+        "import": "./dist/cli/json-patch.js"
+      },
+      "./cli/markitdown-convert": {
+        "types": "./dist/cli/markitdown-convert.d.ts",
+        "import": "./dist/cli/markitdown-convert.js"
+      },
+      "./cli/narration-language-detect": {
+        "types": "./dist/cli/narration-language-detect.d.ts",
+        "import": "./dist/cli/narration-language-detect.js"
+      },
+      "./cli/oci-s3-storage": {
+        "types": "./dist/cli/oci-s3-storage.d.ts",
+        "import": "./dist/cli/oci-s3-storage.js"
+      },
+      "./cli/prompt-optimize": {
+        "types": "./dist/cli/prompt-optimize.d.ts",
+        "import": "./dist/cli/prompt-optimize.js"
+      },
+      "./cli/scene-persistence-normalize": {
+        "types": "./dist/cli/scene-persistence-normalize.d.ts",
+        "import": "./dist/cli/scene-persistence-normalize.js"
+      },
+      "./cli/scene-sync-diff": {
+        "types": "./dist/cli/scene-sync-diff.d.ts",
+        "import": "./dist/cli/scene-sync-diff.js"
+      },
+      "./cli/template-extract-language": {
+        "types": "./dist/cli/template-extract-language.d.ts",
+        "import": "./dist/cli/template-extract-language.js"
+      },
+      "./cli/tts-catalog": {
+        "types": "./dist/cli/tts-catalog.d.ts",
+        "import": "./dist/cli/tts-catalog.js"
+      },
+      "./cli/tts-pronunciation-apply": {
+        "types": "./dist/cli/tts-pronunciation-apply.d.ts",
+        "import": "./dist/cli/tts-pronunciation-apply.js"
+      },
+      "./cli/tts-style-presets": {
+        "types": "./dist/cli/tts-style-presets.d.ts",
+        "import": "./dist/cli/tts-style-presets.js"
+      },
+      "./cli/tts": {
+        "types": "./dist/cli/tts.d.ts",
+        "import": "./dist/cli/tts.js"
+      },
+      "./cli/url-policy": {
+        "types": "./dist/cli/url-policy.d.ts",
+        "import": "./dist/cli/url-policy.js"
+      },
+      "./polyfill/pdf-node-globals": {
+        "types": "./dist/polyfill/pdf-node-globals.d.ts",
+        "import": "./dist/polyfill/pdf-node-globals.js"
+      },
+      "./package.json": "./package.json"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "ainobi": "node ./bin/ainobi.mjs",
+    "test:smoke": "node ./bin/ainobi.mjs --version",
+    "test": "node --import tsx --test \"cli/**/*.test.ts\"",
+    "build": "node ../../scripts/build-package.mjs"
+  },
+  "engines": {
+    "node": ">=22.23.4"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^3.0.67",
+    "@ainobi/courseware-core": "workspace:0.1.0",
+    "@ainobi/storage-impl": "workspace:0.1.0",
+    "@ainobi/tts-fishaudio": "workspace:0.1.0",
+    "@ainobi/tts-google": "workspace:0.1.0",
+    "@ainobi/tts-minimax": "workspace:0.1.0",
+    "@aws-sdk/client-s3": "^3.1054.0",
+    "ai": "^6.0.6",
+    "ali-oss": "^6.23.0",
+    "markitdown-ts": "^0.0.10",
+    "openai": "^6.25.0",
+    "tsx": "^4.19.2",
+    "yup": "^1.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5"
+  }
+}

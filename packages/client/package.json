@@ -1,0 +1,43 @@
+{
+  "name": "@ainobi/client",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AINOBI platform SDK for host applications: exchange a sign-in handoff for a session, read the session and organizations, choose the working organization, list coursewares, and mint the one-time codes that sign embedded AINOBI pages in. Works in browsers and Node (fetch).",
+  "license": "AGPL-3.0-only",
+  "author": "GeekAca Ltd.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "build": "node ../../scripts/build-package.mjs"
+  },
+  "ainobi": {
+    "visibility": "public",
+    "capabilities": [
+      "client"
+    ]
+  },
+  "dependencies": {
+    "@ainobi/api-contracts": "workspace:0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5"
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "name": "@ainobi/web-kit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Browser-side pieces the platform frontends share verbatim: yup response schemas for common records, frontend-only enums (LLM provider, question), the exception level enum, and small utilities (uuid, query/timestamp helpers).",
+  "license": "AGPL-3.0-only",
+  "author": "GeekAca Ltd.",
+  "type": "module",
+  "exports": {
+    "./schemas/*": "./src/schemas/*.ts",
+    "./enums/*": "./src/enums/*.ts",
+    "./lib/enums/*": "./src/lib/enums/*.ts",
+    "./lib/util": "./src/lib/util.ts",
+    "./lib/uuid": "./src/lib/uuid.ts"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "exports": {
+      "./schemas/*": {
+        "types": "./dist/schemas/*.d.ts",
+        "import": "./dist/schemas/*.js"
+      },
+      "./enums/*": {
+        "types": "./dist/enums/*.d.ts",
+        "import": "./dist/enums/*.js"
+      },
+      "./lib/enums/*": {
+        "types": "./dist/lib/enums/*.d.ts",
+        "import": "./dist/lib/enums/*.js"
+      },
+      "./lib/util": {
+        "types": "./dist/lib/util.d.ts",
+        "import": "./dist/lib/util.js"
+      },
+      "./lib/uuid": {
+        "types": "./dist/lib/uuid.d.ts",
+        "import": "./dist/lib/uuid.js"
+      }
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "build": "node ../../scripts/build-package.mjs"
+  },
+  "ainobi": {
+    "visibility": "public",
+    "capabilities": [
+      "web-kit"
+    ],
+    "origin": "adopted"
+  },
+  "dependencies": {
+    "@ainobi/api-contracts": "workspace:0.1.0",
+    "yup": "^1.7.0"
+  }
+}

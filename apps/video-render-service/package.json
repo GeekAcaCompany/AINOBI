@@ -1,0 +1,55 @@
+{
+  "name": "ainobi-video-render-service",
+  "version": "0.0.0",
+  "description": "Ainobi Video Render Service",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "AGPL-3.0-only",
+  "private": true,
+  "author": "GeekAca Ltd.",
+  "directories": {
+    "dist": "dist"
+  },
+  "files": [
+    "dist/"
+  ],
+  "scripts": {
+    "postinstall": "node scripts/patch-hyperframes-url-downloader.mjs",
+    "dev": "tsup --watch --onSuccess \"node --enable-source-maps --no-node-snapshot dist/index.js\"",
+    "start": "node --enable-source-maps --no-node-snapshot dist/index.js",
+    "build": "tsup",
+    "typecheck": "tsc --noEmit -p .",
+    "render:url": "node --no-node-snapshot --import ts-node/esm scripts/render-url.ts",
+    "test": "node scripts/run-tests.mjs"
+  },
+  "dependencies": {
+    "@ainobi/http": "workspace:*",
+    "@ainobi/storage-impl": "workspace:*",
+    "@aws-sdk/client-s3": "^3.1054.0",
+    "@hyperframes/core": "0.7.39",
+    "@hyperframes/producer": "0.7.39",
+    "ali-oss": "^6.23.0",
+    "dotenv": "^16.4.1",
+    "esbuild": "^0.19.12",
+    "ioredis": "^5.7.0",
+    "pg": "^8.15.6",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.23",
+    "yup": "^1.4.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@alicloud/fc20230330": "^4.3.0",
+    "@aws-sdk/s3-request-presigner": "^3.1054.0",
+    "@swc/core": "^1.11.24",
+    "@types/busboy": "^1.5.4",
+    "@types/node": "^25.7.0",
+    "minimist": "^1.2.8",
+    "ts-node": "^10.9.2",
+    "tsup": "8.0.2",
+    "tsx": "^4.23.0",
+    "typescript": "^5.6.2",
+    "vitest": "^4.1.11"
+  }
+}

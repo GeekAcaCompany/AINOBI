@@ -1,0 +1,1326 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AINOBI Courseware Agent Debug</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #0f1115;
+        color: #eceff4;
+        --border: #252a34;
+        --panel: #141821;
+        --muted: #9aa4b2;
+        --accent: #7aa2f7;
+        --user: #1a2a44;
+        --assistant: #171b23;
+        --tool: #1f2430;
+        --success: #9ece6a;
+        --error: #f7768e;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        height: 100vh;
+        overflow: hidden;
+        display: grid;
+        grid-template-rows: auto 1fr;
+      }
+
+      header {
+        border-bottom: 1px solid var(--border);
+        padding: 16px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+      }
+
+      h1 {
+        font-size: 17px;
+        margin: 0 0 4px;
+      }
+
+      .meta {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .header-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--muted);
+        font-size: 12px;
+        user-select: none;
+      }
+
+      main {
+        display: grid;
+        grid-template-columns: minmax(300px, 380px) 1fr;
+        min-height: 0;
+        overflow: hidden;
+      }
+
+      main > form,
+      main > .chat {
+        min-height: 0;
+      }
+
+      form {
+        border-right: 1px solid var(--border);
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-height: 0;
+        overflow: auto;
+      }
+
+      label {
+        display: grid;
+        gap: 6px;
+        color: #c7ced9;
+        font-size: 12px;
+      }
+
+      textarea,
+      input,
+      select {
+        width: 100%;
+        border: 1px solid #303746;
+        border-radius: 10px;
+        background: #171b23;
+        color: #eceff4;
+        padding: 10px 12px;
+        font: inherit;
+      }
+
+      textarea {
+        min-height: 180px;
+        resize: vertical;
+        line-height: 1.5;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      button {
+        border: 0;
+        border-radius: 10px;
+        background: var(--accent);
+        color: #0f1115;
+        cursor: pointer;
+        font-weight: 700;
+        padding: 10px 14px;
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+
+      .secondary {
+        background: #2b3240;
+        color: #eceff4;
+      }
+
+      .chat {
+        min-height: 0;
+        overflow: hidden;
+        display: grid;
+        grid-template-rows: auto auto minmax(0, 1fr) auto;
+      }
+
+      .status-bar {
+        border-bottom: 1px solid var(--border);
+        padding: 10px 16px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 16px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .status-bar span strong {
+        color: #dce3ee;
+        font-weight: 600;
+      }
+
+      #messages {
+        min-height: 0;
+        height: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+      }
+
+      #messages > * {
+        flex-shrink: 0;
+      }
+
+      .bubble {
+        flex-shrink: 0;
+        max-width: min(760px, 100%);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+        animation: fadeIn 0.18s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .bubble.user {
+        align-self: flex-end;
+        background: var(--user);
+      }
+
+      .bubble.assistant {
+        align-self: flex-start;
+        background: var(--assistant);
+      }
+
+      .bubble.tool {
+        align-self: flex-start;
+        background: var(--tool);
+        max-width: min(900px, 100%);
+      }
+
+      .bubble.error {
+        align-self: stretch;
+        border-color: #5a2f3a;
+        background: #24161a;
+      }
+
+      .bubble-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 8px 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        color: var(--muted);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .bubble-body {
+        padding: 12px 14px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .bubble-body.mono {
+        font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        color: #c7ced9;
+      }
+
+      .tool-line {
+        display: flex;
+        gap: 8px;
+        align-items: baseline;
+        padding: 2px 0;
+      }
+
+      .tool-name {
+        color: var(--accent);
+        font-weight: 600;
+        min-width: 56px;
+      }
+
+      .tool-detail {
+        color: #c7ced9;
+        word-break: break-word;
+      }
+
+      .tool-output {
+        margin-top: 8px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        background: #11151d;
+        color: #b8c0cc;
+        font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .tool-command {
+        margin-top: 8px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        background: #101722;
+        border: 1px solid #2a3344;
+        color: #d8e1f0;
+        font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .tool-command::before {
+        content: "$ ";
+        color: var(--accent);
+      }
+
+      .typing {
+        align-self: flex-start;
+        color: var(--muted);
+        font-size: 13px;
+        padding: 0 4px;
+      }
+
+      .typing::after {
+        content: "";
+        animation: dots 1.2s steps(4, end) infinite;
+      }
+
+      @keyframes dots {
+        0% {
+          content: "";
+        }
+        25% {
+          content: ".";
+        }
+        50% {
+          content: "..";
+        }
+        75% {
+          content: "...";
+        }
+      }
+
+      .footer {
+        border-top: 1px solid var(--border);
+        padding: 10px 16px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .footer.done {
+        color: var(--success);
+      }
+
+      .footer.error {
+        color: var(--error);
+      }
+
+      .courseware-panel {
+        border-bottom: 1px solid var(--border);
+        display: grid;
+        grid-template-rows: auto 1fr;
+        min-height: 0;
+        max-height: 220px;
+      }
+
+      .courseware-panel.collapsed {
+        max-height: none;
+        grid-template-rows: auto;
+      }
+
+      .courseware-panel.collapsed #courseware-events {
+        display: none;
+      }
+
+      .courseware-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 16px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .courseware-head strong {
+        color: #dce3ee;
+      }
+
+      .courseware-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .courseware-actions button {
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+
+      #courseware-events {
+        min-height: 0;
+        overflow: auto;
+        padding: 0 16px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      #courseware-events > * {
+        flex-shrink: 0;
+      }
+
+      .courseware-event {
+        border: 1px solid #2a3344;
+        border-radius: 10px;
+        background: #121722;
+        padding: 8px 10px;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .courseware-event-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        color: var(--accent);
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+
+      .courseware-event-meta {
+        color: var(--muted);
+        font-weight: 400;
+      }
+
+      .courseware-event-body {
+        color: #c7ced9;
+        font: 11px/1.45 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .courseware-empty {
+        color: var(--muted);
+        font-size: 12px;
+        padding: 4px 0 8px;
+      }
+
+      details.raw {
+        align-self: stretch;
+        border: 1px dashed #303746;
+        border-radius: 10px;
+        padding: 8px 10px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      details.raw summary {
+        cursor: pointer;
+        user-select: none;
+      }
+
+      details.raw pre {
+        margin: 8px 0 0;
+        max-height: 220px;
+        overflow: auto;
+        white-space: pre-wrap;
+        word-break: break-word;
+        font: 11px/1.4 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      }
+
+      .checkbox-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        font-size: 13px;
+        color: #8a96a8;
+      }
+
+      .checkbox-row input {
+        margin-top: 0.2rem;
+      }
+
+      @media (max-width: 900px) {
+        main {
+          grid-template-columns: 1fr;
+        }
+
+        form {
+          border-right: 0;
+          border-bottom: 1px solid var(--border);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>AINOBI Courseware Agent Debug</h1>
+        <div class="meta">聊天式调试视图，默认隐藏冗长 SDK 事件。</div>
+      </div>
+      <div class="header-actions">
+        <label class="toggle">
+          <input id="show-raw" type="checkbox" />
+          显示原始事件
+        </label>
+      </div>
+    </header>
+
+    <main>
+      <form id="chat-form">
+        <label>
+          Prompt
+          <textarea id="prompt" required>@ainobi-courseware-cli 帮我检查当前 CLI 是否可用，只需要简短回复，检查下他的版本号。</textarea>
+        </label>
+
+        <label>
+          Session ID
+          <input id="session-id" placeholder="首次请求后自动填充" />
+        </label>
+
+        <label>
+          API Key
+          <input id="api-key" type="password" placeholder="Bearer token，填写后才能 Send" autocomplete="off" />
+        </label>
+
+        <div class="row">
+          <label>
+            Max Turns
+            <input id="max-turns" type="number" min="1" max="2000" placeholder="留空用服务端 AGENT_MAX_TURNS" />
+          </label>
+          <label>
+            Permission
+            <select id="permission-mode">
+              <option value="default" selected>default</option>
+              <option value="acceptEdits">acceptEdits</option>
+              <option value="dontAsk">dontAsk (mapped to default for credential policy)</option>
+              <option value="plan">plan</option>
+            </select>
+          </label>
+        </div>
+
+        <label>
+          Model
+          <input id="model" placeholder="留空使用默认模型" />
+        </label>
+
+        <label>
+          Live preview session ID
+          <input id="live-preview-session-id" placeholder="编辑器 live preview session id" />
+        </label>
+
+        <label>
+          Courseware ID（课件表 uuid；刷新后凭此与后端复用同一条对话与 Claude 进度）
+          <input id="courseware-id" type="text" placeholder="例如从业务库复制课件 uuid" autocomplete="off" />
+        </label>
+
+        <label>
+          Conversation ID（可选，由服务端 SSE 回填后写入 localStorage）
+          <input id="conversation-id" type="text" placeholder="留空则仅按 Courseware ID 找最近一条" autocomplete="off" />
+        </label>
+
+        <label class="checkbox-row">
+          <input id="new-conversation" type="checkbox" />
+          <span>新开线程（newConversation：不复用该课件最近对话）</span>
+        </label>
+
+        <div class="row">
+          <button class="secondary" id="courseware-connect" type="button">订阅课件流</button>
+          <button class="secondary" id="courseware-disconnect" type="button" disabled>断开</button>
+        </div>
+
+        <button id="send" type="submit" disabled>Send</button>
+        <button class="secondary" id="clear" type="button">Clear</button>
+      </form>
+
+      <section class="chat">
+        <div class="status-bar" id="status-bar">
+          <span>状态 <strong id="status-text">空闲</strong></span>
+          <span>Session <strong id="status-session">-</strong></span>
+          <span>Model <strong id="status-model">-</strong></span>
+          <span>课件流 <strong id="status-courseware">未连接</strong></span>
+        </div>
+
+        <section class="courseware-panel collapsed" id="courseware-panel">
+          <div class="courseware-head">
+            <span>课件实时流 · <strong id="courseware-stream-key">-</strong></span>
+            <span class="courseware-actions">
+              <span id="courseware-count">0 条事件</span>
+              <button class="secondary" id="courseware-clear" type="button">清空</button>
+            </span>
+          </div>
+          <div id="courseware-events">
+            <div class="courseware-empty" id="courseware-empty">连接后显示 CLI 推送的 scene.patch 事件。</div>
+          </div>
+        </section>
+
+        <div id="messages" aria-live="polite"></div>
+
+        <div class="footer" id="footer">等待发送消息。</div>
+      </section>
+    </main>
+
+    <script>
+      const form = document.querySelector("#chat-form");
+      const messages = document.querySelector("#messages");
+      const sendButton = document.querySelector("#send");
+      const clearButton = document.querySelector("#clear");
+      const promptInput = document.querySelector("#prompt");
+      const sessionInput = document.querySelector("#session-id");
+      const apiKeyInput = document.querySelector("#api-key");
+      const maxTurnsInput = document.querySelector("#max-turns");
+      const permissionInput = document.querySelector("#permission-mode");
+      const modelInput = document.querySelector("#model");
+      const livePreviewSessionInput = document.querySelector("#live-preview-session-id");
+      const coursewareIdInput = document.querySelector("#courseware-id");
+      const conversationIdInput = document.querySelector("#conversation-id");
+      const newConversationInput = document.querySelector("#new-conversation");
+      const coursewareConnectButton = document.querySelector("#courseware-connect");
+      const coursewareDisconnectButton = document.querySelector("#courseware-disconnect");
+      const coursewareClearButton = document.querySelector("#courseware-clear");
+      const coursewarePanel = document.querySelector("#courseware-panel");
+      const coursewareEvents = document.querySelector("#courseware-events");
+      const coursewareEmpty = document.querySelector("#courseware-empty");
+      const coursewareStreamKey = document.querySelector("#courseware-stream-key");
+      const coursewareCount = document.querySelector("#courseware-count");
+      const statusCourseware = document.querySelector("#status-courseware");
+      const showRawInput = document.querySelector("#show-raw");
+      const statusText = document.querySelector("#status-text");
+      const statusSession = document.querySelector("#status-session");
+      const statusModel = document.querySelector("#status-model");
+      const footer = document.querySelector("#footer");
+
+      let typingEl = null;
+      let assistantBubble = null;
+      let assistantText = "";
+      let runStats = null;
+      const seenToolIds = new Set();
+      const seenTextBlocks = new Set();
+      const toolNamesById = new Map();
+      let coursewareAbort = null;
+      let coursewareEventTotal = 0;
+
+      const CHAT_STORAGE_KEY = "ainobi-courseware-agent-chat-v1";
+
+      function loadChatPersistence() {
+        try {
+          const raw = localStorage.getItem(CHAT_STORAGE_KEY);
+          if (!raw) return;
+          const s = JSON.parse(raw);
+          if (typeof s.coursewareId === "string" && s.coursewareId) coursewareIdInput.value = s.coursewareId;
+          if (typeof s.conversationId === "string" && s.conversationId) conversationIdInput.value = s.conversationId;
+          if (typeof s.sessionId === "string" && s.sessionId) sessionInput.value = s.sessionId;
+          if (typeof s.apiKey === "string" && s.apiKey) apiKeyInput.value = s.apiKey;
+          if (typeof s.livePreviewSessionId === "string" && s.livePreviewSessionId) livePreviewSessionInput.value = s.livePreviewSessionId;
+        } catch {
+          /* ignore */
+        }
+      }
+
+      function mergeChatPersistence(patch) {
+        try {
+          const prev = JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) || "{}");
+          const next = { ...prev, ...patch };
+          for (const key of Object.keys(next)) {
+            if (next[key] === undefined || next[key] === "") delete next[key];
+          }
+          localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(next));
+        } catch {
+          /* ignore */
+        }
+      }
+
+      function updateSendButtonState() {
+        sendButton.disabled = !apiKeyInput.value.trim();
+      }
+
+      loadChatPersistence();
+      updateSendButtonState();
+      apiKeyInput.addEventListener("input", () => {
+        updateSendButtonState();
+        mergeChatPersistence({ apiKey: apiKeyInput.value.trim() || undefined });
+      });
+
+      const pageParams = new URLSearchParams(location.search);
+      const coursewareIdFromUrl = pageParams.get("coursewareId");
+      if (coursewareIdFromUrl) coursewareIdInput.value = coursewareIdFromUrl;
+
+      clearButton.addEventListener("click", resetView);
+      coursewareConnectButton.addEventListener("click", connectCoursewareStream);
+      coursewareDisconnectButton.addEventListener("click", disconnectCoursewareStream);
+      coursewareClearButton.addEventListener("click", clearCoursewareEvents);
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const apiKey = apiKeyInput.value.trim();
+        if (!apiKey) {
+          setFooter("请先填写 API Key。", "error");
+          return;
+        }
+
+        sendButton.disabled = true;
+        resetTurnState();
+        appendUserBubble(promptInput.value);
+        setStatus("运行中", "accent");
+        setFooter("Agent 正在处理...", "pending");
+
+        try {
+          const response = await fetch("/chat/stream", {
+            method: "POST",
+            headers: { "content-type": "application/json", Authorization: `Bearer ${apiKey}` },
+            body: JSON.stringify({
+              prompt: promptInput.value,
+              sessionId: sessionInput.value || undefined,
+              conversationId: newConversationInput.checked
+                ? undefined
+                : conversationIdInput.value.trim() || undefined,
+              coursewareId: coursewareIdInput.value.trim() || undefined,
+              newConversation: newConversationInput.checked ? true : undefined,
+              livePreviewSessionId: livePreviewSessionInput.value.trim() || undefined,
+              ...(maxTurnsInput.value.trim()
+                ? { maxTurns: Number(maxTurnsInput.value) }
+                : {}),
+              permissionMode: permissionInput.value,
+              model: modelInput.value || undefined,
+            }),
+          });
+
+          if (!response.ok || !response.body) {
+            throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+          }
+
+          await readEventStream(response.body);
+        } catch (error) {
+          appendErrorBubble(error instanceof Error ? error.message : String(error));
+          setStatus("失败", "error");
+          setFooter("请求失败。", "error");
+        } finally {
+          hideTyping();
+          updateSendButtonState();
+        }
+      });
+
+      function resetView() {
+        messages.replaceChildren();
+        resetTurnState();
+        setStatus("空闲");
+        statusSession.textContent = sessionInput.value || "-";
+        statusModel.textContent = "-";
+        setFooter("等待发送消息。");
+      }
+
+      async function connectCoursewareStream() {
+        const livePreviewSessionId = livePreviewSessionInput.value.trim();
+        if (!livePreviewSessionId) {
+          setCoursewareStatus("缺少 live preview session id", "error");
+          return;
+        }
+
+        disconnectCoursewareStream();
+        coursewareAbort = new AbortController();
+        coursewareConnectButton.disabled = true;
+        coursewareDisconnectButton.disabled = false;
+        coursewarePanel.classList.remove("collapsed");
+        setCoursewareStatus("连接中…", "accent");
+
+        try {
+          const response = await fetch(
+            `/courseware/stream?livePreviewSessionId=${encodeURIComponent(livePreviewSessionId)}`,
+            { signal: coursewareAbort.signal },
+          );
+
+          if (!response.ok || !response.body) {
+            throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+          }
+
+          setCoursewareStatus("已连接", "done");
+          await readCoursewareEventStream(response.body);
+        } catch (error) {
+          if (error instanceof DOMException && error.name === "AbortError") {
+            setCoursewareStatus("已断开");
+            return;
+          }
+
+          appendCoursewareError(error instanceof Error ? error.message : String(error));
+          setCoursewareStatus("连接失败", "error");
+        } finally {
+          coursewareConnectButton.disabled = false;
+          coursewareDisconnectButton.disabled = true;
+          coursewareAbort = null;
+        }
+      }
+
+      function disconnectCoursewareStream() {
+        coursewareAbort?.abort();
+        coursewareAbort = null;
+        coursewareConnectButton.disabled = false;
+        coursewareDisconnectButton.disabled = true;
+        setCoursewareStatus("已断开");
+      }
+
+      function clearCoursewareEvents() {
+        coursewareEventTotal = 0;
+        coursewareCount.textContent = "0 条事件";
+        coursewareEvents.replaceChildren();
+        coursewareEvents.append(coursewareEmpty);
+        coursewareEmpty.hidden = false;
+      }
+
+      async function readCoursewareEventStream(body) {
+        const reader = body.pipeThrough(new TextDecoderStream()).getReader();
+        let buffer = "";
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buffer += value;
+
+          let boundary = buffer.indexOf("\n\n");
+          while (boundary >= 0) {
+            const raw = buffer.slice(0, boundary);
+            buffer = buffer.slice(boundary + 2);
+            consumeCoursewareSse(raw);
+            boundary = buffer.indexOf("\n\n");
+          }
+        }
+      }
+
+      function consumeCoursewareSse(raw) {
+        const lines = raw.split("\n");
+        const event = lines.find((line) => line.startsWith("event: "))?.slice(7) || "message";
+        const data = lines
+          .filter((line) => line.startsWith("data: "))
+          .map((line) => line.slice(6))
+          .join("\n");
+
+        if (!data) return;
+
+        const payload = JSON.parse(data);
+
+        if (event === "ready") {
+          coursewareStreamKey.textContent = payload.livePreviewStreamKey || "-";
+          return;
+        }
+
+        if (event === "event") {
+          appendCoursewareEvent(payload);
+          return;
+        }
+
+        if (event === "error") {
+          appendCoursewareError(payload.error || "Unknown stream error");
+          setCoursewareStatus("错误", "error");
+        }
+      }
+
+      function appendCoursewareEvent(entry) {
+        coursewareEmpty.hidden = true;
+        coursewareEventTotal += 1;
+        coursewareCount.textContent = `${coursewareEventTotal} 条事件`;
+
+        const card = document.createElement("article");
+        card.className = "courseware-event";
+
+        const head = document.createElement("div");
+        head.className = "courseware-event-head";
+        head.innerHTML = `<span>${escapeHtml(entry.eventType || "unknown")}</span><span class="courseware-event-meta">${escapeHtml(entry.id || "")}</span>`;
+
+        const body = document.createElement("div");
+        body.className = "courseware-event-body";
+        body.textContent = summarizeCoursewarePayload(entry);
+
+        card.append(head, body);
+        coursewareEvents.append(card);
+        scrollCoursewareToBottom();
+      }
+
+      function appendCoursewareError(text) {
+        const card = document.createElement("article");
+        card.className = "courseware-event";
+        card.style.borderColor = "#5a2f3a";
+
+        const head = document.createElement("div");
+        head.className = "courseware-event-head";
+        head.textContent = "stream error";
+
+        const body = document.createElement("div");
+        body.className = "courseware-event-body";
+        body.textContent = text;
+
+        card.append(head, body);
+        coursewareEvents.append(card);
+      }
+
+      function summarizeCoursewarePayload(entry) {
+        const payload = entry.payload;
+        if (!payload || typeof payload !== "object") {
+          return typeof payload === "string" ? payload : JSON.stringify(payload, null, 2);
+        }
+
+        if (payload.event_type === "scene.snapshot") {
+          const scene = payload.scene;
+          const name = scene && typeof scene === "object" ? scene.name : undefined;
+          const slideCount = scene && typeof scene === "object" ? scene.slide_count : undefined;
+          return JSON.stringify(
+            {
+              scene_id: payload.scene_id,
+              cli_session_id: payload.cli_session_id,
+              scene_name: name,
+              slide_count: slideCount,
+            },
+            null,
+            2,
+          );
+        }
+
+        if (payload.event_type === "scene.patch") {
+          const patch = Array.isArray(payload.patch) ? payload.patch : [];
+          return JSON.stringify(
+            {
+              scene_id: payload.scene_id,
+              cli_session_id: payload.cli_session_id,
+              patch_count: patch.length,
+              patch: patch.slice(0, 8),
+            },
+            null,
+            2,
+          );
+        }
+
+        return JSON.stringify(payload, null, 2);
+      }
+
+      function setCoursewareStatus(text, tone) {
+        statusCourseware.textContent = text;
+        statusCourseware.style.color =
+          tone === "error"
+            ? "var(--error)"
+            : tone === "done"
+              ? "var(--success)"
+              : tone === "accent"
+                ? "var(--accent)"
+                : "#dce3ee";
+      }
+
+      function resetTurnState() {
+        hideTyping();
+        assistantBubble = null;
+        assistantText = "";
+        runStats = null;
+        seenToolIds.clear();
+        seenTextBlocks.clear();
+        toolNamesById.clear();
+      }
+
+      async function readEventStream(body) {
+        const reader = body.pipeThrough(new TextDecoderStream()).getReader();
+        let buffer = "";
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buffer += value;
+
+          let boundary = buffer.indexOf("\n\n");
+          while (boundary >= 0) {
+            const raw = buffer.slice(0, boundary);
+            buffer = buffer.slice(boundary + 2);
+            consumeSse(raw);
+            boundary = buffer.indexOf("\n\n");
+          }
+        }
+      }
+
+      function consumeSse(raw) {
+        const lines = raw.split("\n");
+        const event = lines.find((line) => line.startsWith("event: "))?.slice(7) || "message";
+        const data = lines
+          .filter((line) => line.startsWith("data: "))
+          .map((line) => line.slice(6))
+          .join("\n");
+
+        if (!data) return;
+
+        const payload = JSON.parse(data);
+        if (payload.sessionId) {
+          sessionInput.value = payload.sessionId;
+          statusSession.textContent = shortId(payload.sessionId);
+        }
+
+        if (event === "ready" || event === "done") {
+          mergeChatPersistence({
+            ...(payload.conversationId && { conversationId: payload.conversationId }),
+            ...(payload.sessionId && { sessionId: payload.sessionId }),
+            ...(coursewareIdInput.value.trim() && { coursewareId: coursewareIdInput.value.trim() }),
+            ...(livePreviewSessionInput.value.trim() && { livePreviewSessionId: livePreviewSessionInput.value.trim() }),
+          });
+          if (payload.conversationId) conversationIdInput.value = payload.conversationId;
+        }
+
+        if (showRawInput.checked) {
+          appendRawEvent(event, payload);
+        }
+
+        if (event === "ready") {
+          showTyping();
+          return;
+        }
+
+        if (event === "message") {
+          handleSdkMessage(payload.message);
+          return;
+        }
+
+        if (event === "done") {
+          hideTyping();
+          finalizeAssistantBubble(payload.result);
+          setStatus("完成", "done");
+          setFooter(payload.result || "完成。", "done", formatRunStats(runStats));
+          return;
+        }
+
+        if (event === "error") {
+          hideTyping();
+          appendErrorBubble(payload.error || "Unknown error");
+          setStatus("失败", "error");
+          setFooter(payload.error || "Agent 返回错误。", "error");
+        }
+      }
+
+      function handleSdkMessage(message) {
+        if (!message) return;
+
+        if (message.type === "system" && message.subtype === "init") {
+          statusModel.textContent = message.model || "-";
+          return;
+        }
+
+        if (message.type === "result") {
+          runStats = message;
+          if (message.result) {
+            finalizeAssistantBubble(message.result);
+          }
+          return;
+        }
+
+        if (message.type === "assistant") {
+          const content = message.message?.content;
+          if (!Array.isArray(content)) return;
+
+          for (const block of content) {
+            if (block.type === "text" && block.text) {
+              appendAssistantText(block.text);
+            }
+
+            if (block.type === "tool_use") {
+              appendToolUse(block);
+            }
+          }
+          return;
+        }
+
+        if (message.type === "user") {
+          if (message.isSynthetic) return;
+
+          const content = message.message?.content;
+          if (!Array.isArray(content)) return;
+
+          for (const block of content) {
+            if (block.type === "tool_result") {
+              appendToolResult(block, message.tool_use_result);
+            }
+          }
+        }
+      }
+
+      function appendUserBubble(text) {
+        messages.append(createBubble("user", "You", text));
+        scrollToBottom();
+      }
+
+      function appendAssistantText(text) {
+        if (!text.trim()) return;
+
+        const key = text.trim();
+        if (seenTextBlocks.has(key)) return;
+        seenTextBlocks.add(key);
+
+        hideTyping();
+
+        if (!assistantBubble) {
+          assistantBubble = createBubble("assistant", "Assistant", "");
+          messages.append(assistantBubble);
+        }
+
+        assistantText = assistantText ? `${assistantText}\n\n${text}` : text;
+        assistantBubble.querySelector(".bubble-body").textContent = assistantText;
+        scrollToBottom();
+      }
+
+      function finalizeAssistantBubble(result) {
+        if (result && !assistantText.includes(result.trim())) {
+          appendAssistantText(result);
+        }
+      }
+
+      function appendToolUse(block) {
+        if (!block.id || seenToolIds.has(block.id)) return;
+        seenToolIds.add(block.id);
+        toolNamesById.set(block.id, block.name || "tool");
+
+        const bubble = createBubble("tool", block.name || "Tool", "");
+        const body = bubble.querySelector(".bubble-body");
+        const line = document.createElement("div");
+        line.className = "tool-line";
+        line.dataset.toolId = block.id;
+
+        const name = document.createElement("span");
+        name.className = "tool-name";
+        name.textContent = block.name || "tool";
+
+        const detail = document.createElement("span");
+        detail.className = "tool-detail";
+        detail.textContent = summarizeToolInput(block.name, block.input);
+
+        line.append(name, detail);
+        body.append(line);
+
+        if (block.name === "Bash" && block.input?.command) {
+          const command = document.createElement("div");
+          command.className = "tool-command";
+          command.textContent = block.input.command;
+          body.append(command);
+        }
+
+        messages.append(bubble);
+        scrollToBottom();
+      }
+
+      function appendToolResult(block, toolUseResult) {
+        const toolId = block.tool_use_id;
+        const toolName = toolNamesById.get(toolId);
+        let outputText = summarizeToolOutput(block.content, toolUseResult, toolName);
+        if (!outputText) return;
+
+        const line = messages.querySelector(`[data-tool-id="${toolId}"]`);
+        const bubble = line?.closest(".bubble.tool");
+        if (!bubble) return;
+
+        const existing = bubble.querySelector(".tool-output");
+        if (existing) {
+          existing.textContent = outputText;
+          return;
+        }
+
+        const output = document.createElement("div");
+        output.className = "tool-output";
+        output.textContent = outputText;
+        bubble.querySelector(".bubble-body").append(output);
+        scrollToBottom();
+      }
+
+      function appendErrorBubble(text) {
+        messages.append(createBubble("error", "Error", text));
+        scrollToBottom();
+      }
+
+      function appendRawEvent(event, payload) {
+        const details = document.createElement("details");
+        details.className = "raw";
+        details.open = false;
+
+        const summary = document.createElement("summary");
+        summary.textContent = `raw / ${event}`;
+
+        const pre = document.createElement("pre");
+        pre.textContent = JSON.stringify(payload, null, 2);
+
+        details.append(summary, pre);
+        messages.append(details);
+        scrollToBottom();
+      }
+
+      function createBubble(kind, title, text) {
+        const bubble = document.createElement("article");
+        bubble.className = `bubble ${kind}`;
+
+        const head = document.createElement("div");
+        head.className = "bubble-head";
+        head.innerHTML = `<span>${escapeHtml(title)}</span><span>${new Date().toLocaleTimeString()}</span>`;
+
+        const body = document.createElement("div");
+        body.className = "bubble-body";
+        body.textContent = text;
+
+        bubble.append(head, body);
+        return bubble;
+      }
+
+      function showTyping() {
+        if (typingEl) return;
+        typingEl = document.createElement("div");
+        typingEl.className = "typing";
+        typingEl.textContent = "Assistant 正在思考";
+        messages.append(typingEl);
+        scrollToBottom();
+      }
+
+      function hideTyping() {
+        typingEl?.remove();
+        typingEl = null;
+      }
+
+      function setStatus(text, tone) {
+        statusText.textContent = text;
+        statusText.style.color =
+          tone === "error" ? "var(--error)" : tone === "done" ? "var(--success)" : tone === "accent" ? "var(--accent)" : "#dce3ee";
+      }
+
+      function setFooter(text, tone, extra) {
+        footer.className = `footer${tone ? ` ${tone}` : ""}`;
+        footer.textContent = extra ? `${text} ${extra}` : text;
+      }
+
+      function summarizeToolInput(name, input) {
+        if (!input || typeof input !== "object") return "";
+
+        if (name === "Bash") {
+          return input.description || "shell";
+        }
+
+        if (name === "Read") {
+          return input.file_path || input.path || "";
+        }
+
+        if (name === "Skill") {
+          return input.skill ? `${input.skill}${input.args ? ` · ${input.args}` : ""}` : JSON.stringify(input);
+        }
+
+        const compact = JSON.stringify(input);
+        return truncate(compact, 140);
+      }
+
+      function summarizeToolOutput(content, toolUseResult, toolName) {
+        if (toolName === "Read") {
+          const path = toolUseResult?.file?.filePath || "";
+          const lines = toolUseResult?.file?.numLines;
+          if (path) {
+            return lines ? `已读取 ${path} (${lines} 行)` : `已读取 ${path}`;
+          }
+          return "已读取文件";
+        }
+
+        if (toolName === "Skill") {
+          return typeof content === "string" ? content : "Skill 已加载";
+        }
+
+        const stdout = toolUseResult?.stdout;
+        if (typeof stdout === "string" && stdout.trim()) {
+          return prettifyOutput(stdout.trim());
+        }
+
+        if (typeof content === "string") {
+          return prettifyOutput(content.trim());
+        }
+
+        if (Array.isArray(content)) {
+          const text = content
+            .map((item) => {
+              if (typeof item === "string") return item;
+              if (item?.type === "text") return item.text;
+              return "";
+            })
+            .filter(Boolean)
+            .join("\n")
+            .trim();
+          return prettifyOutput(text);
+        }
+
+        return "";
+      }
+
+      function prettifyOutput(text) {
+        try {
+          const parsed = JSON.parse(text);
+          if (parsed?.ok && parsed?.data?.version) {
+            return `version ${parsed.data.version}`;
+          }
+          if (parsed?.ok && parsed?.data) {
+            return truncate(JSON.stringify(parsed.data, null, 2), 500);
+          }
+        } catch {
+          // not json
+        }
+
+        const cleaned = text
+          .replace(/\nShell cwd was reset to .*$/m, "")
+          .trim();
+        return truncate(cleaned, 500);
+      }
+
+      function formatRunStats(stats) {
+        if (!stats) return "";
+        const bits = [];
+        if (stats.duration_ms) bits.push(`${(stats.duration_ms / 1000).toFixed(1)}s`);
+        if (typeof stats.num_turns === "number") bits.push(`${stats.num_turns} turns`);
+        if (typeof stats.total_cost_usd === "number") bits.push(`$${stats.total_cost_usd.toFixed(4)}`);
+        return bits.join(" · ");
+      }
+
+      function truncate(text, max) {
+        return text.length > max ? `${text.slice(0, max)}…` : text;
+      }
+
+      function shortId(value) {
+        return value ? `${value.slice(0, 8)}…` : "-";
+      }
+
+      function scrollToBottom() {
+        requestAnimationFrame(() => {
+          messages.scrollTop = messages.scrollHeight;
+          messages.lastElementChild?.scrollIntoView({ block: "end" });
+        });
+      }
+
+      function scrollCoursewareToBottom() {
+        requestAnimationFrame(() => {
+          coursewareEvents.scrollTop = coursewareEvents.scrollHeight;
+        });
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;");
+      }
+    </script>
+  </body>
+</html>
