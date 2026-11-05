@@ -14,6 +14,7 @@ import { listAinobiCoursesForOrg } from '../services/ainobi-course-catalog.ts';
 import { fetchOrgAiTeachersFromPlatform } from '../services/ainobi-ai-teachers.ts';
 import { runHostNarration } from '../services/agent-narration-host-run.ts';
 import { invalidateAgentWorkspaceSessionCache, readAgentWorkspaceSession } from '../services/agent-live-preview-flush.ts';
+import { clearAgentWorkspaceCliSession } from '../services/agent-courseware-scene-sync.ts';
 import { flushAgentWorkspacePersistenceWhenIdle } from '../services/agent-persistence-flush.ts';
 import { recallToolResultBlob } from '../services/agent-tool-result-archive.ts';
 import { writeSceneJsonAndAinobiLoad } from '../services/courseware-cli-preload.ts';
@@ -497,6 +498,9 @@ export async function coursewareOpenTool(
     actor: actorFromSession(caller),
     mcpSessionId: requestedId,
   });
+
+  // Reopening a session reloads it: the CLI refuses a second load while a session is bound.
+  await clearAgentWorkspaceCliSession(binding.workspaceDir);
 
   const load = writeSceneJsonAndAinobiLoad({
     scenePath: binding.scenePath,
