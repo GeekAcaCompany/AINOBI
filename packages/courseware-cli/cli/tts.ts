@@ -251,7 +251,7 @@ const synthesizeGoogleAudio = async (
   if (!apiKey) {
     throw new AinobiCliError(
       "USAGE",
-      "TTS API credentials are required for narration insert (configure GEMINI_TTS_API_KEY on the AINOBI host).",
+      "TTS API credentials are required for narration insert (configure GEMINI_API_KEY or GEMINI_TTS_API_KEY on the AINOBI host).",
     );
   }
 

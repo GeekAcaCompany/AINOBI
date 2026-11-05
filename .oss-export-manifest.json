@@ -1,5 +1,5 @@
 {
-  "sourceCommit": "9b98edeb9c5f5ff9fc547b43149104dee775ddc1",
+  "sourceCommit": "bdf5d1d24af029281e7c2c025aa4a9f78e3ee423",
   "files": [
     "apps/courseware-service/.dockerignore",
     "apps/courseware-service/.env.example",
