@@ -46,9 +46,59 @@ jobs:
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npx pnpm@10.5.0 test
 
-      - name: Build and test the apps
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+  apps:
+    name: apps
+    if: github.event_name != 'push' || github.event.deleted != true
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ainobi
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s
+          --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    env:
+      DB_TYPE: postgres
+      DB_HOST: 127.0.0.1
+      DB_PORT: '5432'
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_DATABASE: ainobi
+      REDIS_HOST: 127.0.0.1
+      REDIS_PORT: '6379'
+    steps:
+      - name: Check out the source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: Install locked dependencies
+        run: npx --yes pnpm@10.5.0 install --frozen-lockfile
+
+      - name: Create the tables
+        env:
+          PGPASSWORD: postgres
+        run: psql -h 127.0.0.1 -U postgres -d ainobi -q -v ON_ERROR_STOP=1 -f apps/studio/server/schema.sql
+
+      - name: Build
         run: |
-          npx pnpm@10.5.0 --filter @ainobi/lite-stores build
+          npx pnpm@10.5.0 --filter @ainobi/lite-stores --filter @ainobi/avatar-generator --filter @ainobi/tts build
           npx pnpm@10.5.0 --filter ainobi-courseware-service --filter @ainobi/studio build
-          npx pnpm@10.5.0 --filter ainobi-courseware-service --filter ainobi-video-render-service --filter @ainobi/studio test
+
+      - name: Test
+        run: npx pnpm@10.5.0 --filter ainobi-courseware-service --filter ainobi-video-render-service --filter @ainobi/studio test

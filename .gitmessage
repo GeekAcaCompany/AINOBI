@@ -12,4 +12,4 @@
 # Add a short body after a blank line only when the diff alone is hard to understand.
 # Check English clarity and verb usage during review.
 # Do not add Co-Authored-By trailers or AI attributions.
-# Validate a message file: yarn lint:commits --edit <file>
+# Validate a message file: pnpm lint:commits --edit <file>

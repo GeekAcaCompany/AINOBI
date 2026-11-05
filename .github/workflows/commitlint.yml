@@ -18,7 +18,7 @@ jobs:
     name: commitlint
     if: github.event_name != 'push' || github.event.deleted != true
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - name: Check out commits
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -33,13 +33,10 @@ jobs:
           node-version-file: .nvmrc
 
       - name: Install locked dependencies
-        run: |
-          corepack enable
-          corepack prepare yarn@1.22.22 --activate
-          yarn install --frozen-lockfile --ignore-scripts
+        run: npx --yes pnpm@10.5.0 install --frozen-lockfile --ignore-scripts
 
       - name: Test commit validation
-        run: yarn test:commits
+        run: npx pnpm@10.5.0 test:commits
 
       - name: Validate every commit in the event
-        run: yarn lint:commits:ci
+        run: npx pnpm@10.5.0 lint:commits:ci
