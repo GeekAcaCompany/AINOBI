@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AiTeacherError, BUILT_IN_TEACHER_ID, createAiTeacherStore, generatorFromEnv, teacherFilePath } from './ai-teachers.mjs';
+import { avatarApiKeyFromEnv } from '../../../packages/avatar-generator/src/config.ts';
 import { answer, LOCAL_ORG_ID } from './local-host.mjs';
 
 const dirs: string[] = [];
@@ -100,13 +101,29 @@ describe('teacherFilePath', () => {
 
 describe('generatorFromEnv', () => {
   it('is off without a key', () => {
-    expect(generatorFromEnv({}, async () => ({}))).toBeNull();
-    expect(generatorFromEnv({ OPENAI_API_KEY: 'o' }, async () => ({}))).toBeNull();
+    expect(generatorFromEnv({}, async () => ({}), avatarApiKeyFromEnv)).toBeNull();
+  });
+
+  it('uses the OpenAI key when nothing else is set', async () => {
+    const generateAvatarModel = vi.fn(async () => ({ modelPath: 'm', previewPath: 'p' }));
+    const generate = await generatorFromEnv({ OPENAI_API_KEY: 'o' }, async () => ({ generateAvatarModel }), avatarApiKeyFromEnv)!();
+    await generate({ prompt: 'p', outputDir: 'd' });
+    expect(generateAvatarModel).toHaveBeenCalledWith(
+      expect.objectContaining({ settings: expect.objectContaining({ apiKey: 'o', apiBase: 'https://api.openai.com/v1' }) }),
+    );
+  });
+
+  it('prefers LLM_API_KEY, and never sends the OpenAI key to another provider', async () => {
+    const generateAvatarModel = vi.fn(async () => ({ modelPath: 'm', previewPath: 'p' }));
+    const generate = await generatorFromEnv({ LLM_API_KEY: 'l', OPENAI_API_KEY: 'o' }, async () => ({ generateAvatarModel }), avatarApiKeyFromEnv)!();
+    await generate({ prompt: 'p', outputDir: 'd' });
+    expect(generateAvatarModel).toHaveBeenCalledWith(expect.objectContaining({ settings: expect.objectContaining({ apiKey: 'l' }) }));
+    expect(generatorFromEnv({ OPENAI_API_KEY: 'o', LLM_API_BASE: 'https://other.example/v1' }, async () => ({}), avatarApiKeyFromEnv)).toBeNull();
   });
 
   it('reads the same settings as the platform backend, and passes them to the pipeline', async () => {
     const generateAvatarModel = vi.fn(async () => ({ modelPath: 'm', previewPath: 'p' }));
-    const load = generatorFromEnv({ LLM_API_KEY: 'a', AVATAR_IMAGE_MODEL: 'img' }, async () => ({ generateAvatarModel }));
+    const load = generatorFromEnv({ LLM_API_KEY: 'a', AVATAR_IMAGE_MODEL: 'img' }, async () => ({ generateAvatarModel }), avatarApiKeyFromEnv);
     const generate = await load!();
     await generate({ prompt: 'p', outputDir: 'd' });
     expect(generateAvatarModel).toHaveBeenCalledWith({ prompt: 'p', outputDir: 'd', settings: expect.objectContaining({ apiKey: 'a', imageModel: 'img' }) });

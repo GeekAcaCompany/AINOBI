@@ -11,6 +11,17 @@ export const CANVAS_H = 1024;
 /** Neutral gray screen of the part extraction line (kept for legacy asset compatibility) */
 export const CHROMA_HEX = "#808080";
 
+/**
+ * The key for generation: LLM_API_KEY, else OPENAI_API_KEY while LLM_API_BASE is unset (the default endpoint is
+ * OpenAI's), so an OpenAI key never goes to another provider. Null when neither applies.
+ */
+export function avatarApiKeyFromEnv(env: Record<string, string | undefined>): string | null {
+  const llmKey = env.LLM_API_KEY?.trim();
+  if (llmKey) return llmKey;
+  if (env.LLM_API_BASE?.trim()) return null;
+  return env.OPENAI_API_KEY?.trim() || null;
+}
+
 /** Pipeline client config */
 export interface AvatarPipelineSettings {
   apiKey: string;

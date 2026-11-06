@@ -1,5 +1,5 @@
 {
-  "sourceCommit": "24242fc8ededae6b8ce0ac78d059b41163e002c9",
+  "sourceCommit": "ce588948e49fb84c076f73833c1afcdd5166f4d7",
   "files": [
     "apps/courseware-service/.dockerignore",
     "apps/courseware-service/.env.example",
@@ -544,6 +544,7 @@
     "packages/avatar-generator/package.json",
     "packages/avatar-generator/src/chroma.test.ts",
     "packages/avatar-generator/src/chroma.ts",
+    "packages/avatar-generator/src/config.test.ts",
     "packages/avatar-generator/src/config.ts",
     "packages/avatar-generator/src/cvops.test.ts",
     "packages/avatar-generator/src/cvops.ts",

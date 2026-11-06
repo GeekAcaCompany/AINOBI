@@ -7,7 +7,7 @@ import { useStudioText } from './text.ts';
 
 const POLL_MS = 2500;
 const MAX_ATTEMPTS = 2;
-const ENV_LINE = 'LLM_API_KEY=your-key';
+const ENV_LINE = 'OPENAI_API_KEY=your-key';
 
 type Stage =
   | { name: 'describe' }

@@ -287,10 +287,12 @@ async function main() {
   );
   const teachersDir = join(stateDir, 'ai-teachers');
   const generatorPath = pathToFileURL(join(repositoryRoot, 'packages/avatar-generator/dist/index.js')).href;
+  // The settings module alone, so the pipeline loads only when someone generates.
+  const { avatarApiKeyFromEnv } = await import(pathToFileURL(join(repositoryRoot, 'packages/avatar-generator/dist/config.js')).href);
   const teachers = createAiTeacherStore({
     dir: teachersDir,
     orgId: LOCAL_ORG_ID,
-    loadGenerator: generatorFromEnv({ ...process.env, ...userEnv }, () => import(generatorPath)),
+    loadGenerator: generatorFromEnv({ ...process.env, ...userEnv }, () => import(generatorPath), avatarApiKeyFromEnv),
     speech: { voice: findDefaultVoice(voices), style: DEFAULT_TTS_STYLE_KEY, stylePrompt: getStylePrompt(DEFAULT_TTS_STYLE_KEY) },
     log: (line) => console.log(line),
   });

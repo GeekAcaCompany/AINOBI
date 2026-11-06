@@ -145,7 +145,7 @@ The complete system at <http://127.0.0.1:5600>. Move it with `AINOBI_PORT_OFFSET
 
 Everything listens on loopback only. Studio has one user and no sign-in, so do not expose these ports. To run for several people, see the next section.
 
-**AI teachers.** Studio ships with one, always available unless you remove it. Generate more from the courseware list once `LLM_API_KEY` is in `.env.local`; set `LLM_API_BASE`, `AVATAR_IMAGE_MODEL`, and `AVATAR_VISION_MODEL` to use another OpenAI compatible provider. A generation takes a few minutes and bills your key, and quality checks can reject a drawing, in which case the dialog tries once more by itself. Generated teachers live in `.ainobi/ai-teachers`. To bring back a removed built-in teacher, set `builtInRemoved` to `false` in `.ainobi/ai-teachers/teachers.json`.
+**AI teachers.** Studio ships with one, always available unless you remove it. Generate more from the courseware list once `OPENAI_API_KEY` is in `.env.local`. To use another OpenAI compatible provider, set `LLM_API_KEY` and `LLM_API_BASE`, and if needed `AVATAR_IMAGE_MODEL` and `AVATAR_VISION_MODEL`; with `LLM_API_BASE` set, the OpenAI key is not used. A generation takes a few minutes and bills your key, and quality checks can reject a drawing, in which case the dialog tries once more by itself. Generated teachers live in `.ainobi/ai-teachers`. To bring back a removed built-in teacher, set `builtInRemoved` to `false` in `.ainobi/ai-teachers/teachers.json`.
 
 **Narration.** With `GEMINI_API_KEY` (or `GOOGLE_CLOUD_API_KEY`), Add narration in the editor and the agent's `courseware_narration` synthesize speech and store it locally. The voices are the catalog in `apps/studio/server/tts_models.json`.
 

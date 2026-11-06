@@ -169,10 +169,11 @@ export function teacherFilePath(dir, pathname) {
 
 /**
  * The generator, when the settings hold a key. Same settings and defaults as the platform backend. Loaded on first
- * use, since most runs never generate.
+ * use, since most runs never generate. Which key applies is the generator package's rule (avatarApiKeyFromEnv), shared
+ * with the platform backend.
  */
-export function generatorFromEnv(env, importGenerator) {
-  const apiKey = env.LLM_API_KEY?.trim();
+export function generatorFromEnv(env, importGenerator, apiKeyFromEnv) {
+  const apiKey = apiKeyFromEnv(env);
   if (!apiKey) return null;
   const settings = {
     apiKey,
