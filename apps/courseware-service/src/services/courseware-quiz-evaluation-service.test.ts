@@ -6,6 +6,7 @@ import {
   parseClientQuestionSnapshot,
   resolveQuestionForEvaluation,
   resolveQuizConfigForEvaluation,
+  shouldRefreshAttemptSnapshot,
 } from "./courseware-quiz-evaluation-service.ts";
 import type { QuizConfig, QuizFillBlankQuestion, QuizQuestion } from "@ainobi/courseware-core/quiz.ts";
 
@@ -144,4 +145,33 @@ test("resolveQuizConfigForEvaluation rejects client synthesis when disallowed", 
     resolveQuizConfigForEvaluation({}, client, { allowClientSnapshot: false }),
     null,
   );
+});
+
+// The author previews a single choice question, then replaces it with a shadowing question on the same slide.
+const sceneWith = (questionId: string, type: string) => ({
+  quiz: { enabled: true, questions: [{ question_id: questionId, type }] },
+  slide_elements: [{ children_elements: [{ element_type: "quiz", element_id: "el_quiz_wrap", quiz_question_id: questionId }] }],
+});
+const before = sceneWith("qz_q_86dc8368e729", "single_choice");
+const after = sceneWith("qz_q_39afcf65553d", "shadowing");
+const preview = { coursewareSnapshot: before, courseId: null, sectionId: null };
+const graded = { coursewareSnapshot: before, courseId: "course-1", sectionId: "section-1" };
+
+test("a preview attempt takes the latest courseware when the question answered is new", () => {
+  // The preview always sends the question id with a server-scored answer.
+  assert.equal(shouldRefreshAttemptSnapshot(preview, after, { questionId: "qz_q_39afcf65553d", questionWrapperId: "el_quiz_wrap" }), true);
+});
+
+test("an attempt keeps its snapshot while the question is still in it", () => {
+  assert.equal(shouldRefreshAttemptSnapshot(preview, after, { questionId: "qz_q_86dc8368e729", questionWrapperId: "el_quiz_wrap" }), false);
+  // Without a question id, the wrapper still resolves in the frozen snapshot.
+  assert.equal(shouldRefreshAttemptSnapshot(preview, after, { questionWrapperId: "el_quiz_wrap" }), false);
+  // Nothing better to move to: the latest courseware lacks the question too.
+  assert.equal(shouldRefreshAttemptSnapshot(preview, before, { questionId: "qz_q_unknown", questionWrapperId: "el_other" }), false);
+  assert.equal(shouldRefreshAttemptSnapshot(preview, {}, { questionWrapperId: "el_quiz_wrap" }), false);
+});
+
+test("an attempt a section grades keeps its snapshot, unless it had no quiz at all", () => {
+  assert.equal(shouldRefreshAttemptSnapshot(graded, after, { questionId: "qz_q_39afcf65553d", questionWrapperId: "el_quiz_wrap" }), false);
+  assert.equal(shouldRefreshAttemptSnapshot({ ...graded, coursewareSnapshot: {} }, after, { questionId: "qz_q_39afcf65553d", questionWrapperId: "el_quiz_wrap" }), true);
 });

@@ -428,6 +428,42 @@ async function assertAttemptOrgStillAuthoritative(
   assertAttemptOrgMatchesCourseware(attempt, courseware);
 }
 
+/** Whether a scene can answer this request: its quiz has the question, by id or through the wrapper on its slides. */
+function sceneHasQuestion(
+  content: Record<string, unknown>,
+  input: Pick<CoursewareQuizEvaluateInput, "questionId" | "questionWrapperId">,
+): boolean {
+  const quiz = quizConfigFromScene(content);
+  if (!quiz) {
+    return false;
+  }
+  const mapped = collectTopLevelQuizWrappersFromSceneContent(content).get(input.questionWrapperId);
+  return findQuestionByInput(quiz, { questionId: input.questionId || mapped, questionWrapperId: input.questionWrapperId }) !== null;
+}
+
+/**
+ * Whether a reused attempt takes the latest courseware instead of the snapshot frozen when it started: when the frozen
+ * scene had no usable quiz, or, for an attempt no section grades (editor preview, Studio), when the question being
+ * answered is missing from it but present now, because the author replaced or retyped the question while previewing.
+ * An attempt a section grades keeps its snapshot, so its learners are scored against what they started.
+ */
+export function shouldRefreshAttemptSnapshot(
+  attempt: Pick<CoursewareQuizAttemptSession, "coursewareSnapshot" | "courseId" | "sectionId">,
+  latest: Record<string, unknown>,
+  input: Pick<CoursewareQuizEvaluateInput, "questionId" | "questionWrapperId">,
+): boolean {
+  if (!quizConfigFromScene(latest)) {
+    return false;
+  }
+  if (!quizConfigFromScene(attempt.coursewareSnapshot)) {
+    return true;
+  }
+  if (attemptProjectsToSection(attempt)) {
+    return false;
+  }
+  return !sceneHasQuestion(attempt.coursewareSnapshot, input) && sceneHasQuestion(latest, input);
+}
+
 async function patchAttemptSessionIfNeeded(params: {
   attempt: CoursewareQuizAttemptSession;
   courseware: Courseware;
@@ -459,11 +495,12 @@ async function patchAttemptSessionIfNeeded(params: {
     patch.sceneId = params.input.sceneId.trim();
     params.attempt.sceneId = patch.sceneId;
   }
-  // Reused active attempts freeze the snapshot at create time; refresh when the
-  // frozen scene had no usable quiz but the current courseware now does.
-  if (!quizConfigFromScene(params.attempt.coursewareSnapshot)) {
+  // Reused active attempts freeze the snapshot at create time; see shouldRefreshAttemptSnapshot for when it moves on.
+  // The latest courseware is read only when the frozen snapshot cannot answer this request.
+  const frozen = params.attempt.coursewareSnapshot;
+  if (!quizConfigFromScene(frozen) || (!attemptProjectsToSection(params.attempt) && !sceneHasQuestion(frozen, params.input))) {
     const snapshot = await latestCoursewareSnapshot(params.courseware);
-    if (quizConfigFromScene(snapshot.content)) {
+    if (shouldRefreshAttemptSnapshot(params.attempt, snapshot.content, params.input)) {
       patch.coursewareSnapshot = snapshot.content;
       patch.coursewareRevision = snapshot.revision;
       params.attempt.coursewareSnapshot = snapshot.content;
