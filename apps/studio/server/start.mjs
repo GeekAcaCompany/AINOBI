@@ -295,6 +295,8 @@ async function main() {
     dir: teachersDir,
     orgId: LOCAL_ORG_ID,
     loadGenerator: generatorFromEnv({ ...process.env, ...userEnv }, () => import(generatorPath), avatarApiKeyFromEnv),
+    // An agent that can draw generates teachers itself, through the same pipeline, with no key.
+    loadAgentPipeline: () => import(generatorPath),
     speech: { voice: findDefaultVoice(voices), style: DEFAULT_TTS_STYLE_KEY, stylePrompt: getStylePrompt(DEFAULT_TTS_STYLE_KEY) },
     log: (line) => console.log(line),
   });

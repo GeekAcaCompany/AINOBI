@@ -66,7 +66,7 @@ The references were written for a shell. Read them with these substitutions:
 
 ### On a local AINOBI Studio
 
-Studio is the single-machine edition: one organization and no courses. There, `course_*`, `courseware_bind_section`, `courseware_import_to_course`, `courseware_export_from_course`, and `agent_set_name` do nothing useful, so go straight to `courseware_list` / `courseware_create`. `courseware_ui_links` returns only the preview and editor links. Teachers are created on Studio's home page. Narration needs the owner's `GEMINI_API_KEY`; until it is set, narration reports an error, so tell the user and continue with silent slides. Search and pictures are yours to do with your own tools (skills **ainobi-research** and **ainobi-images**); the host versions report an error until the owner configures their keys. Upload media you made with `courseware_asset_upload { local_path }`.
+Studio is the single-machine edition: one organization and no courses. There, `course_*`, `courseware_bind_section`, `courseware_import_to_course`, `courseware_export_from_course`, and `agent_set_name` do nothing useful, so go straight to `courseware_list` / `courseware_create`. `courseware_ui_links` returns only the preview and editor links. A new teacher is made with the **ainobi-ai-teacher** skill (you draw it when you can generate images), or by the user on Studio's home page. Narration needs the owner's `GEMINI_API_KEY`; until it is set, narration reports an error, so tell the user and continue with silent slides. Search and pictures are yours to do with your own tools (skills **ainobi-research** and **ainobi-images**); the host versions report an error until the owner configures their keys. Upload media you made with `courseware_asset_upload { local_path }`.
 
 ## Tool surface
 
@@ -170,7 +170,7 @@ The doc's Claude Code / Codex / ChatGPT steps are examples — adapt them to you
 ```text
 User: "加 AI 老师讲解" (add AI-teacher narration)
 → courseware_ai_teachers (after open)
-→ if empty_catalog: tell user to add AI teachers under Teacher Management > AI Teachers (Chinese UI label “教师管理 > AI 教师”); offer silent slides
+→ if empty_catalog: offer to make one with the ainobi-ai-teacher skill, or tell the user to add AI teachers under Teacher Management > AI Teachers (Chinese UI label “教师管理 > AI 教师”); offer silent slides
 → else: present names (+ Chinese / Japanese / English from language); wait for pick
 → courseware_narration with --teacher-id <id> per narrated slide (TTS-first)
 → courseware_save

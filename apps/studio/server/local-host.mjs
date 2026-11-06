@@ -57,9 +57,11 @@ function answerTeachers({ method, path, body, teachers }) {
   }
   if (!scoped) return null;
   if (method === 'GET' && scoped === '/list') return { status: 200, body: ok(page(teachers.list())) };
-  if (method === 'POST' && scoped === '/generate_avatar_temp') return { status: 202, body: ok(teachers.startGeneration(body?.prompt)) };
+  if (method === 'POST' && scoped === '/generate_avatar_temp') return { status: 202, body: ok(teachers.startGeneration(body?.prompt, body?.drawn_by)) };
   const task = /^\/generate_avatar_temp\/([^/]+)$/.exec(scoped)?.[1];
   if (method === 'GET' && task) return { status: 200, body: ok(teachers.task(task)) };
+  const answered = /^\/generate_avatar_temp\/([^/]+)\/agent_answer$/.exec(scoped)?.[1];
+  if (method === 'POST' && answered) return teachers.answerAgentRequest(answered, body).then((data) => ({ status: 200, body: ok(data) }));
   if (method === 'POST' && scoped === '/create') return { status: 200, body: ok(teachers.create({ name: body?.ai_teacher_name, taskId: body?.task_id })) };
   const remove = /^\/([^/]+)\/remove$/.exec(scoped)?.[1];
   if (method === 'POST' && remove) {
@@ -69,7 +71,10 @@ function answerTeachers({ method, path, body, teachers }) {
   return null;
 }
 
-/** The answer to one API call, or null for a path this host does not know. Needs no server, for tests. */
+/**
+ * The answer to one API call, or null for a path this host does not know. Needs no server, for tests. The agent's
+ * answers to a generation are checked asynchronously, so that one route answers with a promise.
+ */
 export function answer({ method, path, bearer, token, body = undefined, teachers = undefined, voices = undefined, styles = undefined, query = new URLSearchParams() }) {
   if (bearer !== token) return failure(401, 'invalid token');
   const route = `${method} ${path}`;
@@ -97,12 +102,16 @@ export function answer({ method, path, bearer, token, body = undefined, teachers
       return found ? { status: 200, body: ok(found) } : failure(404, 'That voice does not exist.');
     }
   }
-  try {
-    const teacherAnswer = answerTeachers({ method, path, body, teachers });
-    if (teacherAnswer) return teacherAnswer;
-  } catch (error) {
+  const teacherFailure = (error) => {
     if (error instanceof AiTeacherError) return failure(error.status, error.message);
     throw error;
+  };
+  try {
+    const teacherAnswer = answerTeachers({ method, path, body, teachers });
+    if (teacherAnswer instanceof Promise) return teacherAnswer.catch(teacherFailure);
+    if (teacherAnswer) return teacherAnswer;
+  } catch (error) {
+    return teacherFailure(error);
   }
   if (method === 'GET' && /^\/v1\/organization\/[^/]+\/(ai_teacher|course|tts|agent)\/list$/.test(path)) {
     return { status: 200, body: ok(page([])) };
@@ -159,7 +168,7 @@ export function startLocalHost({ port, token, teachers, voices, styles, webOrigi
     const bearer = /^Bearer\s+(.+)$/i.exec(req.headers.authorization ?? '')?.[1];
     try {
       const body = await readJson(req);
-      const result = answer({ method: req.method ?? 'GET', path, bearer, token, body, teachers, voices, styles, query: url.searchParams });
+      const result = await answer({ method: req.method ?? 'GET', path, bearer, token, body, teachers, voices, styles, query: url.searchParams });
       if (result) {
         send(result.status, result.body);
         return;

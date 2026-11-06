@@ -47,16 +47,21 @@ export class AiTeacherError extends Error {
  * @param {string} options.orgId the workspace the teachers belong to
  * @param {(() => Promise<(args: {prompt: string, outputDir: string}) => Promise<{modelPath: string, previewPath: string}>>) | null} options.loadGenerator
  *   null when no image provider is configured
+ * @param {(() => Promise<typeof import('@ainobi/avatar-generator')>) | null} [options.loadAgentPipeline] the generator
+ *   package, for generations an agent draws itself; it needs no key
+ * @param {number} [options.agentIdleMs] how long a generation waits for the agent before it stops
  * @param {{voice?: object, style?: string, stylePrompt?: string | null}} [options.speech] how a teacher speaks
  * @param {(line: string) => void} [options.log]
  */
-export function createAiTeacherStore({ dir, orgId, loadGenerator, speech = {}, log = () => undefined }) {
+export function createAiTeacherStore({ dir, orgId, loadGenerator, loadAgentPipeline = null, agentIdleMs = undefined, speech = {}, log = () => undefined }) {
   mkdirSync(dir, { recursive: true });
   const recordsPath = join(dir, 'teachers.json');
   const read = () => (existsSync(recordsPath) ? JSON.parse(readFileSync(recordsPath, 'utf8')) : { teachers: [], builtInRemoved: false });
   const write = (state) => writeFileSync(recordsPath, `${JSON.stringify(state, null, 2)}\n`);
   /** Running and finished generations; they do not need to outlive a restart. */
   const tasks = new Map();
+  /** For generations the agent draws: the bridge its answers go through, by task id. */
+  const bridges = new Map();
 
   const builtIn = () =>
     teacherRecord({
@@ -74,12 +79,25 @@ export function createAiTeacherStore({ dir, orgId, loadGenerator, speech = {}, l
     return [...(state.builtInRemoved ? [] : [builtIn()]), ...state.teachers];
   };
 
+  /** The same pipeline as a hosted generation, with the agent answering each image and vision call. */
+  const agentGenerate = async (task, prompt, outputDir) => {
+    const pipeline = await loadAgentPipeline();
+    const bridge = new pipeline.AgentModelBridge({ dir: join(outputDir, 'agent'), idleMs: agentIdleMs });
+    bridges.set(task.task_id, { bridge, AgentAnswerError: pipeline.AgentAnswerError });
+    try {
+      return await pipeline.generateAvatarModel({ prompt, outputDir, settings: pipeline.AGENT_PIPELINE_SETTINGS, clients: pipeline.agentPipelineClients(bridge) });
+    } catch (error) {
+      throw bridge.stopReason ? new Error(bridge.stopReason) : error;
+    } finally {
+      bridges.delete(task.task_id);
+    }
+  };
+
   const runTask = async (task, prompt) => {
     task.status = 'processing';
     const outputDir = mkdtempSync(join(dir, 'task-'));
     try {
-      const generate = await loadGenerator();
-      const result = await generate({ prompt, outputDir });
+      const result = task.drawn_by === 'agent' ? await agentGenerate(task, prompt, outputDir) : await (await loadGenerator())({ prompt, outputDir });
       const taskDir = join(dir, 'tasks', task.task_id);
       mkdirSync(taskDir, { recursive: true });
       copyFileSync(result.modelPath, join(taskDir, 'model.inx'));
@@ -100,21 +118,40 @@ export function createAiTeacherStore({ dir, orgId, loadGenerator, speech = {}, l
     list,
     get: (id) => list().find((teacher) => teacher.ai_teacher_id === id) ?? null,
 
-    startGeneration(prompt) {
+    /** drawnBy 'agent': the calling agent draws and checks every image itself, so no provider key is needed. */
+    startGeneration(prompt, drawnBy = 'host') {
       const text = String(prompt ?? '').trim();
       if (text.length < 4) throw new AiTeacherError('Describe the teacher in a few more words.', 422);
       if (text.length > MAX_PROMPT) throw new AiTeacherError(`Keep the description under ${MAX_PROMPT} characters.`, 422);
-      if (!loadGenerator) throw new AiTeacherError('No image provider is configured.', 409);
-      const task = { task_id: randomUUID(), status: 'queued', result: null, error: null, error_code: null };
+      if (drawnBy !== 'host' && drawnBy !== 'agent') throw new AiTeacherError('drawn_by is host or agent.', 422);
+      if (drawnBy === 'agent' && !loadAgentPipeline) throw new AiTeacherError('Generations drawn by the agent are not available here.', 409);
+      if (drawnBy === 'host' && !loadGenerator) {
+        throw new AiTeacherError('No image provider is configured: set OPENAI_API_KEY, or let an agent that can draw generate the teacher.', 409);
+      }
+      const task = { task_id: randomUUID(), status: 'queued', drawn_by: drawnBy, result: null, error: null, error_code: null };
       tasks.set(task.task_id, task);
       void runTask(task, text);
-      return { task_id: task.task_id, status: 'queued' };
+      return { task_id: task.task_id, status: 'queued', drawn_by: drawnBy };
     },
 
+    /** The task, with the request the agent should answer now while one is waiting. */
     task(id) {
       const task = tasks.get(id);
       if (!task) throw new AiTeacherError('That generation is not known here. It may have been lost in a restart.', 404);
-      return task;
+      return { ...task, agent_request: bridges.get(id)?.bridge.pending ?? null };
+    },
+
+    /** The agent's answer to the waiting request: a drawing's image_path, or a verdict's JSON answer. */
+    async answerAgentRequest(id, { request_id: requestId, image_path: imagePath, answer } = {}) {
+      const entry = bridges.get(id);
+      if (!entry?.bridge.pending) throw new AiTeacherError('That generation is not waiting for the agent.', 409);
+      try {
+        await entry.bridge.answer(String(requestId ?? ''), { image_path: imagePath, answer });
+      } catch (error) {
+        if (error instanceof entry.AgentAnswerError) throw new AiTeacherError(error.message, 422);
+        throw error;
+      }
+      return { accepted: true };
     },
 
     create({ name, taskId }) {

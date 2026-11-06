@@ -80,6 +80,7 @@ AINOBI assumes an AI agent is working on it, and that agent can already research
 | [`ainobi-courseware`](skills/ainobi-courseware/SKILL.md) | Plans, builds, and edits courseware: slides, layout, quizzes, motion, and narration | None |
 | [`ainobi-research`](skills/ainobi-research/SKILL.md) | Researches and checks facts with its own web search, and reads your documents | `TAVILY_API_KEY` (search the web) |
 | [`ainobi-images`](skills/ainobi-images/SKILL.md) | Draws illustrations with its own image generation and adds them to slides | `OPENAI_API_KEY` (generate images) |
+| [`ainobi-ai-teacher`](skills/ainobi-ai-teacher/SKILL.md) | Creates a new animated AI teacher: it draws the character and checks every step itself, while Studio cuts, animates, and assembles it | `OPENAI_API_KEY` (generate images) |
 
 The skills follow the [Agent Skills](https://agentskills.io) format. They live in [`skills/`](skills/), and Claude Code finds them through `.claude/skills/`, Codex and other agents through `.agents/skills/`.
 

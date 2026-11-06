@@ -9,6 +9,7 @@ A coding agent can author courseware directly on a running Studio: what it makes
 | `ainobi-courseware` | Planning, building, and editing courseware, including quizzes, motion, and narration |
 | `ainobi-research` | Facts: the agent's own web search first, the host's (`TAVILY_API_KEY`) only without one |
 | `ainobi-images` | Pictures: the agent's own image generation first, the host's (`OPENAI_API_KEY`) only without one |
+| `ainobi-ai-teacher` | New AI teachers: an agent that can generate images draws and checks each step itself, with no key; otherwise the host draws (`OPENAI_API_KEY`) |
 
 The skills live in `skills/` in the [Agent Skills](https://agentskills.io) format. Claude Code finds them through `.claude/skills/`, and Codex and other agents through `.agents/skills/`.
 
@@ -60,6 +61,7 @@ Studio is then at <http://127.0.0.1:5700> and MCP at <http://127.0.0.1:5733/mcp>
 | `courseware_ui_links` | Get links to open the editor and preview |
 | `courseware_asset_upload`, `courseware_asset_list`, `courseware_doc_read` | Work with images and documents. On Studio, `courseware_asset_upload` takes `local_path`, so an image the agent generated is uploaded straight from its file |
 | `courseware_ai_teachers` | List AI teachers |
+| `ai_teacher_generate`, `ai_teacher_answer`, `ai_teacher_status`, `ai_teacher_save` | Create a new AI teacher. With `drawn_by: "agent"` (Studio only) the host hands the agent each drawing and each check in turn, as files, and runs the same quality gates as with a hosted model |
 | `courseware_narration`, `courseware_tts_list` | Narration, once `GEMINI_API_KEY` is set |
 | `courseware_image_generate`, `courseware_search` | Fallbacks for agents that cannot generate images or search the web, once `OPENAI_API_KEY` or `TAVILY_API_KEY` is set |
 

@@ -35,6 +35,7 @@ import {
   coursewareWorkspaceWriteTool,
   isCodexMcpToolFailure,
 } from './codex-mcp-tools.ts';
+import { aiTeacherAnswerTool, aiTeacherGenerateTool, aiTeacherSaveTool, aiTeacherStatusTool } from './codex-mcp-teacher-tools.ts';
 
 function jsonResult(payload: unknown) {
   const text = typeof payload === 'string' ? payload : JSON.stringify(payload, null, 2);
@@ -360,6 +361,56 @@ export function createCodexMcpServer(userSession: AinobiAuthorizedSession): McpS
       },
     },
     async (args) => jsonResult(await coursewareAiTeachersTool(userSession, args)),
+  );
+
+  server.registerTool(
+    'ai_teacher_generate',
+    {
+      title: 'Generate an AI teacher',
+      description:
+        'Start generating a new AI teacher (an animated character) from a description. drawn_by "agent" when you can generate images yourself: you draw and check every image, no key needed (local Studio only). drawn_by "host" otherwise: the host draws, which needs its image provider. Returns the first request for you to answer, or progress. Follow the ainobi-ai-teacher skill.',
+      inputSchema: {
+        prompt: z.string().min(4).describe('What the teacher looks like: age, hair, clothes, manner'),
+        drawn_by: z.enum(['agent', 'host']).describe('"agent" if you can generate images yourself, else "host"'),
+      },
+    },
+    async (args) => jsonResult(await aiTeacherGenerateTool(userSession, args)),
+  );
+
+  server.registerTool(
+    'ai_teacher_answer',
+    {
+      title: 'Answer an AI teacher request',
+      description:
+        'Answer the agent_request of a generation you draw yourself: for kind "draw", image_path of the 1024×1024 PNG you saved; for kind "look", answer with the JSON verdict. Returns the next request, or the result.',
+      inputSchema: {
+        task_id: z.string().min(1),
+        request_id: z.string().min(1),
+        image_path: z.string().optional().describe('Absolute path of the PNG you drew (kind "draw")'),
+        answer: z.string().optional().describe('The JSON object the instructions ask for (kind "look")'),
+      },
+    },
+    async (args) => jsonResult(await aiTeacherAnswerTool(userSession, args)),
+  );
+
+  server.registerTool(
+    'ai_teacher_status',
+    {
+      title: 'AI teacher generation status',
+      description: 'Wait for a generation to need you or to finish, and return its request or result.',
+      inputSchema: { task_id: z.string().min(1) },
+    },
+    async (args) => jsonResult(await aiTeacherStatusTool(userSession, args)),
+  );
+
+  server.registerTool(
+    'ai_teacher_save',
+    {
+      title: 'Save a generated AI teacher',
+      description: 'Save a generation that succeeded as a teacher, under the name the user chose.',
+      inputSchema: { task_id: z.string().min(1), name: z.string().min(1).max(60) },
+    },
+    async (args) => jsonResult(await aiTeacherSaveTool(userSession, args)),
   );
 
   server.registerTool(

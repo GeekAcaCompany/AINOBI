@@ -155,4 +155,47 @@ describe('local host teacher routes', () => {
     expect(response.status).toBe(202);
     expect(response.body).toMatchObject({ data: { status: 'queued' } });
   });
+
+  it('lets an agent that can draw generate with no key, answering each request itself', async () => {
+    const dir = tempDir();
+    const teachers = createAiTeacherStore({
+      dir,
+      orgId: LOCAL_ORG_ID,
+      loadGenerator: null,
+      loadAgentPipeline: () => import('../../../packages/avatar-generator/src/index.ts') as never,
+    });
+    const started = call(teachers, 'POST', `${base}/generate_avatar_temp`, { prompt: 'A warm science teacher', drawn_by: 'agent' })!;
+    expect(started.status).toBe(202);
+    const id = started.body.data.task_id;
+    const request = async () => {
+      await vi.waitFor(() => expect(call(teachers, 'GET', `${base}/generate_avatar_temp/${id}`)!.body.data.agent_request).toBeTruthy());
+      return call(teachers, 'GET', `${base}/generate_avatar_temp/${id}`)!.body.data.agent_request;
+    };
+
+    const draw = await request();
+    expect(draw).toMatchObject({ kind: 'draw', input_images: [] });
+    expect(draw.instructions).toContain('A warm science teacher');
+    const wrong = await call(teachers, 'POST', `${base}/generate_avatar_temp/${id}/agent_answer`, { request_id: draw.request_id, image_path: join(dir, 'missing.png') });
+    expect(wrong!.status).toBe(422);
+
+    const { makeGreenAvatarPair } = await import('../../../packages/avatar-generator/src/test_fixtures.ts');
+    const { encodePng } = await import('../../../packages/avatar-generator/src/png.ts');
+    const drawing = join(dir, 'base.png');
+    writeFileSync(drawing, encodePng(makeGreenAvatarPair().base));
+    const accepted = await call(teachers, 'POST', `${base}/generate_avatar_temp/${id}/agent_answer`, { request_id: draw.request_id, image_path: drawing });
+    expect(accepted!.status).toBe(200);
+
+    const look = await request();
+    expect(look).toMatchObject({ kind: 'look' });
+    expect(look.input_images).toHaveLength(1);
+    expect(existsSync(look.input_images[0])).toBe(true);
+  });
+
+  it('refuses an agent answer when nothing is waiting, and an unknown way of drawing', async () => {
+    const teachers = store();
+    const { task_id } = teachers.startGeneration('A warm science teacher');
+    expect((await call(teachers, 'POST', `${base}/generate_avatar_temp/${task_id}/agent_answer`, { request_id: 'x', answer: '{}' }))!.status).toBe(409);
+    expect(call(teachers, 'POST', `${base}/generate_avatar_temp`, { prompt: 'A warm teacher', drawn_by: 'robot' })!.status).toBe(422);
+    expect(call(store(), 'POST', `${base}/generate_avatar_temp`, { prompt: 'A warm teacher', drawn_by: 'agent' })!.status).toBe(409);
+  });
 });
