@@ -43,6 +43,20 @@ export function studioPorts(env = process.env) {
   };
 }
 
+/** A service account key path written relative to the repository, made absolute for the service and its children. */
+export function googleCredentialsEnv(settings, root = repositoryRoot) {
+  const path = settings.GOOGLE_APPLICATION_CREDENTIALS?.trim();
+  return path ? { GOOGLE_APPLICATION_CREDENTIALS: resolvePath(root, path) } : {};
+}
+
+/** Whether narration and AI scoring have their Google Cloud service account: inline, or a key file that exists. */
+export function googleCredentialsStatus(settings, root = repositoryRoot) {
+  if (settings.GOOGLE_APPLICATION_CREDENTIALS_JSON?.trim()) return 'on';
+  const path = googleCredentialsEnv(settings, root).GOOGLE_APPLICATION_CREDENTIALS;
+  if (!path) return 'missing';
+  return existsSync(path) ? 'on' : 'no-file';
+}
+
 /** The courseware service's environment. Connection settings always win over the user's file. */
 export function coursewareEnv({ ports, token, internalToken, storageEndpoint, userEnv, baseEnv, videoRenderUrl }) {
   const web = `http://127.0.0.1:${ports.web}`;
@@ -50,10 +64,10 @@ export function coursewareEnv({ ports, token, internalToken, storageEndpoint, us
     AINOBI_CREDITS_DISABLED: 'true',
     AINOBI_ORG_STORAGE_DISABLED: 'true',
     AINOBI_ORG_STORAGE_QUOTA_CHECK: 'false',
-    // Scoring runs on Gemini, as it does on the platform; GEMINI_API_KEY or GOOGLE_CLOUD_API_KEY turns it on.
-    COURSEWARE_QUIZ_TEXT_SCORING_PROVIDER: 'gemini_api',
+    // Scoring runs on Gemini through Google Cloud Vertex AI, as it does on the platform; GOOGLE_CLOUD_API_KEY turns it on.
+    COURSEWARE_QUIZ_TEXT_SCORING_PROVIDER: 'vertexai',
     COURSEWARE_QUIZ_TEXT_SCORING_MODEL: 'gemini-3.6-flash',
-    COURSEWARE_QUIZ_AUDIO_SCORING_PROVIDER: 'gemini_api',
+    COURSEWARE_QUIZ_AUDIO_SCORING_PROVIDER: 'vertexai',
     COURSEWARE_QUIZ_AUDIO_SCORING_MODEL: 'gemini-3.5-flash',
     CORS_ALLOW_ORIGIN: web,
     STORAGE_BACKEND: 'oci_s3',
@@ -70,6 +84,7 @@ export function coursewareEnv({ ports, token, internalToken, storageEndpoint, us
     AINOBI_MCP_LOCAL_FILES: 'true',
     ...baseEnv,
     ...userEnv,
+    ...googleCredentialsEnv({ ...baseEnv, ...userEnv }),
     DB_TYPE: 'postgres',
     DB_HOST: '127.0.0.1',
     DB_PORT: String(ports.pg),
@@ -363,17 +378,19 @@ async function main() {
   editorAssistant = await readEditorAssistant(`http://127.0.0.1:${ports.courseware}`);
   console.log(`\n  AINOBI Studio   http://127.0.0.1:${ports.web}`);
   console.log(`  Agent (MCP)     http://127.0.0.1:${ports.courseware}/mcp   configured in .mcp.json`);
-  const settings = { ...process.env, ...userEnv };
-  const gemini = Boolean(settings.GEMINI_API_KEY?.trim() || settings.GOOGLE_CLOUD_API_KEY?.trim());
-  console.log(`  Narration       ${gemini ? 'on, with AI scoring' : 'NOT CONFIGURED: GEMINI_API_KEY is required, see below'}`);
+  const google = googleCredentialsStatus({ ...process.env, ...userEnv });
+  console.log(`  Narration       ${google === 'on' ? 'on, with AI scoring' : 'NOT CONFIGURED: a Google Cloud service account is required, see below'}`);
   console.log(`  Editor AI       ${editorAssistant ? 'on' : 'off (set ANTHROPIC_API_KEY and ANTHROPIC_BASE_URL in .env.local)'}`);
   console.log(`  Video export    ${videoRender ? videoRenderUrl : 'off (optional, see docs/video-export.md)'}\n`);
-  if (!gemini) {
+  if (google !== 'on') {
     console.warn(
       [
-        '  !! GEMINI_API_KEY is required and not set.',
+        google === 'no-file'
+          ? '  !! GOOGLE_APPLICATION_CREDENTIALS points at a file that does not exist.'
+          : '  !! GOOGLE_APPLICATION_CREDENTIALS, a Google Cloud service account key file, is required and not set.',
         '  !! Without it, narration and AI scoring of essays and recordings fail when used.',
-        '  !! Add GEMINI_API_KEY=your-key to .env.local in this folder, then restart.\n',
+        '  !! Add GOOGLE_APPLICATION_CREDENTIALS=path/to/key.json to .env.local in this folder, then restart.',
+        '  !! The account needs the Vertex AI User role. See docs/google-cloud.md.\n',
       ].join('\n'),
     );
   }

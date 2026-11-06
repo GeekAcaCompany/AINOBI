@@ -11,9 +11,11 @@ import { synthesizeMiniMaxSpeech } from "@ainobi/tts-minimax";
 import { readMp3DurationMs } from "./mp3-duration.ts";
 import {
   DEFAULT_GOOGLE_TTS_MODEL,
+  createGoogleAccessToken,
   encodePcmToMp3Async,
-  resolveGoogleTtsApiBase,
-  resolveGoogleTtsApiKey,
+  hasGoogleCredentials,
+  readGoogleServiceAccount,
+  resolveGoogleTtsTarget,
   synthesizeGoogleSpeech,
 } from "./google-tts.ts";
 import { coursewareAssetBaseUrl } from "./url-policy.ts";
@@ -243,16 +245,33 @@ const synthesizeFishAudioAudio = async (
 // The outer withTtsRetry retries the whole line as well, so a single segment gets only one extra attempt, to avoid multiplying requests during a persistent outage.
 const GOOGLE_TTS_CHUNK_ATTEMPTS = 2;
 
+/** One token source per credential, so every narration line reuses the cached access token. */
+let googleToken: { key: string; get: () => Promise<string> } | null = null;
+const googleAccessToken = (credentials: Parameters<typeof createGoogleAccessToken>[0]): (() => Promise<string>) => {
+  const key = JSON.stringify(credentials);
+  if (googleToken?.key !== key) googleToken = { key, get: createGoogleAccessToken(credentials) };
+  return googleToken.get;
+};
+
 const synthesizeGoogleAudio = async (
   text: string,
   settings: AITeacherTtsSettings,
 ): Promise<{ audio: Buffer; duration_ms: number; extension: string }> => {
-  const apiKey = resolveGoogleTtsApiKey();
-  if (!apiKey) {
+  const target = resolveGoogleTtsTarget();
+  if (!hasGoogleCredentials(target.credentials)) {
     throw new AinobiCliError(
       "USAGE",
-      "TTS API credentials are required for narration insert (configure GEMINI_API_KEY or GEMINI_TTS_API_KEY on the AINOBI host).",
+      "TTS API credentials are required for narration insert (configure GOOGLE_APPLICATION_CREDENTIALS, a Google Cloud service account key file, on the AINOBI host).",
     );
+  }
+  let project = target.project;
+  try {
+    project ??= (await readGoogleServiceAccount(target.credentials))?.project_id?.trim() || null;
+  } catch (error) {
+    throw new AinobiCliError("USAGE", `The Google Cloud service account key could not be read: ${error instanceof Error ? error.message : error}`);
+  }
+  if (!project) {
+    throw new AinobiCliError("USAGE", "A Google Cloud project is required for narration insert (configure GOOGLE_CLOUD_PROJECT on the AINOBI host).");
   }
 
   // Gemini returns WAV only; MP3 is the only format the courseware stores.
@@ -263,8 +282,10 @@ const synthesizeGoogleAudio = async (
   let synthesized: Awaited<ReturnType<typeof synthesizeGoogleSpeech>>;
   try {
     synthesized = await synthesizeGoogleSpeech({
-      apiKey,
-      apiBase: resolveGoogleTtsApiBase(),
+      accessToken: googleAccessToken(target.credentials),
+      project,
+      location: target.location,
+      apiBase: target.apiBase,
       model: settings.model?.trim() || DEFAULT_GOOGLE_TTS_MODEL,
       text,
       voiceId: settings.voice_id,

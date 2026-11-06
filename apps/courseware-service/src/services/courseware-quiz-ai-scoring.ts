@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-import { createSign } from "node:crypto";
-import { readFile } from "node:fs/promises";
-
+import { createGoogleAccessToken, hasGoogleCredentials, readGoogleServiceAccount } from "@ainobi/tts-google";
 import OpenAI, { toFile } from "openai";
 
 import type { AinobiAuthorizedSession } from "../auth/ainobi-user-session.ts";
@@ -60,7 +58,7 @@ class QuizScoringInvalidJsonError extends Error {
   }
 }
 
-type ScoringProvider = "vertexai" | "gemini_api" | "openai";
+type ScoringProvider = "vertexai" | "openai";
 type ScoringModality = "text" | "audio";
 
 type QuizAiScoringArgs = {
@@ -102,7 +100,12 @@ type ScoringRunResult = {
 function normalizeProvider(value: string | undefined, fallback: ScoringProvider): ScoringProvider {
   const provider = (value?.trim() || fallback).toLowerCase();
   if (provider === "openai") return "openai";
-  if (provider === "gemini_api" || provider === "gemini" || provider === "google_gemini") return "gemini_api";
+  // Gemini runs on Google Cloud (Vertex AI) only; a setting left from the Gemini Developer API must not silently change route.
+  if (provider === "gemini_api" || provider === "gemini" || provider === "google_gemini") {
+    throw new Error(
+      `AI scoring no longer uses the Gemini Developer API (provider "${provider}"): set the scoring provider to vertexai and Google Cloud credentials.`,
+    );
+  }
   return "vertexai";
 }
 
@@ -117,21 +120,19 @@ function scoringProvider(modality: ScoringModality): ScoringProvider {
   );
 }
 
-function geminiApiKey(modality: ScoringModality): string {
-  const key =
+/** A Vertex AI API key (express mode: no project, no service account), or undefined to use a service account. */
+function vertexApiKey(modality: ScoringModality): string | undefined {
+  return (
     (modality === "audio"
       ? process.env.COURSEWARE_QUIZ_AUDIO_SCORING_API_KEY?.trim()
       : process.env.COURSEWARE_QUIZ_TEXT_SCORING_API_KEY?.trim()) ||
     process.env.COURSEWARE_QUIZ_SCORING_API_KEY?.trim() ||
     process.env.GOOGLE_CLOUD_API_KEY?.trim() ||
-    process.env.GEMINI_API_KEY?.trim();
-  if (!key) {
-    throw new Error(
-      "AI scoring is not configured: set GEMINI_API_KEY or GOOGLE_CLOUD_API_KEY.",
-    );
-  }
-  return key;
+    undefined
+  );
 }
+
+const hasVertexServiceAccount = (): boolean => hasGoogleCredentials(vertexCredentials());
 
 function openAiScoringApiKey(modality: ScoringModality): string {
   const modalitySpecific =
@@ -673,14 +674,15 @@ async function transcribe(locator: string): Promise<string> {
   return String(response.text ?? "").trim();
 }
 
-function geminiApiBaseUrl(modality: ScoringModality): string {
+/** Vertex AI express mode (an API key): the same address and path form as @ainobi/llm-vertexai, or a relay in front of it. */
+function vertexExpressBaseUrl(modality: ScoringModality): string {
   return (
     (modality === "audio"
       ? process.env.COURSEWARE_QUIZ_AUDIO_SCORING_BASE_URL?.trim()
       : process.env.COURSEWARE_QUIZ_TEXT_SCORING_BASE_URL?.trim()) ||
     process.env.COURSEWARE_QUIZ_SCORING_BASE_URL?.trim() ||
-    "https://generativelanguage.googleapis.com/v1beta"
-  ).replace(/\/$/, "");
+    `${(process.env.VERTEXAI_BASE_URL?.trim() || "https://aiplatform.googleapis.com").replace(/\/+$/, "")}/v1beta1`
+  ).replace(/\/+$/, "");
 }
 
 function vertexLocation(): string {
@@ -692,14 +694,27 @@ function vertexLocation(): string {
   );
 }
 
-function vertexProjectId(): string {
+/** The service account behind Vertex AI calls; the same credential Gemini TTS uses. */
+const vertexCredentials = () => ({
+  accessToken:
+    process.env.COURSEWARE_QUIZ_VERTEXAI_ACCESS_TOKEN?.trim() ||
+    process.env.VERTEXAI_ACCESS_TOKEN?.trim() ||
+    process.env.GOOGLE_OAUTH_ACCESS_TOKEN?.trim() ||
+    null,
+  credentialsJson: process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON?.trim() || null,
+  credentialsPath: process.env.GOOGLE_APPLICATION_CREDENTIALS?.trim() || null,
+});
+
+/** The configured project, else the one the service account belongs to. */
+async function vertexProjectId(): Promise<string> {
   const projectId =
     process.env.COURSEWARE_QUIZ_VERTEXAI_PROJECT_ID?.trim() ||
     process.env.VERTEXAI_PROJECT_ID?.trim() ||
     process.env.GOOGLE_CLOUD_PROJECT?.trim() ||
-    process.env.GCLOUD_PROJECT?.trim();
+    process.env.GCLOUD_PROJECT?.trim() ||
+    (await readGoogleServiceAccount(vertexCredentials()))?.project_id?.trim();
   if (!projectId) {
-    throw new Error("Vertex AI project id is not configured");
+    throw new Error("Vertex AI project id is not configured: set GOOGLE_CLOUD_PROJECT");
   }
   return projectId;
 }
@@ -715,74 +730,14 @@ function vertexBaseUrl(modality: ScoringModality): string {
   ).replace(/\/$/, "");
 }
 
-type ServiceAccountJson = {
-  client_email: string;
-  private_key: string;
-  token_uri?: string;
-};
+let vertexToken: { key: string; get: () => Promise<string> } | null = null;
 
-let vertexTokenCache: { token: string; expiresAt: number } | null = null;
-
-function base64Url(input: Buffer | string): string {
-  return Buffer.from(input).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
-}
-
-async function serviceAccountJson(): Promise<ServiceAccountJson> {
-  const inline = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON?.trim();
-  if (inline) {
-    return JSON.parse(inline) as ServiceAccountJson;
-  }
-  const path = process.env.GOOGLE_APPLICATION_CREDENTIALS?.trim();
-  if (!path) {
-    throw new Error("Vertex AI requires GOOGLE_APPLICATION_CREDENTIALS_JSON, GOOGLE_APPLICATION_CREDENTIALS, or an access token");
-  }
-  return JSON.parse(await readFile(path, "utf8")) as ServiceAccountJson;
-}
-
-async function vertexAccessToken(): Promise<string> {
-  const direct =
-    process.env.COURSEWARE_QUIZ_VERTEXAI_ACCESS_TOKEN?.trim() ||
-    process.env.VERTEXAI_ACCESS_TOKEN?.trim() ||
-    process.env.GOOGLE_OAUTH_ACCESS_TOKEN?.trim();
-  if (direct) {
-    return direct;
-  }
-  if (vertexTokenCache && vertexTokenCache.expiresAt - Date.now() > 60_000) {
-    return vertexTokenCache.token;
-  }
-
-  const account = await serviceAccountJson();
-  const now = Math.floor(Date.now() / 1000);
-  const header = base64Url(JSON.stringify({ alg: "RS256", typ: "JWT" }));
-  const claim = base64Url(JSON.stringify({
-    iss: account.client_email,
-    scope: "https://www.googleapis.com/auth/cloud-platform",
-    aud: account.token_uri || "https://oauth2.googleapis.com/token",
-    iat: now,
-    exp: now + 3600,
-  }));
-  const unsigned = `${header}.${claim}`;
-  const signer = createSign("RSA-SHA256");
-  signer.update(unsigned);
-  signer.end();
-  const assertion = `${unsigned}.${base64Url(signer.sign(account.private_key))}`;
-  const response = await fetch(account.token_uri || "https://oauth2.googleapis.com/token", {
-    method: "POST",
-    headers: { "content-type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
-      assertion,
-    }),
-  });
-  const payload = await response.json().catch(() => null) as { access_token?: string; expires_in?: number; error?: string } | null;
-  if (!response.ok || !payload?.access_token) {
-    throw new Error(payload?.error || `Vertex AI token exchange failed (${response.status})`);
-  }
-  vertexTokenCache = {
-    token: payload.access_token,
-    expiresAt: Date.now() + Math.max(60, payload.expires_in ?? 3600) * 1000,
-  };
-  return payload.access_token;
+/** A Vertex AI access token, minted once per credential and cached by the shared helper. */
+function vertexAccessToken(): Promise<string> {
+  const credentials = vertexCredentials();
+  const key = JSON.stringify(credentials);
+  if (vertexToken?.key !== key) vertexToken = { key, get: createGoogleAccessToken(credentials) };
+  return vertexToken.get();
 }
 
 function extractGeminiText(payload: Record<string, unknown>): string {
@@ -869,73 +824,6 @@ function geminiUsage(payload: Record<string, unknown>, fallbackPrompt: string, f
   };
 }
 
-async function runGeminiJsonScoring(args: {
-  modality: ScoringModality;
-  systemPrompt: string;
-  userMessage: string;
-  max: number;
-  audioParts?: { bytes: Buffer; mime: string }[];
-}): Promise<ScoringRunResult> {
-  const model = scoringModel(args.modality);
-  const parts: Record<string, unknown>[] = [{ text: args.userMessage }];
-  for (const audio of args.audioParts ?? []) {
-    parts.push({
-      inlineData: {
-        mimeType: audio.mime,
-        data: audio.bytes.toString("base64"),
-      },
-    });
-  }
-  const response = await fetch(
-    `${geminiApiBaseUrl(args.modality)}/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(geminiApiKey(args.modality))}`,
-    {
-      method: "POST",
-      headers: { "content-type": "application/json", accept: "application/json" },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: args.systemPrompt }] },
-        contents: [{ role: "user", parts }],
-        generationConfig: geminiScoringGenerationConfig(model),
-        safetySettings: [
-          { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "OFF" },
-          { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "OFF" },
-          { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "OFF" },
-          { category: "HARM_CATEGORY_HARASSMENT", threshold: "OFF" },
-        ],
-      }),
-    },
-  );
-  const payload = await response.json().catch(() => null) as Record<string, unknown> | null;
-  if (!response.ok || !payload) {
-    const message = payload && typeof payload.error === "object"
-      ? JSON.stringify(payload.error)
-      : `Gemini scoring failed (${response.status})`;
-    throw new Error(message);
-  }
-  const content = extractGeminiText(payload);
-  let parsed: ParsedScore;
-  try {
-    parsed = parseScoreJson(content || "{}", args.max);
-  } catch (error) {
-    logScoringParseFailure(
-      {
-        provider: "gemini_api",
-        modality: args.modality,
-        model,
-        audioPartCount: args.audioParts?.length ?? 0,
-        extractedTextLength: content.length,
-        extractedTextPreview: content.slice(0, 500),
-        gemini: summarizeGeminiPayloadForLog(payload),
-      },
-      error,
-    );
-    throw error;
-  }
-  return {
-    parsed,
-    usage: geminiUsage(payload, `${args.systemPrompt}\n${args.userMessage}`, content),
-  };
-}
-
 async function runVertexJsonScoring(args: {
   modality: ScoringModality;
   systemPrompt: string;
@@ -953,22 +841,34 @@ async function runVertexJsonScoring(args: {
       },
     });
   }
-  const response = await fetch(
-    `${vertexBaseUrl(args.modality)}/projects/${encodeURIComponent(vertexProjectId())}/locations/${encodeURIComponent(vertexLocation())}/publishers/google/models/${encodeURIComponent(model)}:generateContent`,
-    {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${await vertexAccessToken()}`,
-        "content-type": "application/json",
-        accept: "application/json",
-      },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: args.systemPrompt }] },
-        contents: [{ role: "user", parts }],
-        generationConfig: geminiScoringGenerationConfig(model),
-      }),
+  // An API key (express mode) needs no project; without one, a service account and project id are used.
+  const apiKey = vertexApiKey(args.modality);
+  if (!apiKey && !hasVertexServiceAccount()) {
+    throw new Error("AI scoring is not configured: set GOOGLE_APPLICATION_CREDENTIALS (a Google Cloud service account key file) or GOOGLE_CLOUD_API_KEY.");
+  }
+  const url = apiKey
+    ? `${vertexExpressBaseUrl(args.modality)}/publishers/google/models/${encodeURIComponent(model)}:generateContent`
+    : `${vertexBaseUrl(args.modality)}/projects/${encodeURIComponent(await vertexProjectId())}/locations/${encodeURIComponent(vertexLocation())}/publishers/google/models/${encodeURIComponent(model)}:generateContent`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      ...(apiKey ? { "x-goog-api-key": apiKey } : { authorization: `Bearer ${await vertexAccessToken()}` }),
+      "content-type": "application/json",
+      accept: "application/json",
     },
-  );
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: args.systemPrompt }] },
+      contents: [{ role: "user", parts }],
+      generationConfig: geminiScoringGenerationConfig(model),
+      // Learners' essays and recordings are graded, not answered: the default filters must not block them.
+      safetySettings: [
+        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "OFF" },
+        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "OFF" },
+        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "OFF" },
+        { category: "HARM_CATEGORY_HARASSMENT", threshold: "OFF" },
+      ],
+    }),
+  });
   const payload = await response.json().catch(() => null) as Record<string, unknown> | null;
   if (!response.ok || !payload) {
     const message = payload && typeof payload.error === "object"
@@ -1132,9 +1032,7 @@ export async function scoreCoursewareQuizAnswerWithAi(
   const { parsed, usage } = await runScoringWithJsonRetries(scoringLabel, () =>
     provider === "openai"
       ? runOpenAiJsonScoring(modality, `${systemPrompt}\n\n${userMessage}`, max)
-      : provider === "gemini_api"
-        ? runGeminiJsonScoring({ modality, systemPrompt, userMessage, max, audioParts })
-        : runVertexJsonScoring({ modality, systemPrompt, userMessage, max, audioParts }),
+      : runVertexJsonScoring({ modality, systemPrompt, userMessage, max, audioParts }),
   );
   const score = clampScore(parsed.score, max);
   const billingTransactionId = await consumeScoringCredits({

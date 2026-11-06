@@ -1,5 +1,5 @@
 {
-  "sourceCommit": "1173dd0be40c144181e1c78da88331d9104325ac",
+  "sourceCommit": "27fba3fa5e1e1fc4f04af912844d926d9b495935",
   "files": [
     "apps/courseware-service/.dockerignore",
     "apps/courseware-service/.env.example",
@@ -1333,6 +1333,8 @@
     "packages/tts-fishaudio/tsconfig.json",
     "packages/tts-google/README.md",
     "packages/tts-google/package.json",
+    "packages/tts-google/src/google-auth.test.ts",
+    "packages/tts-google/src/google-auth.ts",
     "packages/tts-google/src/index.ts",
     "packages/tts-google/src/provider.test.ts",
     "packages/tts-google/src/provider.ts",

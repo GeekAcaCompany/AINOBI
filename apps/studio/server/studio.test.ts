@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-import { join, sep } from 'node:path';
+import { join, resolve, sep } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { answer, isLoopbackHost, LOCAL_ORG_ID } from './local-host.mjs';
-import { coursewareEnv, embedOrigins, frameAncestors, mcpConfig, resolveStatic, studioPorts } from './start.mjs';
+import { coursewareEnv, embedOrigins, frameAncestors, googleCredentialsEnv, googleCredentialsStatus, mcpConfig, resolveStatic, studioPorts } from './start.mjs';
 import { findDefaultVoice, loadVoices, voicePage } from './voices.mjs';
 
 describe('local host', () => {
@@ -61,10 +61,23 @@ describe('coursewareEnv', () => {
   it('keeps billing off and lets the user file add provider keys', () => {
     const result = env({ ANTHROPIC_API_KEY: 'k' });
     expect(result.AINOBI_CREDITS_DISABLED).toBe('true');
-    expect(result.COURSEWARE_QUIZ_TEXT_SCORING_PROVIDER).toBe('gemini_api');
-    expect(result.COURSEWARE_QUIZ_AUDIO_SCORING_PROVIDER).toBe('gemini_api');
+    expect(result.COURSEWARE_QUIZ_TEXT_SCORING_PROVIDER).toBe('vertexai');
+    expect(result.COURSEWARE_QUIZ_AUDIO_SCORING_PROVIDER).toBe('vertexai');
     expect(result.ANTHROPIC_API_KEY).toBe('k');
     expect(result.AINOBI_DB_JOIN_NESTED_TRANSACTIONS).toBe('true');
+  });
+
+  it('makes a service account key path absolute, and tells a missing key from a missing file', () => {
+    const root = join(sep, 'repo');
+    expect(googleCredentialsEnv({ GOOGLE_APPLICATION_CREDENTIALS: '.ainobi/gcp-key.json' }, root)).toEqual({
+      GOOGLE_APPLICATION_CREDENTIALS: resolve(root, '.ainobi', 'gcp-key.json'),
+    });
+    expect(googleCredentialsEnv({}, root)).toEqual({});
+    expect(googleCredentialsStatus({}, root)).toBe('missing');
+    expect(googleCredentialsStatus({ GOOGLE_APPLICATION_CREDENTIALS: 'nope.json' }, root)).toBe('no-file');
+    expect(googleCredentialsStatus({ GOOGLE_APPLICATION_CREDENTIALS_JSON: '{}' }, root)).toBe('on');
+    expect(googleCredentialsStatus({ GOOGLE_APPLICATION_CREDENTIALS: __filename }, root)).toBe('on');
+    expect(env({ GOOGLE_APPLICATION_CREDENTIALS: 'key.json' }).GOOGLE_APPLICATION_CREDENTIALS).toMatch(/[\\/]key\.json$/);
   });
 });
 

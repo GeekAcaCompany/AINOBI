@@ -147,9 +147,9 @@ Everything listens on loopback only. Studio has one user and no sign-in, so do n
 
 **AI teachers.** Studio ships with one, always available unless you remove it. An agent that can generate images makes more with no key, through the `ainobi-ai-teacher` skill. People generate them from the courseware list once `OPENAI_API_KEY` is in `.env.local`. To use another OpenAI compatible provider, set `LLM_API_KEY` and `LLM_API_BASE`, and if needed `AVATAR_IMAGE_MODEL` and `AVATAR_VISION_MODEL`; with `LLM_API_BASE` set, the OpenAI key is not used. A generation takes a few minutes and bills your key, and quality checks can reject a drawing, in which case the dialog tries once more by itself. Generated teachers live in `.ainobi/ai-teachers`. To bring back a removed built-in teacher, set `builtInRemoved` to `false` in `.ainobi/ai-teachers/teachers.json`.
 
-**Narration.** With `GEMINI_API_KEY` (or `GOOGLE_CLOUD_API_KEY`), Add narration in the editor and the agent's `courseware_narration` synthesize speech and store it locally. The voices are the catalog in `apps/studio/server/tts_models.json`.
+**Narration.** With a Google Cloud service account in `GOOGLE_APPLICATION_CREDENTIALS` ([docs/google-cloud.md](google-cloud.md)), Add narration in the editor and the agent's `courseware_narration` synthesize speech and store it locally. The voices are the catalog in `apps/studio/server/tts_models.json`.
 
-**Quiz scoring.** Choice and exact fill-in questions need nothing. Essay, shadowing, and speech questions are scored by Gemini, and need `GEMINI_API_KEY` (or `GOOGLE_CLOUD_API_KEY`) in `.env.local`; without it, submitting one reports that scoring is not configured, so set the key before giving learners those questions.
+**Quiz scoring.** Choice and exact fill-in questions need nothing. Essay, shadowing, and speech questions are scored by Gemini on Vertex AI, with the same service account; without it, submitting one reports that scoring is not configured, so set it up before giving learners those questions.
 
 ## Connecting your own system
 

@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 /**
- * Google Gemini TTS (Gemini Developer API, Interactions endpoint) — the one implementation the
+ * Google Gemini TTS on Google Cloud (Vertex AI, Interactions endpoint) — the one implementation the
  * backend provider and the courseware CLI share.
+ *
+ * The request body is the Interactions one: the delivery style travels in its own
+ * `speech_metadata` annotation, apart from the text, so it is never read aloud. Vertex's
+ * Interactions API takes a service account's access token, not an API key, and is addressed by
+ * project and location.
  *
  * The API answers with 24 kHz mono 16-bit WAV (or raw L16); callers store MP3, so the PCM is
  * encoded locally. Gemini TTS has no numeric speed / volume / pitch fields: speed becomes a
@@ -15,7 +20,18 @@ import { fetch as undiciFetch, ProxyAgent } from "undici";
 export const DEFAULT_GOOGLE_TTS_MODEL = "gemini-3.8-flash-tts";
 /** Multilingual base voice (works for zh / ja / en). */
 export const DEFAULT_GOOGLE_TTS_VOICE_ID = "kore";
-export const DEFAULT_GOOGLE_TTS_API_BASE = "https://generativelanguage.googleapis.com";
+export const DEFAULT_GOOGLE_TTS_LOCATION = "global";
+
+/** Vertex AI's address for a location: the global endpoint, or the regional one. */
+export const googleTtsApiBase = (location: string = DEFAULT_GOOGLE_TTS_LOCATION): string =>
+  location === "global" ? "https://aiplatform.googleapis.com" : `https://${location}-aiplatform.googleapis.com`;
+
+/** The Interactions endpoint of a project and location on Vertex AI. */
+export const googleTtsInteractionsUrl = (args: { apiBase?: string | null; project: string; location?: string | null }): string => {
+  const location = args.location?.trim() || DEFAULT_GOOGLE_TTS_LOCATION;
+  const apiBase = (args.apiBase?.trim() || googleTtsApiBase(location)).replace(/\/+$/, "");
+  return `${apiBase}/v1beta1/projects/${encodeURIComponent(args.project)}/locations/${encodeURIComponent(location)}/interactions`;
+};
 
 const SPEED_EPSILON = 0.05;
 
@@ -343,8 +359,13 @@ export class GoogleTtsError extends Error {
 }
 
 export interface GoogleSpeechOptions {
-  apiKey: string;
-  apiBase?: string;
+  /** A Google Cloud access token for each request (see createGoogleAccessToken). */
+  accessToken: () => Promise<string>;
+  /** The Google Cloud project, and the Vertex AI location (default global). */
+  project: string;
+  location?: string | null;
+  /** Vertex AI's address, or a relay in front of it; default from the location. */
+  apiBase?: string | null;
   model?: string;
   text: string;
   voiceId: string;
@@ -363,12 +384,18 @@ export interface GoogleSpeechOptions {
 }
 
 const requestChunk = async (options: GoogleSpeechOptions, text: string): Promise<PcmAudio> => {
-  const apiBase = (options.apiBase || DEFAULT_GOOGLE_TTS_API_BASE).replace(/\/+$/, "");
+  let token: string;
+  try {
+    token = await options.accessToken();
+  } catch (error) {
+    // A token that cannot be minted is a configuration problem, not worth retrying.
+    throw new GoogleTtsError(error instanceof Error ? error.message : String(error), false);
+  }
   let response: Response;
   try {
-    response = await outboundHttp.fetch(`${apiBase}/v1beta/interactions`, {
+    response = await outboundHttp.fetch(googleTtsInteractionsUrl(options), {
       method: "POST",
-      headers: { "x-goog-api-key": options.apiKey, "content-type": "application/json" },
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
       body: JSON.stringify(
         buildGoogleTtsPayload({
           model: options.model || DEFAULT_GOOGLE_TTS_MODEL,

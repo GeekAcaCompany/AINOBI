@@ -1,6 +1,6 @@
 # Using coding agents
 
-A coding agent can author courseware directly on a running Studio: what it makes appears in the courseware list, ready to edit and preview. It connects over MCP. Research and pictures are done with the agent's own web search and image generation, so they need keys only for an agent without those abilities. Narration always needs `GEMINI_API_KEY`.
+A coding agent can author courseware directly on a running Studio: what it makes appears in the courseware list, ready to edit and preview. It connects over MCP. Research and pictures are done with the agent's own web search and image generation, so they need keys only for an agent without those abilities. Narration always needs the owner's Google Cloud service account ([docs/google-cloud.md](google-cloud.md)).
 
 ## Skills
 
@@ -62,7 +62,7 @@ Studio is then at <http://127.0.0.1:5700> and MCP at <http://127.0.0.1:5733/mcp>
 | `courseware_asset_upload`, `courseware_asset_list`, `courseware_doc_read` | Work with images and documents. On Studio, `courseware_asset_upload` takes `local_path`, so an image the agent generated is uploaded straight from its file |
 | `courseware_ai_teachers` | List AI teachers |
 | `ai_teacher_generate`, `ai_teacher_answer`, `ai_teacher_status`, `ai_teacher_save` | Create a new AI teacher. With `drawn_by: "agent"` (Studio only) the host hands the agent each drawing and each check in turn, as files, and runs the same quality gates as with a hosted model |
-| `courseware_narration`, `courseware_tts_list` | Narration, once `GEMINI_API_KEY` is set |
+| `courseware_narration`, `courseware_tts_list` | Narration, once the Google Cloud service account is set up |
 | `courseware_image_generate`, `courseware_search` | Fallbacks for agents that cannot generate images or search the web, once `OPENAI_API_KEY` or `TAVILY_API_KEY` is set |
 
 The tools for courses and teaching sections (`course_*`, `courseware_bind_section`) belong to the full platform; Studio has no courses, so they return nothing useful.

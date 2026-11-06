@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 /**
  * Google Gemini TTS provider for the `@ainobi/tts` port, built on the shared implementation in
- * speech.ts (the one the courseware CLI uses). Output is MP3 (LAME) or WAV.
+ * speech.ts (the one the courseware CLI uses). Output is MP3 (LAME) or WAV. It runs on Google
+ * Cloud Vertex AI with a service account.
  */
 
 import { countBillableCodePoints, type BaseTTSProvider } from "@ainobi/tts";
+import { createGoogleAccessToken, hasGoogleCredentials, readGoogleServiceAccount, type GoogleCredentialSource } from "./google-auth.ts";
 import {
-  DEFAULT_GOOGLE_TTS_API_BASE,
+  DEFAULT_GOOGLE_TTS_LOCATION,
   DEFAULT_GOOGLE_TTS_MODEL,
   encodePcmToMp3Async,
   encodePcmToWav,
@@ -15,7 +17,15 @@ import {
 
 /** Deployment settings; the host maps its configuration onto these (nothing is read from the environment). */
 export interface GoogleTTSSettings {
-  api_key: string;
+  /** A service account key, inline JSON or a file path, or a ready access token. */
+  credentials_json: string;
+  credentials_path: string;
+  access_token: string;
+  /** The Google Cloud project; empty to use the service account's own project. */
+  project: string;
+  /** The Vertex AI location of the Interactions endpoint. */
+  location: string;
+  /** Vertex AI's address, or a relay in front of it; empty for the location's default. */
   api_base: string;
   /** Outbound proxy URI; empty for a direct connection. */
   proxy: string;
@@ -30,8 +40,12 @@ export interface GoogleTTSSettings {
 }
 
 export const DEFAULT_GOOGLE_TTS_SETTINGS: GoogleTTSSettings = {
-  api_key: "",
-  api_base: DEFAULT_GOOGLE_TTS_API_BASE,
+  credentials_json: "",
+  credentials_path: "",
+  access_token: "",
+  project: "",
+  location: DEFAULT_GOOGLE_TTS_LOCATION,
+  api_base: "",
   proxy: "",
   model: DEFAULT_GOOGLE_TTS_MODEL,
   service_timeout: 180,
@@ -44,39 +58,42 @@ export const GOOGLE_TTS_SUPPORTED_FORMATS = new Set(["mp3", "wav"]);
 
 export class GoogleTTSProvider implements BaseTTSProvider {
   model: string;
-  api_key: string | null;
-  api_base: string | null;
   proxy: string | null;
   timeout: number;
   readonly settings: GoogleTTSSettings;
+  private readonly credentials: GoogleCredentialSource;
+  private readonly accessToken: () => Promise<string>;
+  private project: string | null;
 
   constructor(params: {
     model?: string;
-    api_key?: string | null;
-    api_base?: string | null;
     settings?: Partial<GoogleTTSSettings>;
   } & Record<string, unknown>) {
     this.settings = { ...DEFAULT_GOOGLE_TTS_SETTINGS, ...params.settings };
     this.model = params.model || this.settings.model;
-    this.api_key = params.api_key ?? null;
-    this.api_base = params.api_base ?? null;
-
-    if (!this.api_key) {
-      this.api_key = this.settings.api_key;
-      if (!this.api_key) {
-        throw new Error(
-          "Google TTS API key not provided and GEMINI_TTS_API_KEY / GEMINI_API_KEY / GOOGLE_CLOUD_API_KEY are not set",
-        );
-      }
+    this.credentials = {
+      accessToken: this.settings.access_token,
+      credentialsJson: this.settings.credentials_json,
+      credentialsPath: this.settings.credentials_path,
+    };
+    if (!hasGoogleCredentials(this.credentials)) {
+      throw new Error("Google TTS needs Google Cloud credentials: set GOOGLE_APPLICATION_CREDENTIALS to a service account key file");
     }
-
-    if (!this.api_base) {
-      this.api_base = this.settings.api_base;
-    }
-    this.api_base = this.api_base.replace(/\/+$/, "");
-
+    this.accessToken = createGoogleAccessToken(this.credentials);
+    this.project = this.settings.project.trim() || null;
     this.proxy = (params.proxy as string | undefined) || this.settings.proxy || null;
     this.timeout = Number(params.timeout) || this.settings.service_timeout || 180;
+  }
+
+  /** The configured project, else the one the service account belongs to. */
+  private async resolveProject(): Promise<string> {
+    if (this.project) return this.project;
+    const project = (await readGoogleServiceAccount(this.credentials))?.project_id?.trim();
+    if (!project) {
+      throw new Error("Google TTS needs a Google Cloud project: set GOOGLE_CLOUD_PROJECT");
+    }
+    this.project = project;
+    return project;
   }
 
   async textToSpeech(params: {
@@ -94,8 +111,10 @@ export class GoogleTTSProvider implements BaseTTSProvider {
     }
     // temperature / top_p are not used by Gemini TTS
     const { pcm } = await synthesizeGoogleSpeech({
-      apiKey: this.api_key ?? "",
-      apiBase: this.api_base ?? undefined,
+      accessToken: this.accessToken,
+      project: await this.resolveProject(),
+      location: this.settings.location,
+      apiBase: this.settings.api_base || null,
       model: this.model,
       text: params.text,
       voiceId: params.voice_id,

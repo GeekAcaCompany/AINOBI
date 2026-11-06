@@ -179,15 +179,20 @@ test("WAV encoding round-trips stereo PCM", () => {
   assert.deepEqual(Array.from(decoded.samples), Array.from(samples));
 });
 
-test("provider: sends one Interactions request per chunk and encodes the requested format", async () => {
+test("provider: sends one Vertex AI Interactions request per chunk, with a bearer token, and encodes the requested format", async () => {
   const bodies: Array<Record<string, unknown>> = [];
-  outboundHttp.fetch = (async (_url: string, init: RequestInit) => {
+  const sent: Array<{ url: string; auth: string }> = [];
+  outboundHttp.fetch = (async (url: string, init: RequestInit) => {
     bodies.push(JSON.parse(String(init.body)));
+    sent.push({ url, auth: (init.headers as Record<string, string>).authorization });
     return new Response(interaction(wavBytes([100, 200, 300])), { status: 200 });
   }) as unknown as typeof fetch;
-  const provider = new GoogleTTSProvider({ settings: { api_key: "k" } });
+  const provider = new GoogleTTSProvider({ settings: { access_token: "tok", project: "proj" } });
   const wav = await provider.textToSpeech({ text: "你好。", voice_id: "kore", speed: 1, temperature: 0.7, top_p: 0.7, format: "wav", volume: 2 });
   assert.equal(bodies.length, 1);
+  assert.deepEqual(sent[0], { url: "https://aiplatform.googleapis.com/v1beta1/projects/proj/locations/global/interactions", auth: "Bearer tok" });
+  // The AI Studio body, unchanged: the style travels apart from the text.
+  assert.equal(bodies[0]?.model, "gemini-3.8-flash-tts");
   assert.deepEqual(Array.from(decodeGooglePcm(wav, "audio/wav").samples), [200, 400, 600]);
   const mp3 = await provider.textToSpeech({ text: "你好。", voice_id: "kore", speed: 1, temperature: 0.7, top_p: 0.7, format: "mp3" });
   assert.equal(mp3[0], 0xff);
@@ -205,7 +210,7 @@ test("provider: retries transient failures up to chunk_attempts, never client er
       ? new Response("busy", { status: 503 })
       : new Response(interaction(wavBytes([1, 2])), { status: 200 });
   }) as unknown as typeof fetch;
-  const provider = new GoogleTTSProvider({ settings: { api_key: "k", chunk_attempts: 3, retry_delay_ms: 0 } });
+  const provider = new GoogleTTSProvider({ settings: { access_token: "tok", project: "proj", chunk_attempts: 3, retry_delay_ms: 0 } });
   await provider.textToSpeech({ text: "x", voice_id: "kore", speed: 1, temperature: 0.7, top_p: 0.7, format: "wav" });
   assert.equal(calls, 3);
 
@@ -222,6 +227,6 @@ test("provider: retries transient failures up to chunk_attempts, never client er
 });
 
 test("provider: bills by Unicode code points", () => {
-  const provider = new GoogleTTSProvider({ settings: { api_key: "k" } });
+  const provider = new GoogleTTSProvider({ settings: { access_token: "tok", project: "proj" } });
   assert.equal(provider.get_billable_units("恭喜你🎉🎉"), 5);
 });

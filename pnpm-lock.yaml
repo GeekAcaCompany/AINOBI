@@ -63,6 +63,9 @@ importers:
       '@ainobi/http':
         specifier: workspace:*
         version: link:../../packages/http
+      '@ainobi/tts-google':
+        specifier: workspace:*
+        version: link:../../packages/tts-google
       '@anthropic-ai/claude-agent-sdk':
         specifier: 0.2.141
         version: 0.2.141(zod@4.6.7)

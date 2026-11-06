@@ -1,6 +1,6 @@
 # @ainobi/tts-google
 
-The Google (Gemini, Interactions API) implementation of the `@ainobi/tts` port — the one implementation the platform backend and the courseware CLI share. Long text is split at sentences on code points (≤500 per request), synthesized up to four chunks at a time with per-chunk retries of transient failures (`chunk_attempts`, `retry_delay_ms`), concatenated, gained, and encoded to MP3 (LAME) or WAV. `synthesizeGoogleSpeech` is the provider-independent call returning PCM; the building blocks (`splitGoogleTtsText`, `buildGoogleTtsPayload`, `decodeGooglePcm`, `applyPcmGain`, `encodePcmToMp3Async`, `encodePcmToWav`, …) are exported too.
+The Google Gemini TTS (on Google Cloud Vertex AI's Interactions API, with a service account) implementation of the `@ainobi/tts` port — the one implementation the platform backend and the courseware CLI share. Long text is split at sentences on code points (≤500 per request), synthesized up to four chunks at a time with per-chunk retries of transient failures (`chunk_attempts`, `retry_delay_ms`), concatenated, gained, and encoded to MP3 (LAME) or WAV. `synthesizeGoogleSpeech` is the provider-independent call returning PCM; the building blocks (`splitGoogleTtsText`, `buildGoogleTtsPayload`, `decodeGooglePcm`, `applyPcmGain`, `encodePcmToMp3Async`, `encodePcmToWav`, …) are exported too.
 
 Runtime: Node.
 
@@ -8,8 +8,10 @@ Runtime: Node.
 import { registerTTSProvider } from '@ainobi/tts';
 import { GoogleTTSProvider } from '@ainobi/tts-google';
 
-registerTTSProvider('google', new GoogleTTSProvider({ api_key: process.env.GEMINI_API_KEY }));
+registerTTSProvider('google', new GoogleTTSProvider({ settings: { credentials_path: process.env.GOOGLE_APPLICATION_CREDENTIALS } }));
 ```
+
+The request body is the Interactions one, so a voice's delivery style travels in its own `speech_metadata` field and is never read aloud. Vertex AI's Interactions API takes a service account's token, not an API key; `createGoogleAccessToken` mints and caches it, and the project defaults to the service account's.
 
 The provider reads no environment variables: pass credentials and settings to the constructor at your composition root. It implements `TTSProvider` from `@ainobi/tts`; see that package for the interface and the registry.
 

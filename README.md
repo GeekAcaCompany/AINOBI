@@ -58,13 +58,13 @@ You can also hand the whole job over. Give your agent this repository and say:
 
 ## Required setting
 
-One key is required. Add it to `.env.local` in this folder and restart:
+One Google Cloud service account is required. Create it with the Vertex AI User role, save its key as `.ainobi/gcp-key.json` (the `.ainobi/` folder is ignored by git), add this line to `.env.local` in this folder, and restart:
 
 ```sh
-GEMINI_API_KEY=your-key
+GOOGLE_APPLICATION_CREDENTIALS=.ainobi/gcp-key.json
 ```
 
-It powers narration, in 30 voices, and the AI scoring of essay, shadowing, and speech questions. Studio still starts without it so you can look around, but it warns you at startup, and narration and AI scoring report an error when used.
+It powers narration, in 30 voices, with Gemini TTS on Vertex AI, and the AI scoring of essay, shadowing, and speech questions. [docs/google-cloud.md](docs/google-cloud.md) walks through creating the account. Studio still starts without it so you can look around, but it warns you at startup, and narration and AI scoring report an error when used.
 
 ## What works out of the box
 
@@ -114,6 +114,7 @@ The quick start uses embedded stores so it runs anywhere. The courseware service
 - [Component list](docs/components.md)
 - [Integration guide](docs/integration.md)
 - [Using coding agents](docs/agents.md)
+- [Google Cloud for narration and AI scoring](docs/google-cloud.md)
 - [Video export](docs/video-export.md)
 - [Development and contributing](CONTRIBUTING.md)
 
