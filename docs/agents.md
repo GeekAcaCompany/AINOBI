@@ -1,6 +1,16 @@
 # Using coding agents
 
-A coding agent can author courseware directly on a running Studio: what it makes appears in the courseware list, ready to edit and preview. It connects over MCP, and needs no API keys of AINOBI's own.
+A coding agent can author courseware directly on a running Studio: what it makes appears in the courseware list, ready to edit and preview. It connects over MCP. Research and pictures are done with the agent's own web search and image generation, so they need keys only for an agent without those abilities. Narration always needs `GEMINI_API_KEY`.
+
+## Skills
+
+| Skill | Use it for |
+| --- | --- |
+| `ainobi-courseware` | Planning, building, and editing courseware, including quizzes, motion, and narration |
+| `ainobi-research` | Facts: the agent's own web search first, the host's (`TAVILY_API_KEY`) only without one |
+| `ainobi-images` | Pictures: the agent's own image generation first, the host's (`OPENAI_API_KEY`) only without one |
+
+The skills live in `skills/` in the [Agent Skills](https://agentskills.io) format. Claude Code finds them through `.claude/skills/`, and Codex and other agents through `.agents/skills/`.
 
 ## Claude Code
 
@@ -9,7 +19,7 @@ npm start        # in one terminal; writes .mcp.json
 claude           # in another, from this directory
 ```
 
-Wait for the `AINOBI Studio` line before starting Claude Code. It reads `.mcp.json` when it starts and asks you to approve the `ainobi` server; a session already running needs a restart to see it. The skill in `.claude/skills/ainobi-courseware` teaches it how to author. Then ask:
+Wait for the `AINOBI Studio` line before starting Claude Code. It reads `.mcp.json` when it starts and asks you to approve the `ainobi` server; a session already running needs a restart to see it. The skills in `.claude/skills/` teach it how to author. Then ask:
 
 > Make a five-slide lesson on photosynthesis for beginners, with a short quiz at the end.
 
@@ -27,7 +37,7 @@ bearer_token_env_var = "AINOBI_LOCAL_TOKEN"
 AINOBI_LOCAL_TOKEN=<token> codex
 ```
 
-Codex reads the same skill from `.agents/skills/ainobi-courseware`.
+Codex reads the same skills from `.agents/skills/`.
 
 ## If a port is taken
 
@@ -48,10 +58,10 @@ Studio is then at <http://127.0.0.1:5700> and MCP at <http://127.0.0.1:5733/mcp>
 | `courseware_workspace_write` | Prepare the batch plans and quiz layouts `ainobi_exec` reads |
 | `courseware_save` | Save, which creates a new version. It refuses to overwrite changes made after the agent opened the courseware |
 | `courseware_ui_links` | Get links to open the editor and preview |
-| `courseware_asset_upload`, `courseware_asset_list`, `courseware_doc_read` | Work with images and documents |
+| `courseware_asset_upload`, `courseware_asset_list`, `courseware_doc_read` | Work with images and documents. On Studio, `courseware_asset_upload` takes `local_path`, so an image the agent generated is uploaded straight from its file |
 | `courseware_ai_teachers` | List AI teachers |
 | `courseware_narration`, `courseware_tts_list` | Narration, once `GEMINI_API_KEY` is set |
-| `courseware_image_generate`, `courseware_search` | Images and web search, once their providers are set |
+| `courseware_image_generate`, `courseware_search` | Fallbacks for agents that cannot generate images or search the web, once `OPENAI_API_KEY` or `TAVILY_API_KEY` is set |
 
 The tools for courses and teaching sections (`course_*`, `courseware_bind_section`) belong to the full platform; Studio has no courses, so they return nothing useful.
 

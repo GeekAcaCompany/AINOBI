@@ -56,23 +56,41 @@ You can also hand the whole job over. Give your agent this repository and say:
 
 [AGENTS.md](AGENTS.md) tells the agent how to choose the smallest set of components and integrate them into your project.
 
+## Required setting
+
+One key is required. Add it to `.env.local` in this folder and restart:
+
+```sh
+GEMINI_API_KEY=your-key
+```
+
+It powers narration, in 30 voices, and the AI scoring of essay, shadowing, and speech questions. Studio still starts without it so you can look around, but it warns you at startup, and narration and AI scoring report an error when used.
+
 ## What works out of the box
 
-- **An AI teacher.** Studio ships with one, ready to add to any slide and, with a Gemini key, to narrate.
-- **Quizzes.** Single choice, multiple choice, and exact fill-in questions are scored with no setup, with a final score page. Essay, shadowing, and speech questions are scored by AI, and need `GEMINI_API_KEY`: without it, submitting one reports that scoring is not configured.
+- **An AI teacher.** Studio ships with one, ready to add to any slide and to narrate.
+- **Quizzes.** Single choice, multiple choice, and exact fill-in questions are scored locally, with a final score page. Essay, shadowing, and speech questions are scored by Gemini.
 
-## Optional features
+## Your agent does the rest
 
-Everything above works with no API keys. Some features call an outside service and stay off until you add its key to `.env.local`:
+AINOBI assumes an AI agent is working on it, and that agent can already research and, often, draw. So these workflows are skills your agent follows with its own abilities, not services AINOBI calls on its behalf. A key is needed only when your agent lacks the ability:
+
+| Skill | What your agent does | Key needed only if your agent cannot |
+| --- | --- | --- |
+| [`ainobi-courseware`](skills/ainobi-courseware/SKILL.md) | Plans, builds, and edits courseware: slides, layout, quizzes, motion, and narration | None |
+| [`ainobi-research`](skills/ainobi-research/SKILL.md) | Researches and checks facts with its own web search, and reads your documents | `TAVILY_API_KEY` (search the web) |
+| [`ainobi-images`](skills/ainobi-images/SKILL.md) | Draws illustrations with its own image generation and adds them to slides | `OPENAI_API_KEY` (generate images) |
+
+The skills follow the [Agent Skills](https://agentskills.io) format. They live in [`skills/`](skills/), and Claude Code finds them through `.claude/skills/`, Codex and other agents through `.agents/skills/`.
+
+## Optional features for people
+
+These help people working in the browser, without an agent, and stay off until you add their keys to `.env.local`:
 
 | Feature | Setting |
 | --- | --- |
-| Narration, in 30 voices | `GEMINI_API_KEY` |
-| AI scoring of essays and recordings | `GEMINI_API_KEY` |
-| AI assistant in the editor (its panel is hidden until both are set) | `ANTHROPIC_API_KEY` and `ANTHROPIC_BASE_URL` |
-| Generating new AI teachers | `OPENAI_API_KEY` |
-| Image generation | `OPENAI_API_KEY` |
-| Web search for the agent | `TAVILY_API_KEY` |
+| AI assistant panel in the editor (hidden until both are set) | `ANTHROPIC_API_KEY` and `ANTHROPIC_BASE_URL` |
+| Generating new AI teachers from Studio's home page | `OPENAI_API_KEY` |
 
 [`.env.example`](.env.example) lists these and more.
 

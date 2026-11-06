@@ -22,6 +22,8 @@
     "apps/courseware-service/codex-plugins/ainobi-courseware/skills/ainobi-courseware/references/topics/narration.md",
     "apps/courseware-service/codex-plugins/ainobi-courseware/skills/ainobi-courseware/references/topics/quiz.md",
     "apps/courseware-service/codex-plugins/ainobi-courseware/skills/ainobi-courseware/references/workflows.md",
+    "apps/courseware-service/codex-plugins/ainobi-courseware/skills/ainobi-images/SKILL.md",
+    "apps/courseware-service/codex-plugins/ainobi-courseware/skills/ainobi-research/SKILL.md",
     "apps/courseware-service/package.json",
     "apps/courseware-service/public/index.html",
     "apps/courseware-service/scripts/pack-codex-plugin.js",
@@ -63,6 +65,7 @@
     "apps/courseware-service/src/mcp/codex-mcp-course-tools.test.ts",
     "apps/courseware-service/src/mcp/codex-mcp-create-rename.test.ts",
     "apps/courseware-service/src/mcp/codex-mcp-http.ts",
+    "apps/courseware-service/src/mcp/codex-mcp-local-upload.test.ts",
     "apps/courseware-service/src/mcp/codex-mcp-media-tools.ts",
     "apps/courseware-service/src/mcp/codex-mcp-oauth.ts",
     "apps/courseware-service/src/mcp/codex-mcp-server.ts",
@@ -1388,6 +1391,8 @@
     "skills/ainobi-courseware/references/topics/motion-timing.md",
     "skills/ainobi-courseware/references/topics/narration.md",
     "skills/ainobi-courseware/references/topics/quiz.md",
-    "skills/ainobi-courseware/references/workflows.md"
+    "skills/ainobi-courseware/references/workflows.md",
+    "skills/ainobi-images/SKILL.md",
+    "skills/ainobi-research/SKILL.md"
   ]
 }

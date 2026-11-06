@@ -66,6 +66,8 @@ export function coursewareEnv({ ports, token, internalToken, storageEndpoint, us
     OSS_BUCKET: STORAGE_BUCKET,
     AINOBI_VIDEO_RENDER_ALLOW_PRIVATE_URLS: 'true',
     AINOBI_MANAGE_VIEW_DISABLED: 'true',
+    // Agents run on this machine, so they may hand over media they made by path.
+    AINOBI_MCP_LOCAL_FILES: 'true',
     ...baseEnv,
     ...userEnv,
     DB_TYPE: 'postgres',
@@ -359,8 +361,20 @@ async function main() {
   editorAssistant = await readEditorAssistant(`http://127.0.0.1:${ports.courseware}`);
   console.log(`\n  AINOBI Studio   http://127.0.0.1:${ports.web}`);
   console.log(`  Agent (MCP)     http://127.0.0.1:${ports.courseware}/mcp   configured in .mcp.json`);
+  const settings = { ...process.env, ...userEnv };
+  const gemini = Boolean(settings.GEMINI_API_KEY?.trim() || settings.GOOGLE_CLOUD_API_KEY?.trim());
+  console.log(`  Narration       ${gemini ? 'on, with AI scoring' : 'NOT CONFIGURED: GEMINI_API_KEY is required, see below'}`);
   console.log(`  Editor AI       ${editorAssistant ? 'on' : 'off (set ANTHROPIC_API_KEY and ANTHROPIC_BASE_URL in .env.local)'}`);
   console.log(`  Video export    ${videoRender ? videoRenderUrl : 'off (optional, see docs/video-export.md)'}\n`);
+  if (!gemini) {
+    console.warn(
+      [
+        '  !! GEMINI_API_KEY is required and not set.',
+        '  !! Without it, narration and AI scoring of essays and recordings fail when used.',
+        '  !! Add GEMINI_API_KEY=your-key to .env.local in this folder, then restart.\n',
+      ].join('\n'),
+    );
+  }
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

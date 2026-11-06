@@ -381,7 +381,8 @@ export function createCodexMcpServer(userSession: AinobiAuthorizedSession): McpS
     'courseware_search',
     {
       title: 'Web search',
-      description: 'Billed Tavily search on the host (facts for courseware research).',
+      description:
+        'FALLBACK ONLY when you have no web search of your own (needs TAVILY_API_KEY on the host). Billed Tavily search for courseware research facts.',
       inputSchema: {
         mcp_session_id: z.string().min(1),
         query: z.string().min(1),
@@ -401,7 +402,7 @@ export function createCodexMcpServer(userSession: AinobiAuthorizedSession): McpS
     {
       title: 'Generate courseware image (fallback)',
       description:
-        'FALLBACK ONLY when Codex cannot generate an image itself. Billed host gpt-image-2.5-sunburst → asset library. Preferred path: generate the image in Codex, then courseware_asset_upload (content_base64), then ainobi_exec element insert --type image. Never use ainobi_exec image.',
+        'FALLBACK ONLY when you cannot generate an image yourself (needs OPENAI_API_KEY on the host). Billed host gpt-image-2.5-sunburst → asset library. Preferred path: generate the image with your own image tool, then courseware_asset_upload (local_path on a local Studio, else content_base64), then ainobi_exec element insert --type image. Never use ainobi_exec image.',
       inputSchema: {
         mcp_session_id: z.string().min(1),
         prompt: z.string().min(1).describe('Image generation prompt'),
@@ -435,13 +436,13 @@ export function createCodexMcpServer(userSession: AinobiAuthorizedSession): McpS
     {
       title: 'Upload courseware asset',
       description:
-        'Upload a file into the open courseware asset library (OSS + DB). Preferred for Codex-generated images: pass content_base64 (+ file_name). For larger files already in the MCP work_dir, use workspace_path. Returns source for element insert.',
+        'Upload a file into the open courseware asset library (OSS + DB). For an image you generated: on a local Studio pass local_path (the file on this machine); otherwise content_base64 (+ file_name). For files already in the MCP work_dir, use workspace_path. Returns source for element insert.',
       inputSchema: {
         mcp_session_id: z.string().min(1),
         file_name: z
           .string()
           .optional()
-          .describe('Target file name with extension (required unless workspace_path has one)'),
+          .describe('Target file name with extension (required unless workspace_path or local_path has one)'),
         content_base64: z
           .string()
           .optional()
@@ -450,6 +451,10 @@ export function createCodexMcpServer(userSession: AinobiAuthorizedSession): McpS
           .string()
           .optional()
           .describe('Path relative to MCP workspace (no ..); prefer for large files already in work_dir'),
+        local_path: z
+          .string()
+          .optional()
+          .describe('Absolute path of a media file on this machine, e.g. an image you generated; local Studio only'),
       },
     },
     async (args) => jsonResult(await coursewareAssetsUploadTool(userSession, args)),

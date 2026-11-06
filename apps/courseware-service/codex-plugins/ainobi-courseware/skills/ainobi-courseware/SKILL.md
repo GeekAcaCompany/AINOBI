@@ -39,8 +39,8 @@ Use dedicated MCP tools for hosted / billed / catalog work. Use **`ainobi_exec`*
 | AI teacher catalog | `courseware_ai_teachers` | `ainobi_exec ["ai-teachers",…]` |
 | Narration / TTS | `courseware_narration` (`--teacher-id`) | `ainobi_exec ["narration",…]` |
 | TTS voice pool (rare) | `courseware_tts_list` | `ainobi_exec ["tts",…]` |
-| Web search | `courseware_search` | `ainobi_exec ["search",…]` |
-| **Images (preferred)** | **Generate in Codex → `courseware_asset_upload`** | Host generate first |
+| Research and facts | Your own web search; `courseware_search` only without one (skill **ainobi-research**) | `ainobi_exec ["search",…]` |
+| **Images (preferred)** | **Your own image generation → `courseware_asset_upload`** (skill **ainobi-images**) | Host generate first |
 | Images (fallback only) | `courseware_image_generate` | `ainobi_exec ["image",…]` |
 | Library list / upload | `courseware_asset_list` / `courseware_asset_upload` | `ainobi_exec ["asset",…]` |
 | Document → markdown | `courseware_doc_read` | `ainobi_exec ["doc",…]` |
@@ -66,7 +66,7 @@ The references were written for a shell. Read them with these substitutions:
 
 ### On a local AINOBI Studio
 
-Studio is the single-machine edition: one organization and no courses. There, `course_*`, `courseware_bind_section`, `courseware_import_to_course`, `courseware_export_from_course`, and `agent_set_name` do nothing useful, so go straight to `courseware_list` / `courseware_create`. `courseware_ui_links` returns only the preview and editor links. Teachers are created on Studio's home page; narration, image generation, and web search report an error until the owner configures their keys in `.env.local`, so tell the user which feature needs configuring and continue with silent slides.
+Studio is the single-machine edition: one organization and no courses. There, `course_*`, `courseware_bind_section`, `courseware_import_to_course`, `courseware_export_from_course`, and `agent_set_name` do nothing useful, so go straight to `courseware_list` / `courseware_create`. `courseware_ui_links` returns only the preview and editor links. Teachers are created on Studio's home page. Narration needs the owner's `GEMINI_API_KEY`; until it is set, narration reports an error, so tell the user and continue with silent slides. Search and pictures are yours to do with your own tools (skills **ainobi-research** and **ainobi-images**); the host versions report an error until the owner configures their keys. Upload media you made with `courseware_asset_upload { local_path }`.
 
 ## Tool surface
 
@@ -86,7 +86,7 @@ Studio is the single-machine edition: one organization and no courses. There, `c
 8. **`courseware_save`** — persist to AINOBI DB. Refuses with `VERSION_CONFLICT` when someone changed the courseware after this session loaded it (see below).
 9. **`courseware_ai_teachers`** — required before narration; show names (+ language); keep ids internal.
 10. **`courseware_narration`** — billed TTS (`--teacher-id`).
-11. **`courseware_search`** — billed web search.
+11. **`courseware_search`** — billed web search, only when you have none of your own.
 12. **`courseware_asset_list`** / **`courseware_asset_upload`** — courseware media library.
 13. **`courseware_doc_read`** — PDF/DOCX/… → markdown (`file_id` preferred).
 14. **`courseware_tts_list`** — optional voice catalog; prefer teachers for narration.
@@ -115,20 +115,9 @@ A **course** (“课程”) is the container; a **courseware** (“课件”) is
 - Update course info → **`course_update`** (name/description/status). Update courseware title → **`courseware_rename`**.
 - Move courseware in/out of a course library → **`courseware_import_to_course`** / **`courseware_export_from_course`** (idempotent bind/unbind; the courseware itself is never moved or deleted).
 
-### Images (Codex-first)
+### Images (you first)
 
-```text
-Preferred:
-  1) Generate the image with Codex / ChatGPT image capability
-  2) courseware_asset_upload { content_base64, file_name: "*.png|.jpg|…" }
-  3) ainobi_exec element insert --type image --set source=<file_url> (+ size/position/timeline)
-  4) courseware_save
-
-Fallback (only if Codex cannot generate / export image bytes):
-  courseware_image_generate { prompt } → same insert path using returned source
-```
-
-Never call `ainobi_exec ["image",…]`. Do not prefer host generate when Codex image gen works.
+Follow the **ainobi-images** skill. In short: generate the image yourself, upload it with `courseware_asset_upload` (`local_path` on a local Studio, else `content_base64`), insert it with `ainobi_exec element insert --type image --set source=<source>`, and save. Use `courseware_image_generate` only when you cannot generate images. Never call `ainobi_exec ["image",…]`.
 
 ### Login-free preview (after authoring)
 
@@ -220,13 +209,13 @@ Do **not** run `init` / `load` / `slide insert` / `element insert` / `narration`
 - **Micro-edit**: incremental `ainobi_exec` (`element insert|update`, `animation preset`, …) — one call per logical change; inspect `ok`/`warnings` before continuing.
 - **TTS-first** on narrated slides: teacher catalog → transcript → **`courseware_narration`** → timed inserts → motion. Narration is **never** in batch. Read [topics/narration.md](references/topics/narration.md) first.
 - **Silent slides:** still set explicit `--start` / `--duration` and motion when the slide has a timeline. Read [topics/motion-timing.md](references/topics/motion-timing.md).
-- **Images:** Codex-generate → **`courseware_asset_upload`** first; host **`courseware_image_generate`** only if Codex image gen is unavailable.
+- **Images:** your own image generation → **`courseware_asset_upload`** first; host **`courseware_image_generate`** only if you cannot generate images (skill **ainobi-images**).
 
 ### Forbidden
 
 - Long argv chains with `&&` / pipes inside `ainobi_exec`.
 - Hand-writing a full scene JSON as the loaded scene (use `batch` ops or incremental CLI on the preloaded scene).
-- Calling `courseware_image_generate` when Codex can already produce image bytes for upload.
+- Calling `courseware_image_generate` when you can generate the image yourself.
 - Losing `data.source` after upload / generate.
 
 ## Workflow skeleton
@@ -237,7 +226,7 @@ Do **not** run `init` / `load` / `slide insert` / `element insert` / `narration`
 3. Inspect — `ainobi_exec` `slide list --verbose`, `slide get`, `element get`.
 4. Architecture once — slide inventory + compact design system.
 5. Structure — batch dry-run → apply (or micro-edit if tiny).
-6. Media — Codex images → `courseware_asset_upload`; docs → `courseware_doc_read` as needed.
+6. Media — your own images → `courseware_asset_upload` (skill **ainobi-images**); docs → `courseware_doc_read` as needed.
 7. Per narrated slide — TTS-first via `courseware_narration`.
 8. Ship — `validate --publish` (+ `quiz validate` if quizzes) → **`courseware_save`**.
 9. Hand over — **`courseware_ui_links`** and share the preview URL so the user can view the result without logging in.
@@ -250,7 +239,7 @@ Do **not** run `init` / `load` / `slide insert` / `element insert` / `narration`
 - **Shapes:** prefer `rectangle` / `ellipse` / `line`; `svg` only when needed.
 - **Cards / grids:** prefer `rich` (Tailwind) — Read [topics/html-rich.md](references/topics/html-rich.md).
 - **Complex interactive HTML:** sketch HTML carefully in the workspace, then `element insert --type html --asset …` (no Claude Task subagent on this surface).
-- **Search / docs / images:** Read [topics/assets-search.md](references/topics/assets-search.md). Prefer **`courseware_search`** over inventing facts; prefer **Codex image → upload** over host image generate.
+- **Search / docs / images:** facts come from research, never invention (skill **ainobi-research**: your own search first, `courseware_search` only without one); pictures follow skill **ainobi-images**. Asset and doc commands: [topics/assets-search.md](references/topics/assets-search.md).
 - **Refresh preview after changes:** after any content change, call `courseware_ui_links` and send the user the fresh preview link (see "HARD RULE: refresh the preview after every change" above).
 - **Medical / legal / finance:** Strict Mode — generate only from provided / searched sources ([workflows.md](references/workflows.md)).
 

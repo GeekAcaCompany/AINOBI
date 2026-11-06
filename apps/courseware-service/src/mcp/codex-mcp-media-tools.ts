@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import type { IncomingMessage } from 'node:http';
 import { createHash } from 'node:crypto';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { basename, extname, isAbsolute, join, normalize, resolve, sep } from 'node:path';
 
@@ -326,6 +326,32 @@ export async function coursewareAssetsListTool(
   };
 }
 
+/**
+ * A file the agent made on this machine (e.g. an image it generated), uploaded by path. Only a host whose agents share
+ * the machine turns this on (AINOBI_MCP_LOCAL_FILES=true, set by Studio); elsewhere the path means nothing to the
+ * service. Only media the agent makes is accepted, so documents, settings, and key files can never be read this way.
+ */
+const LOCAL_UPLOAD_EXTENSIONS = new Set([
+  '.png', '.jpg', '.jpeg', '.webp', '.gif', '.bmp', '.tiff',
+  '.mp4', '.webm', '.mp3', '.aac', '.wav', '.ogg',
+]);
+
+export function resolveLocalUploadPath(
+  localPath: string,
+  env: NodeJS.ProcessEnv = process.env,
+): { path: string } | { error: string } {
+  if (env.AINOBI_MCP_LOCAL_FILES?.trim().toLowerCase() !== 'true') {
+    return { error: 'local_path is only available when the service runs on the same machine as the agent (local Studio); use content_base64' };
+  }
+  if (!isAbsolute(localPath)) {
+    return { error: 'local_path must be an absolute path' };
+  }
+  if (!LOCAL_UPLOAD_EXTENSIONS.has(extname(localPath).toLowerCase())) {
+    return { error: `local_path must be an image, audio, or video file (${[...LOCAL_UPLOAD_EXTENSIONS].join(', ')})` };
+  }
+  return { path: resolve(localPath) };
+}
+
 export async function coursewareAssetsUploadTool(
   caller: AinobiAuthorizedSession,
   args: {
@@ -333,6 +359,7 @@ export async function coursewareAssetsUploadTool(
     file_name?: string;
     content_base64?: string;
     workspace_path?: string;
+    local_path?: string;
   },
 ): Promise<Record<string, unknown>> {
   const session = await requireOwnedSession(caller, args.mcp_session_id);
@@ -340,7 +367,11 @@ export async function coursewareAssetsUploadTool(
     return session;
   }
 
-  const fileName = args.file_name?.trim() || basename(args.workspace_path?.trim() || '') || '';
+  const fileName =
+    args.file_name?.trim() ||
+    basename(args.workspace_path?.trim() || '') ||
+    basename(args.local_path?.trim() || '') ||
+    '';
   if (!fileName) {
     return toolError('file_name is required (or derive from workspace_path)', 'USAGE');
   }
@@ -397,8 +428,22 @@ export async function coursewareAssetsUploadTool(
         );
       }
       tmpFilePath = abs;
+    } else if (args.local_path?.trim()) {
+      const local = resolveLocalUploadPath(args.local_path.trim());
+      if ('error' in local) {
+        return toolError(local.error, 'USAGE');
+      }
+      const size = (await stat(local.path).catch(() => null))?.size;
+      if (size === undefined) {
+        return toolError(`local_path does not exist: ${local.path}`, 'USAGE');
+      }
+      if (size > MAX_MCP_UPLOAD_BYTES * 5) {
+        return toolError(`local file exceeds ${MAX_MCP_UPLOAD_BYTES * 5} bytes`, 'USAGE');
+      }
+      buffer = await readFile(local.path);
+      tmpFilePath = local.path;
     } else {
-      return toolError('Provide content_base64 or workspace_path', 'USAGE');
+      return toolError('Provide content_base64, workspace_path, or local_path', 'USAGE');
     }
 
     const contentMd5 = createHash('md5').update(buffer).digest('hex');
