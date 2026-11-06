@@ -95,7 +95,7 @@ These help people working in the browser, without an agent, and stay off until y
 
 [`.env.example`](.env.example) lists these and more.
 
-Video export is the one feature that needs something besides Node.js: it runs in a Docker container that you start only if you want it. See [docs/video-export.md](docs/video-export.md).
+Two features need something besides Node.js, and each runs in a Docker container that you start only if you want it: exporting courseware as video ([docs/video-export.md](docs/video-export.md)), and converting uploaded PDF and PowerPoint files into pages a slide can show ([docs/document-conversion.md](docs/document-conversion.md)).
 
 ## Your own database, Redis, and storage
 
@@ -116,6 +116,7 @@ The quick start uses embedded stores so it runs anywhere. The courseware service
 - [Using coding agents](docs/agents.md)
 - [Google Cloud for narration and AI scoring](docs/google-cloud.md)
 - [Video export](docs/video-export.md)
+- [Document conversion](docs/document-conversion.md)
 - [Development and contributing](CONTRIBUTING.md)
 
 ## License

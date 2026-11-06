@@ -2,7 +2,7 @@
 import { join, resolve, sep } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { answer, isLoopbackHost, LOCAL_ORG_ID } from './local-host.mjs';
-import { coursewareEnv, embedOrigins, frameAncestors, googleCredentialsEnv, googleCredentialsStatus, mcpConfig, resolveStatic, studioPorts } from './start.mjs';
+import { coursewareEnv, documentConverterUrls, embedOrigins, frameAncestors, googleCredentialsEnv, googleCredentialsStatus, mcpConfig, resolveStatic, studioPorts } from './start.mjs';
 import { findDefaultVoice, loadVoices, voicePage } from './voices.mjs';
 
 describe('local host', () => {
@@ -65,6 +65,12 @@ describe('coursewareEnv', () => {
     expect(result.COURSEWARE_QUIZ_AUDIO_SCORING_PROVIDER).toBe('vertexai');
     expect(result.ANTHROPIC_API_KEY).toBe('k');
     expect(result.AINOBI_DB_JOIN_NESTED_TRANSACTIONS).toBe('true');
+  });
+
+  it('points the service at the document converters, on their usual ports unless the user file moves them', () => {
+    expect(documentConverterUrls({})).toEqual({ pdf: 'http://127.0.0.1:5636', pptx: 'http://127.0.0.1:5637' });
+    expect(env({}).PDF2HTML_SERVICE_URL).toBe('http://127.0.0.1:5636');
+    expect(env({ PPTX2HTML_SERVICE_URL: 'http://127.0.0.1:9000' }).PPTX2HTML_SERVICE_URL).toBe('http://127.0.0.1:9000');
   });
 
   it('makes a service account key path absolute, and tells a missing key from a missing file', () => {

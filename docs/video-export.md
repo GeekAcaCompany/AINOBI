@@ -1,6 +1,6 @@
 # Video export
 
-Exporting courseware as video is optional, and the only feature that needs more than Node.js. It renders in a headless browser with ffmpeg, which is why it runs in a Docker container. Without it, everything else works and the export button stays disabled.
+Exporting courseware as video is optional, and one of two features that need more than Node.js (the other is [document conversion](document-conversion.md)). It renders in a headless browser with ffmpeg, which is why it runs in a Docker container. Without it, everything else works and the export button stays disabled.
 
 You need [Docker](https://docs.docker.com/get-docker/).
 

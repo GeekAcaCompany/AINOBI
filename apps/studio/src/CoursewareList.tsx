@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-import { listCoursewareLibrary, type CoursewareLibraryListItem } from '@ainobi/courseware-player/api/courseware_list';
-import { Pencil, Play, Plus } from 'lucide-react';
+import { deleteCourseware, listCoursewareLibrary, type CoursewareLibraryListItem } from '@ainobi/courseware-player/api/courseware_list';
+import { Pencil, Play, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { TeacherStrip } from './TeacherStrip.tsx';
@@ -17,6 +17,22 @@ export function CoursewareList({ orgId, teachers }: { orgId: string; teachers: T
   const navigate = useNavigate();
   const [items, setItems] = useState<CoursewareLibraryListItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
+
+  const remove = async (item: CoursewareLibraryListItem) => {
+    const title = item.title?.trim() || text.untitled;
+    if (!window.confirm(text.deleteConfirm.replace('{title}', title))) return;
+    setDeleting(item.id);
+    try {
+      await deleteCourseware({ key: item.key });
+      setItems((current) => current?.filter((entry) => entry.id !== item.id) ?? null);
+      setError(null);
+    } catch (caught) {
+      setError(`${text.deleteFailed}: ${caught instanceof Error ? caught.message : String(caught)}`);
+    } finally {
+      setDeleting(null);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -78,6 +94,14 @@ export function CoursewareList({ orgId, teachers }: { orgId: string; teachers: T
               <Link className="inline-flex items-center gap-1 rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-50" to={previewUrl(item.key, orgId)}>
                 <Play className="h-4 w-4" aria-hidden /> {text.preview}
               </Link>
+              <button
+                type="button"
+                className="inline-flex items-center gap-1 rounded-md border border-slate-300 px-3 py-1.5 text-red-700 hover:border-red-300 hover:bg-red-50 disabled:opacity-50"
+                disabled={deleting === item.id}
+                onClick={() => void remove(item)}
+              >
+                <Trash2 className="h-4 w-4" aria-hidden /> {text.delete}
+              </button>
             </div>
           </li>
         ))}

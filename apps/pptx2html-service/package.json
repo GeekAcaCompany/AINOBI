@@ -1,0 +1,29 @@
+{
+  "name": "ainobi-pptx2html-service",
+  "version": "0.0.0",
+  "main": "index.js",
+  "license": "AGPL-3.0-only",
+  "private": true,
+  "scripts": {
+    "start": "node index.js",
+    "convert": "node scripts/convert-pptx-to-html.js",
+    "test": "node --test",
+    "syntax": "node --check index.js && node --check scripts/convert-pptx-to-html.js && node --check scripts/sync-runtime-vendor.js && node --check src/concurrency.js && node --check src/config.js && node --check src/converter-page.js && node --check src/converter-pool.js && node --check src/html-output.js && node --check src/oci-s3-storage.js && node --check src/oss-storage.js && node --check src/static-runtime.js && node --check runtime/preview-render-hooks.js",
+    "vendor:runtime": "node scripts/sync-runtime-vendor.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1054.0",
+    "ali-oss": "^6.23.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "html-minifier-terser": "^7.2.0",
+    "jszip": "3.8.0",
+    "multer": "^2.3.0",
+    "pptx-preview": "^1.0.7",
+    "proxy-agent": "5.0.0",
+    "puppeteer-core": "^24.43.0"
+  },
+  "devDependencies": {
+    "@alicloud/fc20230330": "^4.3.3"
+  }
+}

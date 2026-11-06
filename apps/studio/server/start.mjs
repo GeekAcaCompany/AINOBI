@@ -57,10 +57,24 @@ export function googleCredentialsStatus(settings, root = repositoryRoot) {
   return existsSync(path) ? 'on' : 'no-file';
 }
 
+/**
+ * Where the optional document converters listen: PDF on 5636 and PowerPoint on 5637, unless the settings move them.
+ * They run in containers started separately (docs/document-conversion.md).
+ */
+export function documentConverterUrls(settings) {
+  return {
+    pdf: settings.PDF2HTML_SERVICE_URL?.trim() || 'http://127.0.0.1:5636',
+    pptx: settings.PPTX2HTML_SERVICE_URL?.trim() || 'http://127.0.0.1:5637',
+  };
+}
+
 /** The courseware service's environment. Connection settings always win over the user's file. */
 export function coursewareEnv({ ports, token, internalToken, storageEndpoint, userEnv, baseEnv, videoRenderUrl }) {
   const web = `http://127.0.0.1:${ports.web}`;
+  const converters = documentConverterUrls({ ...baseEnv, ...userEnv });
   return {
+    PDF2HTML_SERVICE_URL: converters.pdf,
+    PPTX2HTML_SERVICE_URL: converters.pptx,
     AINOBI_CREDITS_DISABLED: 'true',
     AINOBI_ORG_STORAGE_DISABLED: 'true',
     AINOBI_ORG_STORAGE_QUOTA_CHECK: 'false',
@@ -257,6 +271,15 @@ const readEditorAssistant = async (url) => {
   }
 };
 
+/** Whether a document converter answers its health check. */
+const converterUp = async (url) => {
+  try {
+    return (await fetch(`${url.replace(/\/+$/, '')}/healthz`, { signal: AbortSignal.timeout(1000) })).ok;
+  } catch {
+    return false;
+  }
+};
+
 /** Resolves true once the service answers, false if it exits or does not answer in time. */
 const waitUntilHealthy = async (url, child, timeoutMs = 120_000) => {
   const deadline = Date.now() + timeoutMs;
@@ -381,6 +404,11 @@ async function main() {
   const google = googleCredentialsStatus({ ...process.env, ...userEnv });
   console.log(`  Narration       ${google === 'on' ? 'on, with AI scoring' : 'NOT CONFIGURED: a Google Cloud service account is required, see below'}`);
   console.log(`  Editor AI       ${editorAssistant ? 'on' : 'off (set ANTHROPIC_API_KEY and ANTHROPIC_BASE_URL in .env.local)'}`);
+  const converters = documentConverterUrls({ ...process.env, ...userEnv });
+  const [pdfUp, pptxUp] = await Promise.all([converterUp(converters.pdf), converterUp(converters.pptx)]);
+  console.log(
+    `  Documents       ${pdfUp || pptxUp ? `PDF ${pdfUp ? 'on' : 'off'}, PowerPoint ${pptxUp ? 'on' : 'off'}` : 'off (optional, see docs/document-conversion.md)'}`,
+  );
   console.log(`  Video export    ${videoRender ? videoRenderUrl : 'off (optional, see docs/video-export.md)'}\n`);
   if (google !== 'on') {
     console.warn(

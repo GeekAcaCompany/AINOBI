@@ -101,4 +101,4 @@ jobs:
           npx pnpm@10.5.0 --filter ainobi-courseware-service --filter @ainobi/studio build
 
       - name: Test
-        run: npx pnpm@10.5.0 --filter ainobi-courseware-service --filter ainobi-video-render-service --filter @ainobi/studio test
+        run: npx pnpm@10.5.0 --filter ainobi-courseware-service --filter ainobi-video-render-service --filter ainobi-pdf2html-service --filter ainobi-pptx2html-service --filter @ainobi/studio test

@@ -1,0 +1,26 @@
+# The service images (apps/*/Dockerfile) build from the repository root and copy it in; send only source and
+# manifests, and never Studio's data or credentials.
+node_modules
+**/node_modules
+**/dist
+apps/*/build
+**/coverage
+**/.vite
+**/.react-router
+**/storybook-static
+**/test-results
+**/playwright-report
+.git
+**/.env
+**/.env.*
+!**/.env.example
+**/*.log
+**/*.tsbuildinfo
+
+# Studio: local database, stored objects, the access token, service account keys, and the agent connection
+.ainobi/
+.mcp.json
+*.local.json
+*.pem
+*.key
+*.p12

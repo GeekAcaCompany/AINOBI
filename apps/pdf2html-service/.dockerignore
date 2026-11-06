@@ -1,0 +1,13 @@
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.git/
+.gitignore
+.env
+*.local
+tmp/
+*.pdf
+*.html
+pdf2htmlEX/pdf2htmlEX-fc-layer-debian10-amd64.zip
+pdf2htmlEX/fc-layer
+s.yaml

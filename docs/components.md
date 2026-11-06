@@ -24,6 +24,8 @@ These install into your project. None needs a server unless the table says so.
 | `apps/studio` | The complete system: a web app with the courseware list, editor, and preview, plus the embedded stores and the local host. Starts `courseware-service` | Node.js |
 | `apps/courseware-service` | Stores courseware and assets, serves the agent's MCP endpoint, and runs the editor's AI assistant | Node.js, a PostgreSQL protocol database, a Redis protocol server, S3 protocol storage (Studio supplies all three) |
 | `apps/video-render-service` | Exports courseware as video. Optional | Docker |
+| `apps/pdf2html-service` | Converts uploaded PDF files into per-page HTML for slides. Optional ([docs/document-conversion.md](document-conversion.md)) | Docker |
+| `apps/pptx2html-service` | Converts uploaded PowerPoint files into per-page HTML for slides. Optional | Docker |
 
 ## Building blocks
 

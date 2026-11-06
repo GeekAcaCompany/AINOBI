@@ -1,0 +1,23 @@
+{
+  "name": "ainobi-pdf2html-service",
+  "version": "0.0.0",
+  "main": "index.js",
+  "license": "AGPL-3.0-only",
+  "private": true,
+  "scripts": {
+    "start": "node index.js",
+    "test": "node --test",
+    "syntax": "node --check index.js && node --check src/config.js && node --check src/html-output.js && node --check src/oci-s3-storage.js && node --check src/oss-storage.js && node --check src/pdf-converter.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1124.0",
+    "ali-oss": "^6.23.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "html-minifier-terser": "^7.2.0",
+    "multer": "^2.3.0"
+  },
+  "devDependencies": {
+    "@alicloud/fc20230330": "^4.3.3"
+  }
+}

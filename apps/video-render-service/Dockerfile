@@ -1,6 +1,6 @@
 # apps/video-render-service — monorepo root-context build.
 #
-#   docker build -f deploy/dockerfiles/video-render-service.Dockerfile .
+#   docker build -f apps/video-render-service/Dockerfile .
 #
 # Dependencies follow pnpm's Docker pattern (`pnpm fetch` from the lockfile, an offline
 # install of the full context), as in the other service Dockerfiles. The runtime tree is
