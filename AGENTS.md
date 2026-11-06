@@ -12,7 +12,7 @@ A user may ask you to build something with AINOBI or add part of it to their sys
 4. **Connect it.** Copy the matching section of the integration guide. `apps/studio/src` is a working host to read when something is unclear. To use their own users, follow "Connecting your own system"; do not build a second user system.
 5. **Show it working.** Run it and open the page. A passing build does not show that the editor loads courseware.
 
-Only Node.js may be required. Video export is the one exception, and only if the user asks for it ([docs/video-export.md](docs/video-export.md)). Do not add Docker, a database, or Redis to a setup that does not need them.
+By default only Node.js may be required. Video export is the one exception, and only if the user asks for it ([docs/video-export.md](docs/video-export.md)). Do not add Docker, a database, or Redis to a setup that does not need them. The embedded stores are the minimal setup, not a rule: when the user has, or asks for, their own PostgreSQL, Redis, or S3 compatible storage, connect the service to it as the [integration guide](docs/integration.md#connecting-your-own-system) describes.
 
 ### "Build me a courseware system, and let my agent author on it"
 

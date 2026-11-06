@@ -14,7 +14,7 @@ AINOBI is a courseware system you can run as a whole or take apart. Run it compl
 
 ## Quick start
 
-Install [Node.js](https://nodejs.org) 22.12 or later (22, 24, or a newer even-numbered release). You need nothing else: no Docker, no database, no Redis.
+Install [Node.js](https://nodejs.org) 22.12 or later (22, 24, or a newer even-numbered release). For this quick start you need nothing else: no Docker, no database, no Redis.
 
 ```sh
 git clone https://github.com/GeekAcaCompany/AINOBI.git
@@ -24,7 +24,7 @@ npm start
 
 The first run installs and builds, which takes a few minutes. Then open <http://127.0.0.1:5600>: a courseware list, with editing and preview for each item. Your work is stored in `.ainobi/` in this directory.
 
-The database is PGlite (PostgreSQL in WebAssembly), Redis is an in-memory server, and objects are files on disk, all inside the Node.js process. It is built for one person or a small team on one machine.
+This is the smallest way to run AINOBI, not a fixed choice. The database is PGlite (PostgreSQL in WebAssembly), Redis is an in-memory server, and objects are files on disk, all inside the Node.js process, so nothing has to be installed or configured. It suits one person or a small team on one machine. When you outgrow it, swap any of the three for your own server; see [Your own database, Redis, and storage](#your-own-database-redis-and-storage).
 
 If a port is taken, `npm start` stops and names it. Add `AINOBI_PORT_OFFSET=100` to `.env.local` to move every port together, and Studio is then at <http://127.0.0.1:5700>.
 
@@ -77,6 +77,18 @@ Everything above works with no API keys. Some features call an outside service a
 [`.env.example`](.env.example) lists these and more.
 
 Video export is the one feature that needs something besides Node.js: it runs in a Docker container that you start only if you want it. See [docs/video-export.md](docs/video-export.md).
+
+## Your own database, Redis, and storage
+
+The quick start uses embedded stores so it runs anywhere. The courseware service speaks the ordinary protocols, so each store can be replaced on its own:
+
+| Store | Quick start | Replace with | Settings |
+| --- | --- | --- | --- |
+| Database | PGlite | Any PostgreSQL server | `DB_*` |
+| Cache and streams | In-memory Redis server | Any Redis server | `REDIS_*` |
+| Courseware assets | Files on disk | Any S3 compatible storage | `STORAGE_BACKEND=oci_s3` and `OCI_S3_*` |
+
+`npm start` always uses the embedded stores: it is meant for a single machine, has one user, and listens on loopback only. To use your own servers, run the courseware service with these settings, alongside your own sign-in. The [integration guide](docs/integration.md#connecting-your-own-system) lists every setting and how to create the tables.
 
 ## Documentation
 

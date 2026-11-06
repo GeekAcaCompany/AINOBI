@@ -169,7 +169,13 @@ Authorization: Bearer <your user's token>
 
 Answer `GET /v1/organization/list` with the workspaces the user belongs to. Every courseware belongs to one of them.
 
-To replace a store, point the service at your own: `DB_*` for PostgreSQL, `REDIS_*` for Redis, and `OCI_S3_*` for any S3 compatible storage. Leave `AINOBI_DB_JOIN_NESTED_TRANSACTIONS` off on a real PostgreSQL server. Create the tables from [`apps/studio/server/schema.sql`](../apps/studio/server/schema.sql).
+Studio's PGlite, in-memory Redis, and disk storage are the smallest setup, not a requirement. To replace a store, point the service at your own; each one can be swapped independently:
+
+- **PostgreSQL:** `DB_TYPE=postgres`, `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_DATABASE`. Create the tables from [`apps/studio/server/schema.sql`](../apps/studio/server/schema.sql). Leave `AINOBI_DB_JOIN_NESTED_TRANSACTIONS` off: only PGlite's single session needs it.
+- **Redis:** `REDIS_HOST`, `REDIS_PORT`, and if needed `REDIS_USER`, `REDIS_PASSWORD`, `REDIS_DB`.
+- **S3 compatible storage:** `STORAGE_BACKEND=oci_s3`, `OCI_S3_ENDPOINT`, `OCI_S3_BUCKET`, `OCI_S3_ACCESS_KEY_ID`, `OCI_S3_SECRET_KEY`, `OCI_S3_REGION`. Set `AINOBI_STORAGE_LOCAL_ENDPOINT=true` only for a plain `http://` endpoint on your own machine.
+
+`npm start` does not read these: Studio always runs its embedded stores, so run `apps/courseware-service` yourself to use your own.
 
 Then give your frontend your own session in `configureCoursewareHost`. `ProtectedRoute`, `useAuth`, and `FeatureGate` are yours to replace, and the [player README](../packages/courseware-player/README.md) lists every setting.
 
