@@ -49,12 +49,26 @@ export function googleCredentialsEnv(settings, root = repositoryRoot) {
   return path ? { GOOGLE_APPLICATION_CREDENTIALS: resolvePath(root, path) } : {};
 }
 
-/** Whether narration and AI scoring have their Google Cloud service account: inline, or a key file that exists. */
+/** Whether a Google Cloud service account is configured: inline, or a key file that exists. */
 export function googleCredentialsStatus(settings, root = repositoryRoot) {
   if (settings.GOOGLE_APPLICATION_CREDENTIALS_JSON?.trim()) return 'on';
   const path = googleCredentialsEnv(settings, root).GOOGLE_APPLICATION_CREDENTIALS;
   if (!path) return 'missing';
   return existsSync(path) ? 'on' : 'no-file';
+}
+
+/**
+ * Where narration and AI scoring run, and whether its credential is there. AI Studio with GEMINI_API_KEY by default;
+ * Google Cloud Vertex AI with GEMINI_TTS_VERTEXAI=true, or when only a service account is configured
+ * (docs/google-cloud.md). The same rule as @ainobi/tts-google's chooseGoogleTtsBackend.
+ */
+export function googleBackend(settings, root = repositoryRoot) {
+  const apiKey = ['GEMINI_TTS_API_KEY', 'GEMINI_API_KEY', 'GOOGLE_CLOUD_API_KEY'].some((key) => settings[key]?.trim());
+  const credentials = googleCredentialsStatus(settings, root);
+  const choice = settings.GEMINI_TTS_VERTEXAI?.trim().toLowerCase();
+  const vertex = choice === 'true' || choice === '1' ? true : choice === 'false' || choice === '0' ? false : !apiKey && credentials !== 'missing';
+  if (vertex) return { backend: 'vertexai', status: credentials };
+  return { backend: 'gemini_api', status: apiKey ? 'on' : 'missing' };
 }
 
 /**
@@ -72,16 +86,17 @@ export function documentConverterUrls(settings) {
 export function coursewareEnv({ ports, token, internalToken, storageEndpoint, userEnv, baseEnv, videoRenderUrl }) {
   const web = `http://127.0.0.1:${ports.web}`;
   const converters = documentConverterUrls({ ...baseEnv, ...userEnv });
+  const google = googleBackend({ ...baseEnv, ...userEnv }).backend;
   return {
     PDF2HTML_SERVICE_URL: converters.pdf,
     PPTX2HTML_SERVICE_URL: converters.pptx,
     AINOBI_CREDITS_DISABLED: 'true',
     AINOBI_ORG_STORAGE_DISABLED: 'true',
     AINOBI_ORG_STORAGE_QUOTA_CHECK: 'false',
-    // Scoring runs on Gemini through Google Cloud Vertex AI, as it does on the platform; GOOGLE_CLOUD_API_KEY turns it on.
-    COURSEWARE_QUIZ_TEXT_SCORING_PROVIDER: 'vertexai',
+    // Scoring runs on Gemini, where narration does: AI Studio or Vertex AI (googleBackend).
+    COURSEWARE_QUIZ_TEXT_SCORING_PROVIDER: google,
     COURSEWARE_QUIZ_TEXT_SCORING_MODEL: 'gemini-3.6-flash',
-    COURSEWARE_QUIZ_AUDIO_SCORING_PROVIDER: 'vertexai',
+    COURSEWARE_QUIZ_AUDIO_SCORING_PROVIDER: google,
     COURSEWARE_QUIZ_AUDIO_SCORING_MODEL: 'gemini-3.5-flash',
     CORS_ALLOW_ORIGIN: web,
     STORAGE_BACKEND: 'oci_s3',
@@ -99,6 +114,7 @@ export function coursewareEnv({ ports, token, internalToken, storageEndpoint, us
     ...baseEnv,
     ...userEnv,
     ...googleCredentialsEnv({ ...baseEnv, ...userEnv }),
+    GEMINI_TTS_VERTEXAI: String(google === 'vertexai'),
     DB_TYPE: 'postgres',
     DB_HOST: '127.0.0.1',
     DB_PORT: String(ports.pg),
@@ -401,8 +417,11 @@ async function main() {
   editorAssistant = await readEditorAssistant(`http://127.0.0.1:${ports.courseware}`);
   console.log(`\n  AINOBI Studio   http://127.0.0.1:${ports.web}`);
   console.log(`  Agent (MCP)     http://127.0.0.1:${ports.courseware}/mcp   configured in .mcp.json`);
-  const google = googleCredentialsStatus({ ...process.env, ...userEnv });
-  console.log(`  Narration       ${google === 'on' ? 'on, with AI scoring' : 'NOT CONFIGURED: a Google Cloud service account is required, see below'}`);
+  const google = googleBackend({ ...process.env, ...userEnv });
+  const vertex = google.backend === 'vertexai';
+  console.log(
+    `  Narration       ${google.status === 'on' ? `on, with AI scoring${vertex ? ', on Google Cloud' : ''}` : `NOT CONFIGURED: ${vertex ? 'a Google Cloud service account' : 'GEMINI_API_KEY'} is required, see below`}`,
+  );
   console.log(`  Editor AI       ${editorAssistant ? 'on' : 'off (set ANTHROPIC_API_KEY and ANTHROPIC_BASE_URL in .env.local)'}`);
   const converters = documentConverterUrls({ ...process.env, ...userEnv });
   const [pdfUp, pptxUp] = await Promise.all([converterUp(converters.pdf), converterUp(converters.pptx)]);
@@ -410,16 +429,23 @@ async function main() {
     `  Documents       ${pdfUp || pptxUp ? `PDF ${pdfUp ? 'on' : 'off'}, PowerPoint ${pptxUp ? 'on' : 'off'}` : 'off (optional, see docs/document-conversion.md)'}`,
   );
   console.log(`  Video export    ${videoRender ? videoRenderUrl : 'off (optional, see docs/video-export.md)'}\n`);
-  if (google !== 'on') {
+  if (google.status !== 'on') {
     console.warn(
-      [
-        google === 'no-file'
-          ? '  !! GOOGLE_APPLICATION_CREDENTIALS points at a file that does not exist.'
-          : '  !! GOOGLE_APPLICATION_CREDENTIALS, a Google Cloud service account key file, is required and not set.',
-        '  !! Without it, narration and AI scoring of essays and recordings fail when used.',
-        '  !! Add GOOGLE_APPLICATION_CREDENTIALS=path/to/key.json to .env.local in this folder, then restart.',
-        '  !! The account needs the Vertex AI User role. See docs/google-cloud.md.\n',
-      ].join('\n'),
+      (vertex
+        ? [
+            google.status === 'no-file'
+              ? '  !! GOOGLE_APPLICATION_CREDENTIALS points at a file that does not exist.'
+              : '  !! GEMINI_TTS_VERTEXAI=true needs GOOGLE_APPLICATION_CREDENTIALS, a Google Cloud service account key file.',
+            '  !! Without it, narration and AI scoring of essays and recordings fail when used.',
+            '  !! Add GOOGLE_APPLICATION_CREDENTIALS=path/to/key.json to .env.local in this folder, then restart.',
+            '  !! See docs/google-cloud.md.\n',
+          ]
+        : [
+            '  !! GEMINI_API_KEY is required and not set.',
+            '  !! Without it, narration and AI scoring of essays and recordings fail when used.',
+            '  !! Add GEMINI_API_KEY=your-key to .env.local in this folder, then restart.\n',
+          ]
+      ).join('\n'),
     );
   }
 }

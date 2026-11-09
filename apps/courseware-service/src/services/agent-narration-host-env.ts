@@ -49,8 +49,10 @@ const isNarrationHostEnvKey = (key: string): boolean => {
   return (
     key.startsWith('OSS_') ||
     key.startsWith('GEMINI_TTS_') ||
-    // Google TTS on Vertex AI's Interactions API (resolveGoogleTtsTarget): the service account, project, and
-    // relay; host-side child only.
+    // Google TTS key fallbacks (resolveGoogleTtsApiKey), and on Vertex AI (resolveGoogleTtsVertexTarget) the service
+    // account, project, and relay; host-side child only.
+    key === 'GEMINI_API_KEY' ||
+    key === 'GOOGLE_CLOUD_API_KEY' ||
     key === 'GOOGLE_APPLICATION_CREDENTIALS' ||
     key === 'GOOGLE_APPLICATION_CREDENTIALS_JSON' ||
     key === 'GOOGLE_CLOUD_PROJECT' ||

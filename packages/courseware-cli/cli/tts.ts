@@ -15,9 +15,13 @@ import {
   encodePcmToMp3Async,
   hasGoogleCredentials,
   readGoogleServiceAccount,
-  resolveGoogleTtsTarget,
+  resolveGoogleTtsApiBase,
+  resolveGoogleTtsApiKey,
+  resolveGoogleTtsBackend,
+  resolveGoogleTtsVertexTarget,
   synthesizeGoogleSpeech,
 } from "./google-tts.ts";
+import type { GoogleTtsTarget } from "@ainobi/tts-google";
 import { coursewareAssetBaseUrl } from "./url-policy.ts";
 import { cliEnv, runWithCliEnv } from "./env.ts";
 import {
@@ -253,26 +257,48 @@ const googleAccessToken = (credentials: Parameters<typeof createGoogleAccessToke
   return googleToken.get;
 };
 
+/** The configured backend's target: AI Studio with an API key, or Vertex AI with a service account and project. */
+const resolveGoogleTarget = async (): Promise<GoogleTtsTarget> => {
+  if (resolveGoogleTtsBackend() === "gemini_api") {
+    const apiKey = resolveGoogleTtsApiKey();
+    if (!apiKey) {
+      throw new AinobiCliError(
+        "USAGE",
+        "TTS API credentials are required for narration insert (configure GEMINI_API_KEY or GEMINI_TTS_API_KEY on the AINOBI host).",
+      );
+    }
+    return { backend: "gemini_api", apiKey, apiBase: resolveGoogleTtsApiBase() };
+  }
+  const vertex = resolveGoogleTtsVertexTarget();
+  if (!hasGoogleCredentials(vertex.credentials)) {
+    throw new AinobiCliError(
+      "USAGE",
+      "TTS API credentials are required for narration insert on Vertex AI (configure GOOGLE_APPLICATION_CREDENTIALS, a service account key file, on the AINOBI host).",
+    );
+  }
+  let project = vertex.project;
+  try {
+    project ??= (await readGoogleServiceAccount(vertex.credentials))?.project_id?.trim() || null;
+  } catch (error) {
+    throw new AinobiCliError("USAGE", `The service account key could not be read: ${error instanceof Error ? error.message : error}`);
+  }
+  if (!project) {
+    throw new AinobiCliError("USAGE", "A Vertex AI project is required for narration insert (configure GOOGLE_CLOUD_PROJECT on the AINOBI host).");
+  }
+  return {
+    backend: "vertexai",
+    accessToken: googleAccessToken(vertex.credentials),
+    project,
+    location: vertex.location,
+    apiBase: vertex.apiBase,
+  };
+};
+
 const synthesizeGoogleAudio = async (
   text: string,
   settings: AITeacherTtsSettings,
 ): Promise<{ audio: Buffer; duration_ms: number; extension: string }> => {
-  const target = resolveGoogleTtsTarget();
-  if (!hasGoogleCredentials(target.credentials)) {
-    throw new AinobiCliError(
-      "USAGE",
-      "TTS API credentials are required for narration insert (configure GOOGLE_APPLICATION_CREDENTIALS, a Google Cloud service account key file, on the AINOBI host).",
-    );
-  }
-  let project = target.project;
-  try {
-    project ??= (await readGoogleServiceAccount(target.credentials))?.project_id?.trim() || null;
-  } catch (error) {
-    throw new AinobiCliError("USAGE", `The Google Cloud service account key could not be read: ${error instanceof Error ? error.message : error}`);
-  }
-  if (!project) {
-    throw new AinobiCliError("USAGE", "A Google Cloud project is required for narration insert (configure GOOGLE_CLOUD_PROJECT on the AINOBI host).");
-  }
+  const target = await resolveGoogleTarget();
 
   // Gemini returns WAV only; MP3 is the only format the courseware stores.
   const format = (cliEnv().GEMINI_TTS_FORMAT?.trim() || "mp3").toLowerCase();
@@ -282,10 +308,7 @@ const synthesizeGoogleAudio = async (
   let synthesized: Awaited<ReturnType<typeof synthesizeGoogleSpeech>>;
   try {
     synthesized = await synthesizeGoogleSpeech({
-      accessToken: googleAccessToken(target.credentials),
-      project,
-      location: target.location,
-      apiBase: target.apiBase,
+      target,
       model: settings.model?.trim() || DEFAULT_GOOGLE_TTS_MODEL,
       text,
       voiceId: settings.voice_id,

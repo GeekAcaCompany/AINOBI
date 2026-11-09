@@ -81,7 +81,8 @@ Always host-side: `AINOBI_KNOWLEDGE_HOST_URL` (knowledge commands; `AINOBI_KNOWL
 | `MINIMAX_TTS_MODEL`, `MINIMAX_TTS_VOICE_ID`, `MINIMAX_TTS_SPEED`, `MINIMAX_TTS_VOL`, `MINIMAX_TTS_PITCH` | Default voice settings. |
 | `MINIMAX_TTS_FORMAT`, `MINIMAX_TTS_SAMPLE_RATE`, `MINIMAX_TTS_BITRATE`, `MINIMAX_TTS_CHANNEL`, `MINIMAX_TTS_ENGLISH_NORMALIZATION` | Output settings. |
 | `MINIMAX_TTS_CONNECT_TIMEOUT_MS`, `MINIMAX_TTS_SYNTHESIS_TIMEOUT_MS` | Timeouts. |
-| `GOOGLE_APPLICATION_CREDENTIALS` or `GOOGLE_APPLICATION_CREDENTIALS_JSON`, `VERTEXAI_PROJECT_ID` / `GOOGLE_CLOUD_PROJECT`, `GEMINI_TTS_LOCATION`, `VERTEXAI_BASE_URL` | Google Gemini TTS on Google Cloud Vertex AI's Interactions API: a service account (no API key), the project (default: the service account's), the location (default `global`), and an optional relay. |
+| `GEMINI_TTS_API_KEY` (falls back to `GEMINI_API_KEY`, `GOOGLE_CLOUD_API_KEY`), `GEMINI_TTS_API_BASE` | Google (Gemini) TTS credentials and endpoint on AI Studio, the default. |
+| `GEMINI_TTS_VERTEXAI`, `GOOGLE_APPLICATION_CREDENTIALS` or `GOOGLE_APPLICATION_CREDENTIALS_JSON`, `VERTEXAI_PROJECT_ID` / `GOOGLE_CLOUD_PROJECT`, `GEMINI_TTS_LOCATION`, `VERTEXAI_BASE_URL` | Google Gemini TTS on Google Cloud Vertex AI instead: `GEMINI_TTS_VERTEXAI=true` (or a service account and no API key), the service account (Vertex takes no API key here), the project (default: the service account's), the location (default `global`), and an optional relay. |
 | `GEMINI_TTS_MODEL`, `GEMINI_TTS_VOICE_ID`, `GEMINI_TTS_FORMAT`, `GEMINI_TTS_MP3_BITRATE_KBPS`, `GEMINI_TTS_SYNTHESIS_TIMEOUT_MS` | Voice, output, and timeout. |
 
 ## Models, search, documents

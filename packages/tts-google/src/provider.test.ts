@@ -7,6 +7,7 @@ import {
   applyPcmGain,
   buildGoogleSpeedStyle,
   buildGoogleTtsPayload,
+  chooseGoogleTtsBackend,
   concatPcm,
   decodeGooglePcm,
   encodePcmToMp3,
@@ -177,6 +178,33 @@ test("WAV encoding round-trips stereo PCM", () => {
   const decoded = decodeGooglePcm(encodePcmToWav({ samples, sampleRate: 24000, channels: 2 }), "audio/wav");
   assert.equal(decoded.channels, 2);
   assert.deepEqual(Array.from(decoded.samples), Array.from(samples));
+});
+
+test("backend: an explicit choice wins, else an API key means AI Studio and a service account alone Vertex AI", () => {
+  assert.equal(chooseGoogleTtsBackend({ hasApiKey: true, hasCredentials: true }), "gemini_api");
+  assert.equal(chooseGoogleTtsBackend({ hasApiKey: false, hasCredentials: true }), "vertexai");
+  assert.equal(chooseGoogleTtsBackend({ hasApiKey: false, hasCredentials: false }), "gemini_api");
+  assert.equal(chooseGoogleTtsBackend({ vertexAi: " TRUE ", hasApiKey: true, hasCredentials: false }), "vertexai");
+  assert.equal(chooseGoogleTtsBackend({ vertexAi: "false", hasApiKey: false, hasCredentials: true }), "gemini_api");
+});
+
+test("provider: on AI Studio, sends the Interactions request with the API key", async () => {
+  const sent: Array<{ url: string; key: string; body: Record<string, unknown> }> = [];
+  outboundHttp.fetch = (async (url: string, init: RequestInit) => {
+    sent.push({ url, key: (init.headers as Record<string, string>)["x-goog-api-key"], body: JSON.parse(String(init.body)) });
+    return new Response(interaction(wavBytes([1, 2])), { status: 200 });
+  }) as unknown as typeof fetch;
+  // An API key wins over a service account unless Vertex AI is chosen.
+  const provider = new GoogleTTSProvider({ settings: { api_key: "k", access_token: "tok", project: "proj" } });
+  assert.equal(provider.backend, "gemini_api");
+  await provider.textToSpeech({ text: "你好。", voice_id: "kore", speed: 1, temperature: 0.7, top_p: 0.7, format: "wav", style: "warm" });
+  assert.equal(sent[0]?.url, "https://generativelanguage.googleapis.com/v1beta/interactions");
+  assert.equal(sent[0]?.key, "k");
+  assert.equal(sent[0]?.body.model, "gemini-3.8-flash-tts");
+  const relayed = new GoogleTTSProvider({ api_key: "k2", api_base: "https://relay.test/gemini/", settings: {} });
+  await relayed.textToSpeech({ text: "x", voice_id: "kore", speed: 1, temperature: 0.7, top_p: 0.7, format: "wav" });
+  assert.equal(sent[1]?.url, "https://relay.test/gemini/v1beta/interactions");
+  assert.equal(sent[1]?.key, "k2");
 });
 
 test("provider: sends one Vertex AI Interactions request per chunk, with a bearer token, and encodes the requested format", async () => {

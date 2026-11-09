@@ -1,6 +1,6 @@
 # Using coding agents
 
-A coding agent can author courseware directly on a running Studio: what it makes appears in the courseware list, ready to edit and preview. It connects over MCP. Research and pictures are done with the agent's own web search and image generation, so they need keys only for an agent without those abilities. Narration always needs the owner's Google Cloud service account ([docs/google-cloud.md](google-cloud.md)).
+A coding agent can author courseware directly on a running Studio: what it makes appears in the courseware list, ready to edit and preview. It connects over MCP. Research and pictures are done with the agent's own web search and image generation, so they need keys only for an agent without those abilities. Narration always needs the owner's `GEMINI_API_KEY`, or their Google Cloud service account ([docs/google-cloud.md](google-cloud.md)).
 
 ## Skills
 

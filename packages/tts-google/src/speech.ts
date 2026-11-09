@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 /**
- * Google Gemini TTS on Google Cloud (Vertex AI, Interactions endpoint) — the one implementation the
- * backend provider and the courseware CLI share.
+ * Google Gemini TTS (Interactions endpoint) — the one implementation the backend provider and the
+ * courseware CLI share. It runs on the Gemini Developer API (AI Studio, an API key) or on Google
+ * Cloud Vertex AI (a service account's access token, addressed by project and location); the
+ * request body is the same on both.
  *
- * The request body is the Interactions one: the delivery style travels in its own
- * `speech_metadata` annotation, apart from the text, so it is never read aloud. Vertex's
- * Interactions API takes a service account's access token, not an API key, and is addressed by
- * project and location.
+ * The delivery style travels in its own `speech_metadata` annotation, apart from the text, so it
+ * is never read aloud.
  *
  * The API answers with 24 kHz mono 16-bit WAV (or raw L16); callers store MP3, so the PCM is
  * encoded locally. Gemini TTS has no numeric speed / volume / pitch fields: speed becomes a
@@ -20,7 +20,38 @@ import { fetch as undiciFetch, ProxyAgent } from "undici";
 export const DEFAULT_GOOGLE_TTS_MODEL = "gemini-3.8-flash-tts";
 /** Multilingual base voice (works for zh / ja / en). */
 export const DEFAULT_GOOGLE_TTS_VOICE_ID = "kore";
+export const DEFAULT_GOOGLE_TTS_API_BASE = "https://generativelanguage.googleapis.com";
 export const DEFAULT_GOOGLE_TTS_LOCATION = "global";
+
+/** Where Gemini TTS runs: the Gemini Developer API (AI Studio) with an API key, or Vertex AI with an access token. */
+export type GoogleTtsTarget =
+  | { backend: "gemini_api"; apiKey: string; apiBase?: string | null }
+  | {
+      backend: "vertexai";
+      /** A Google Cloud access token for each request (see createGoogleAccessToken). */
+      accessToken: () => Promise<string>;
+      project: string;
+      location?: string | null;
+      /** Vertex AI's address, or a relay in front of it; default from the location. */
+      apiBase?: string | null;
+    };
+
+export type GoogleTtsBackend = GoogleTtsTarget["backend"];
+
+/**
+ * Which backend to use. An explicit choice (hosts read GEMINI_TTS_VERTEXAI, like GEMINI_LIVE_VERTEXAI) wins;
+ * otherwise an API key means AI Studio, and a service account alone means Vertex AI.
+ */
+export const chooseGoogleTtsBackend = (args: {
+  vertexAi?: string | null;
+  hasApiKey: boolean;
+  hasCredentials: boolean;
+}): GoogleTtsBackend => {
+  const choice = args.vertexAi?.trim().toLowerCase();
+  if (choice === "true" || choice === "1") return "vertexai";
+  if (choice === "false" || choice === "0") return "gemini_api";
+  return !args.hasApiKey && args.hasCredentials ? "vertexai" : "gemini_api";
+};
 
 /** Vertex AI's address for a location: the global endpoint, or the regional one. */
 export const googleTtsApiBase = (location: string = DEFAULT_GOOGLE_TTS_LOCATION): string =>
@@ -359,13 +390,7 @@ export class GoogleTtsError extends Error {
 }
 
 export interface GoogleSpeechOptions {
-  /** A Google Cloud access token for each request (see createGoogleAccessToken). */
-  accessToken: () => Promise<string>;
-  /** The Google Cloud project, and the Vertex AI location (default global). */
-  project: string;
-  location?: string | null;
-  /** Vertex AI's address, or a relay in front of it; default from the location. */
-  apiBase?: string | null;
+  target: GoogleTtsTarget;
   model?: string;
   text: string;
   voiceId: string;
@@ -383,19 +408,29 @@ export interface GoogleSpeechOptions {
   retryDelayMs?: number;
 }
 
-const requestChunk = async (options: GoogleSpeechOptions, text: string): Promise<PcmAudio> => {
+/** The Interactions endpoint and credential header of a target. */
+const targetRequest = async (target: GoogleTtsTarget): Promise<{ url: string; auth: Record<string, string> }> => {
+  if (target.backend === "gemini_api") {
+    const apiBase = (target.apiBase?.trim() || DEFAULT_GOOGLE_TTS_API_BASE).replace(/\/+$/, "");
+    return { url: `${apiBase}/v1beta/interactions`, auth: { "x-goog-api-key": target.apiKey } };
+  }
   let token: string;
   try {
-    token = await options.accessToken();
+    token = await target.accessToken();
   } catch (error) {
     // A token that cannot be minted is a configuration problem, not worth retrying.
     throw new GoogleTtsError(error instanceof Error ? error.message : String(error), false);
   }
+  return { url: googleTtsInteractionsUrl(target), auth: { authorization: `Bearer ${token}` } };
+};
+
+const requestChunk = async (options: GoogleSpeechOptions, text: string): Promise<PcmAudio> => {
+  const { url, auth } = await targetRequest(options.target);
   let response: Response;
   try {
-    response = await outboundHttp.fetch(googleTtsInteractionsUrl(options), {
+    response = await outboundHttp.fetch(url, {
       method: "POST",
-      headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+      headers: { ...auth, "content-type": "application/json" },
       body: JSON.stringify(
         buildGoogleTtsPayload({
           model: options.model || DEFAULT_GOOGLE_TTS_MODEL,

@@ -1,23 +1,32 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 /**
  * Google Gemini TTS provider for the `@ainobi/tts` port, built on the shared implementation in
- * speech.ts (the one the courseware CLI uses). Output is MP3 (LAME) or WAV. It runs on Google
- * Cloud Vertex AI with a service account.
+ * speech.ts (the one the courseware CLI uses). Output is MP3 (LAME) or WAV. It runs on the Gemini
+ * Developer API (AI Studio) with an API key, or on Google Cloud Vertex AI with a service account.
  */
 
 import { countBillableCodePoints, type BaseTTSProvider } from "@ainobi/tts";
 import { createGoogleAccessToken, hasGoogleCredentials, readGoogleServiceAccount, type GoogleCredentialSource } from "./google-auth.ts";
 import {
+  chooseGoogleTtsBackend,
+  DEFAULT_GOOGLE_TTS_API_BASE,
   DEFAULT_GOOGLE_TTS_LOCATION,
   DEFAULT_GOOGLE_TTS_MODEL,
   encodePcmToMp3Async,
   encodePcmToWav,
   synthesizeGoogleSpeech,
+  type GoogleTtsBackend,
+  type GoogleTtsTarget,
 } from "./speech.ts";
 
 /** Deployment settings; the host maps its configuration onto these (nothing is read from the environment). */
 export interface GoogleTTSSettings {
-  /** A service account key, inline JSON or a file path, or a ready access token. */
+  /** "gemini_api" (AI Studio), "vertexai", or empty to choose from the credentials given (an API key wins). */
+  backend: "" | GoogleTtsBackend;
+  /** The Gemini Developer API key, and its address or a relay in front of it. */
+  api_key: string;
+  api_base: string;
+  /** For Vertex AI: a service account key, inline JSON or a file path, or a ready access token. */
   credentials_json: string;
   credentials_path: string;
   access_token: string;
@@ -26,7 +35,7 @@ export interface GoogleTTSSettings {
   /** The Vertex AI location of the Interactions endpoint. */
   location: string;
   /** Vertex AI's address, or a relay in front of it; empty for the location's default. */
-  api_base: string;
+  vertex_api_base: string;
   /** Outbound proxy URI; empty for a direct connection. */
   proxy: string;
   model: string;
@@ -40,12 +49,15 @@ export interface GoogleTTSSettings {
 }
 
 export const DEFAULT_GOOGLE_TTS_SETTINGS: GoogleTTSSettings = {
+  backend: "",
+  api_key: "",
+  api_base: DEFAULT_GOOGLE_TTS_API_BASE,
   credentials_json: "",
   credentials_path: "",
   access_token: "",
   project: "",
   location: DEFAULT_GOOGLE_TTS_LOCATION,
-  api_base: "",
+  vertex_api_base: "",
   proxy: "",
   model: DEFAULT_GOOGLE_TTS_MODEL,
   service_timeout: 180,
@@ -60,26 +72,38 @@ export class GoogleTTSProvider implements BaseTTSProvider {
   model: string;
   proxy: string | null;
   timeout: number;
+  readonly backend: GoogleTtsBackend;
   readonly settings: GoogleTTSSettings;
   private readonly credentials: GoogleCredentialSource;
-  private readonly accessToken: () => Promise<string>;
+  private readonly accessToken: (() => Promise<string>) | null;
   private project: string | null;
 
   constructor(params: {
     model?: string;
+    api_key?: string | null;
+    api_base?: string | null;
     settings?: Partial<GoogleTTSSettings>;
   } & Record<string, unknown>) {
     this.settings = { ...DEFAULT_GOOGLE_TTS_SETTINGS, ...params.settings };
     this.model = params.model || this.settings.model;
+    if (params.api_key) this.settings.api_key = params.api_key;
+    if (params.api_base) this.settings.api_base = params.api_base;
     this.credentials = {
       accessToken: this.settings.access_token,
       credentialsJson: this.settings.credentials_json,
       credentialsPath: this.settings.credentials_path,
     };
-    if (!hasGoogleCredentials(this.credentials)) {
-      throw new Error("Google TTS needs Google Cloud credentials: set GOOGLE_APPLICATION_CREDENTIALS to a service account key file");
+    this.backend = this.settings.backend || chooseGoogleTtsBackend({
+      hasApiKey: Boolean(this.settings.api_key.trim()),
+      hasCredentials: hasGoogleCredentials(this.credentials),
+    });
+    if (this.backend === "gemini_api" && !this.settings.api_key.trim()) {
+      throw new Error("Google TTS API key not provided and GEMINI_TTS_API_KEY / GEMINI_API_KEY / GOOGLE_CLOUD_API_KEY are not set");
     }
-    this.accessToken = createGoogleAccessToken(this.credentials);
+    if (this.backend === "vertexai" && !hasGoogleCredentials(this.credentials)) {
+      throw new Error("Google TTS on Vertex AI needs Google Cloud credentials: set GOOGLE_APPLICATION_CREDENTIALS to a service account key file");
+    }
+    this.accessToken = this.backend === "vertexai" ? createGoogleAccessToken(this.credentials) : null;
     this.project = this.settings.project.trim() || null;
     this.proxy = (params.proxy as string | undefined) || this.settings.proxy || null;
     this.timeout = Number(params.timeout) || this.settings.service_timeout || 180;
@@ -94,6 +118,19 @@ export class GoogleTTSProvider implements BaseTTSProvider {
     }
     this.project = project;
     return project;
+  }
+
+  private async target(): Promise<GoogleTtsTarget> {
+    if (!this.accessToken) {
+      return { backend: "gemini_api", apiKey: this.settings.api_key.trim(), apiBase: this.settings.api_base || null };
+    }
+    return {
+      backend: "vertexai",
+      accessToken: this.accessToken,
+      project: await this.resolveProject(),
+      location: this.settings.location,
+      apiBase: this.settings.vertex_api_base || null,
+    };
   }
 
   async textToSpeech(params: {
@@ -111,10 +148,7 @@ export class GoogleTTSProvider implements BaseTTSProvider {
     }
     // temperature / top_p are not used by Gemini TTS
     const { pcm } = await synthesizeGoogleSpeech({
-      accessToken: this.accessToken,
-      project: await this.resolveProject(),
-      location: this.settings.location,
-      apiBase: this.settings.api_base || null,
+      target: await this.target(),
       model: this.model,
       text: params.text,
       voiceId: params.voice_id,

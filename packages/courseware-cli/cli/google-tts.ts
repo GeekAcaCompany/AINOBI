@@ -3,7 +3,14 @@
  * Google Gemini TTS for the CLI: the implementation lives in @ainobi/tts-google (shared with the
  * backend); this module re-exports it and resolves the CLI's credentials from its configuration.
  */
-import { DEFAULT_GOOGLE_TTS_LOCATION, type GoogleCredentialSource } from "@ainobi/tts-google";
+import {
+  chooseGoogleTtsBackend,
+  DEFAULT_GOOGLE_TTS_API_BASE,
+  DEFAULT_GOOGLE_TTS_LOCATION,
+  hasGoogleCredentials,
+  type GoogleCredentialSource,
+  type GoogleTtsBackend,
+} from "@ainobi/tts-google";
 import { cliEnv } from "./env.ts";
 
 export {
@@ -30,11 +37,20 @@ export {
   type PcmAudio,
 } from "@ainobi/tts-google";
 
+export const resolveGoogleTtsApiKey = (env: NodeJS.ProcessEnv = cliEnv()): string | undefined =>
+  env.GEMINI_TTS_API_KEY?.trim() ||
+  env.GEMINI_API_KEY?.trim() ||
+  env.GOOGLE_CLOUD_API_KEY?.trim() ||
+  undefined;
+
+export const resolveGoogleTtsApiBase = (env: NodeJS.ProcessEnv = cliEnv()): string =>
+  (env.GEMINI_TTS_API_BASE?.trim() || DEFAULT_GOOGLE_TTS_API_BASE).replace(/\/+$/, "");
+
 /**
- * Where Gemini TTS runs: Google Cloud Vertex AI's Interactions API, with a service account (it takes no API key). The
- * project defaults to the service account's own; VERTEXAI_BASE_URL puts a relay in front of Vertex AI.
+ * Where Gemini TTS on Google Cloud Vertex AI runs: a service account (Vertex's Interactions API takes no API key), the
+ * project (default: the service account's own), the location, and VERTEXAI_BASE_URL for a relay in front of it.
  */
-export const resolveGoogleTtsTarget = (
+export const resolveGoogleTtsVertexTarget = (
   env: NodeJS.ProcessEnv = cliEnv(),
 ): { credentials: GoogleCredentialSource; project: string | null; location: string; apiBase: string | null } => ({
   credentials: {
@@ -45,3 +61,11 @@ export const resolveGoogleTtsTarget = (
   location: env.GEMINI_TTS_LOCATION?.trim() || DEFAULT_GOOGLE_TTS_LOCATION,
   apiBase: env.VERTEXAI_BASE_URL?.trim().replace(/\/+$/, "") || null,
 });
+
+/** AI Studio by default; Vertex AI with GEMINI_TTS_VERTEXAI=true, or when only a service account is configured. */
+export const resolveGoogleTtsBackend = (env: NodeJS.ProcessEnv = cliEnv()): GoogleTtsBackend =>
+  chooseGoogleTtsBackend({
+    vertexAi: env.GEMINI_TTS_VERTEXAI,
+    hasApiKey: Boolean(resolveGoogleTtsApiKey(env)),
+    hasCredentials: hasGoogleCredentials(resolveGoogleTtsVertexTarget(env).credentials),
+  });

@@ -52,7 +52,8 @@ test("reads a key file, takes a ready token as is, and says what is missing", as
 });
 
 test("the provider needs credentials, and takes the project from the service account", async () => {
-  assert.throws(() => new GoogleTTSProvider({ settings: {} }), /GOOGLE_APPLICATION_CREDENTIALS/);
+  assert.throws(() => new GoogleTTSProvider({ settings: {} }), /GEMINI_API_KEY/);
+  assert.throws(() => new GoogleTTSProvider({ settings: { backend: "vertexai", api_key: "k" } }), /GOOGLE_APPLICATION_CREDENTIALS/);
   const provider = new GoogleTTSProvider({ settings: { credentials_json: JSON.stringify(account) } });
   assert.equal(await (provider as unknown as { resolveProject(): Promise<string> }).resolveProject(), "proj-from-key");
 });

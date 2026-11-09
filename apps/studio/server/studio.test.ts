@@ -2,7 +2,7 @@
 import { join, resolve, sep } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { answer, isLoopbackHost, LOCAL_ORG_ID } from './local-host.mjs';
-import { coursewareEnv, documentConverterUrls, embedOrigins, frameAncestors, googleCredentialsEnv, googleCredentialsStatus, mcpConfig, resolveStatic, studioPorts } from './start.mjs';
+import { coursewareEnv, documentConverterUrls, embedOrigins, frameAncestors, googleBackend, googleCredentialsEnv, googleCredentialsStatus, mcpConfig, resolveStatic, studioPorts } from './start.mjs';
 import { findDefaultVoice, loadVoices, voicePage } from './voices.mjs';
 
 describe('local host', () => {
@@ -61,10 +61,25 @@ describe('coursewareEnv', () => {
   it('keeps billing off and lets the user file add provider keys', () => {
     const result = env({ ANTHROPIC_API_KEY: 'k' });
     expect(result.AINOBI_CREDITS_DISABLED).toBe('true');
-    expect(result.COURSEWARE_QUIZ_TEXT_SCORING_PROVIDER).toBe('vertexai');
-    expect(result.COURSEWARE_QUIZ_AUDIO_SCORING_PROVIDER).toBe('vertexai');
+    expect(result.COURSEWARE_QUIZ_TEXT_SCORING_PROVIDER).toBe('gemini_api');
+    expect(result.COURSEWARE_QUIZ_AUDIO_SCORING_PROVIDER).toBe('gemini_api');
+    expect(result.GEMINI_TTS_VERTEXAI).toBe('false');
     expect(result.ANTHROPIC_API_KEY).toBe('k');
     expect(result.AINOBI_DB_JOIN_NESTED_TRANSACTIONS).toBe('true');
+  });
+
+  it('runs narration and scoring on AI Studio by default, and on Vertex AI when chosen or with a service account alone', () => {
+    const root = join(sep, 'repo');
+    const sa = { GOOGLE_APPLICATION_CREDENTIALS_JSON: '{}' };
+    expect(googleBackend({}, root)).toEqual({ backend: 'gemini_api', status: 'missing' });
+    expect(googleBackend({ GEMINI_API_KEY: 'k', ...sa }, root)).toEqual({ backend: 'gemini_api', status: 'on' });
+    expect(googleBackend(sa, root)).toEqual({ backend: 'vertexai', status: 'on' });
+    expect(googleBackend({ GOOGLE_APPLICATION_CREDENTIALS: 'nope.json' }, root)).toEqual({ backend: 'vertexai', status: 'no-file' });
+    expect(googleBackend({ GEMINI_API_KEY: 'k', GEMINI_TTS_VERTEXAI: 'true' }, root)).toEqual({ backend: 'vertexai', status: 'missing' });
+    const vertex = env({ GEMINI_API_KEY: 'k', GEMINI_TTS_VERTEXAI: 'true', ...sa });
+    expect(vertex.COURSEWARE_QUIZ_TEXT_SCORING_PROVIDER).toBe('vertexai');
+    expect(vertex.COURSEWARE_QUIZ_AUDIO_SCORING_PROVIDER).toBe('vertexai');
+    expect(vertex.GEMINI_TTS_VERTEXAI).toBe('true');
   });
 
   it('points the service at the document converters, on their usual ports unless the user file moves them', () => {

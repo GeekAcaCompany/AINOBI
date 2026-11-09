@@ -3,7 +3,15 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 // The synthesis itself is tested in @ainobi/tts-google; these cover the CLI's side of it.
-import { encodePcmToMp3, hasGoogleCredentials, pcmDurationMs, resolveGoogleTtsTarget } from "./google-tts.ts";
+import {
+  encodePcmToMp3,
+  hasGoogleCredentials,
+  pcmDurationMs,
+  resolveGoogleTtsApiBase,
+  resolveGoogleTtsApiKey,
+  resolveGoogleTtsBackend,
+  resolveGoogleTtsVertexTarget,
+} from "./google-tts.ts";
 import { readMp3DurationMs } from "./mp3-duration.ts";
 import { isTtsVoiceNotFoundError, resolveGoogleTtsProxyUrl, resolveTtsProxyUrl } from "./tts.ts";
 
@@ -21,19 +29,31 @@ test("encoded Google TTS audio has the duration the CLI's MP3 parser reads", () 
   assert.ok(duration != null && Math.abs(duration - 1000) < 150, `duration=${duration}`);
 });
 
-test("Google TTS runs on Vertex AI with a service account, never an API key", () => {
-  const target = resolveGoogleTtsTarget({ GOOGLE_APPLICATION_CREDENTIALS: " /keys/sa.json ", GOOGLE_CLOUD_PROJECT: "proj", VERTEXAI_BASE_URL: "https://relay.test/vertexai/" });
+test("Google TTS credentials and base URL fall back in order", () => {
+  assert.equal(resolveGoogleTtsApiKey({ GEMINI_TTS_API_KEY: "a", GEMINI_API_KEY: "b" }), "a");
+  assert.equal(resolveGoogleTtsApiKey({ GEMINI_API_KEY: "b", GOOGLE_CLOUD_API_KEY: "c" }), "b");
+  assert.equal(resolveGoogleTtsApiKey({ GOOGLE_CLOUD_API_KEY: "c" }), "c");
+  assert.equal(resolveGoogleTtsApiKey({}), undefined);
+  assert.equal(resolveGoogleTtsApiBase({}), "https://generativelanguage.googleapis.com");
+  assert.equal(resolveGoogleTtsApiBase({ GEMINI_TTS_API_BASE: "https://relay.test/t/x/gemini/" }), "https://relay.test/t/x/gemini");
+});
+
+test("Google TTS runs on AI Studio by default, and on Vertex AI when chosen or with a service account alone", () => {
+  const sa = { GOOGLE_APPLICATION_CREDENTIALS: " /keys/sa.json " };
+  assert.equal(resolveGoogleTtsBackend({ GEMINI_API_KEY: "a", ...sa }), "gemini_api");
+  assert.equal(resolveGoogleTtsBackend(sa), "vertexai");
+  assert.equal(resolveGoogleTtsBackend({ GEMINI_API_KEY: "a", ...sa, GEMINI_TTS_VERTEXAI: "true" }), "vertexai");
+  assert.equal(resolveGoogleTtsBackend({}), "gemini_api");
+  const target = resolveGoogleTtsVertexTarget({ ...sa, GOOGLE_CLOUD_PROJECT: "proj", VERTEXAI_BASE_URL: "https://relay.test/vertexai/" });
   assert.deepEqual(target, {
     credentials: { credentialsJson: null, credentialsPath: "/keys/sa.json" },
     project: "proj",
     location: "global",
     apiBase: "https://relay.test/vertexai",
   });
-  // Gemini Developer API (AI Studio) and Vertex API keys give no credential for the Interactions API.
-  const keysOnly = resolveGoogleTtsTarget({ GEMINI_API_KEY: "a", GEMINI_TTS_API_KEY: "b", GOOGLE_CLOUD_API_KEY: "c" });
-  assert.equal(hasGoogleCredentials(keysOnly.credentials), false);
-  assert.equal(keysOnly.project, null);
-  assert.equal(resolveGoogleTtsTarget({ GEMINI_TTS_LOCATION: "us-central1" }).location, "us-central1");
+  // API keys give no credential for Vertex AI's Interactions API.
+  assert.equal(hasGoogleCredentials(resolveGoogleTtsVertexTarget({ GEMINI_API_KEY: "a", GOOGLE_CLOUD_API_KEY: "c" }).credentials), false);
+  assert.equal(resolveGoogleTtsVertexTarget({ GEMINI_TTS_LOCATION: "us-central1" }).location, "us-central1");
 });
 
 test("isTtsVoiceNotFoundError recognizes Google unknown-voice errors", () => {
