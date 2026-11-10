@@ -35,7 +35,7 @@ embed.on('saved', ({ coursewareId }) => console.log('saved', coursewareId));
 | `@ainobi/widgets/guest` | `startEmbedGuest(options)` for the embedded page: it answers only `window.parent` on its origin allowlist and pins the host origin. |
 | `@ainobi/widgets/bundle` | The IIFE script: defines the elements and exposes `window.AinobiWidgets`. |
 
-Events: `ready`, `resize`, `saved`, `signedIn`, `error`, `close`. Element attributes: `base-url`, `src`, `courseware-id`, `course-id`, `org-id`, `model-url` (avatar: Live2D `.model3.json` or Inochi2D `.inx`), `height`, `auto-resize`. See `docs/embedding-guide.md` in the repository for the platform side (allowed origins, handoff).
+Events: `ready`, `resize`, `saved`, `signedIn`, `error`, `close`. Element attributes: `base-url`, `src`, `courseware-id`, `course-id`, `org-id`, `model-url` (avatar: a model the frame can render, such as an Inochi2D `.inx`), `height`, `auto-resize`. See `docs/embedding-guide.md` in the repository for the platform side (allowed origins, handoff).
 
 ## Using it outside this repository
 

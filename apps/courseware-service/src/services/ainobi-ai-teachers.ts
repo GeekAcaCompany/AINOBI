@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import { ainobiBackendApiUrl } from '../config/ainobi-backend-api.ts';
 import {
-  DEFAULT_AI_TEACHERS,
+  defaultAiTeacher,
+  defaultAiTeachers,
+  modelRuntime,
   normalizeTeacherList,
   normalizeTtsProvider,
   type AITeacher,
@@ -64,7 +66,7 @@ export type FetchOrgAiTeachersResult = {
 };
 
 export function builtinAiTeachers(): readonly AITeacher[] {
-  return DEFAULT_AI_TEACHERS;
+  return defaultAiTeachers();
 }
 
 export function mapPlatformAiTeacherRow(row: PlatformAiTeacherRow): AITeacher | null {
@@ -74,7 +76,7 @@ export function mapPlatformAiTeacherRow(row: PlatformAiTeacherRow): AITeacher | 
     return null;
   }
 
-  const fallback = DEFAULT_AI_TEACHERS[0];
+  const fallback = defaultAiTeacher();
   const fallbackModelUrl = fallback?.ai_teacher_live2d_model_url?.trim() || '';
   const hasPlatformLive2dModel = Boolean(row.ai_teacher_live2d_model_url?.trim());
   const usedLive2dFallback = !hasPlatformLive2dModel && Boolean(fallbackModelUrl);
@@ -85,7 +87,7 @@ export function mapPlatformAiTeacherRow(row: PlatformAiTeacherRow): AITeacher | 
   const teacher: AITeacher = {
     ai_teacher_id: id,
     ai_teacher_name: name,
-    runtime: 'live2d',
+    runtime: modelRuntime(modelUrl),
     model_url: modelUrl,
     ai_teacher_avatar_url: usedLive2dFallback
       ? fallback?.ai_teacher_avatar_url?.trim() || ''

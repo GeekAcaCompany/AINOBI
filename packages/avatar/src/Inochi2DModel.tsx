@@ -272,7 +272,7 @@ function applyCanvasFillStyles(
 export interface Inochi2DModelProps {
   /** URL to an Inochi2D `.inx` (INP) file. */
   modelUrl: string;
-  /** Target height in CSS pixels (matches Live2DModel layout intent). */
+  /** Target height in CSS pixels. */
   maxHeight?: number;
   /** Target width hint when the container has not laid out yet (editor stage slot). */
   maxWidth?: number;
@@ -321,7 +321,7 @@ export type Inochi2DModelApi = {
   /** Loaded puppet data and Three.js root (if still mounted). */
   puppet: unknown;
   rootObject: THREE.Object3D | null;
-  /** Inochi2D web runtime does not expose Live2D-style motions; these are compatibility stubs. */
+  /** The Inochi2D web runtime has no motions; these keep the API of the other model runtimes. */
   playMotion: (group: string, index?: number) => void;
   playExpression: (name: string) => void;
   playPresetAction: (preset: string) => void;
@@ -554,7 +554,7 @@ export function Inochi2DModelComponent({
         case "low":
           return 1;
         case "high":
-          // Fixed supersampling ratio; see Live2DModel.tsx for the rationale.
+          // High quality renders at a fixed 3x, whatever the display's pixel ratio.
           return 3;
         default:
           return Math.min(dpr, 1.5);

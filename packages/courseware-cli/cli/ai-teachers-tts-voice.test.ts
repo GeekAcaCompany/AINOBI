@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
-  DEFAULT_AI_TEACHER,
+  defaultAiTeacher,
   defaultTtsVoiceId,
   isPlatformTtsRecordId,
   normalizeTeacherList,
@@ -73,9 +73,9 @@ test("normalizeTeacherList keeps teachers without live2d model url", () => {
   assert.ok(teacher);
   assert.equal(teacher.ai_teacher_id, "addbcdc1-6c2c-4aab-8e6b-652ec856e23a");
   assert.equal(teacher.ai_teacher_name, "NoModelUrlTeacher");
-  assert.equal(teacher.ai_teacher_live2d_model_url, DEFAULT_AI_TEACHER.ai_teacher_live2d_model_url);
-  assert.equal(teacher.ai_teacher_avatar_url, DEFAULT_AI_TEACHER.ai_teacher_avatar_url);
-  assert.equal(teacher.ai_teacher_live2d_model_image_url, DEFAULT_AI_TEACHER.ai_teacher_live2d_model_image_url);
+  assert.equal(teacher.ai_teacher_live2d_model_url, defaultAiTeacher().ai_teacher_live2d_model_url);
+  assert.equal(teacher.ai_teacher_avatar_url, defaultAiTeacher().ai_teacher_avatar_url);
+  assert.equal(teacher.ai_teacher_live2d_model_image_url, defaultAiTeacher().ai_teacher_live2d_model_image_url);
 });
 
 test("normalizeTeacherList falls back live2d model url when missing", () => {
@@ -86,10 +86,38 @@ test("normalizeTeacherList falls back live2d model url when missing", () => {
     },
   ]);
   assert.ok(teacher);
-  assert.equal(teacher.ai_teacher_live2d_model_url, DEFAULT_AI_TEACHER.ai_teacher_live2d_model_url);
-  assert.equal(teacher.model_url, DEFAULT_AI_TEACHER.ai_teacher_live2d_model_url);
-  assert.equal(teacher.ai_teacher_avatar_url, DEFAULT_AI_TEACHER.ai_teacher_avatar_url);
-  assert.equal(teacher.ai_teacher_live2d_model_image_url, DEFAULT_AI_TEACHER.ai_teacher_live2d_model_image_url);
+  assert.equal(teacher.ai_teacher_live2d_model_url, defaultAiTeacher().ai_teacher_live2d_model_url);
+  assert.equal(teacher.model_url, defaultAiTeacher().ai_teacher_live2d_model_url);
+  assert.equal(teacher.ai_teacher_avatar_url, defaultAiTeacher().ai_teacher_avatar_url);
+  assert.equal(teacher.ai_teacher_live2d_model_image_url, defaultAiTeacher().ai_teacher_live2d_model_image_url);
+});
+
+test("defaultAiTeacher takes a host's own teacher, with the runtime its model needs", () => {
+  const keys = ["AINOBI_DEFAULT_AI_TEACHER_ID", "AINOBI_DEFAULT_AI_TEACHER_NAME", "AINOBI_DEFAULT_AI_TEACHER_MODEL_URL", "AINOBI_DEFAULT_AI_TEACHER_AVATAR_URL"];
+  const previous = keys.map((key) => process.env[key]);
+  const platform = defaultAiTeacher();
+  Object.assign(process.env, {
+    AINOBI_DEFAULT_AI_TEACHER_ID: "00000000-0000-4000-8000-000000000003",
+    AINOBI_DEFAULT_AI_TEACHER_NAME: "Local Teacher",
+    AINOBI_DEFAULT_AI_TEACHER_MODEL_URL: "/models/teacher/teacher.inx",
+    AINOBI_DEFAULT_AI_TEACHER_AVATAR_URL: "/teacher.png",
+  });
+  try {
+    const local = defaultAiTeacher();
+    assert.equal(local.ai_teacher_id, "00000000-0000-4000-8000-000000000003");
+    assert.equal(local.runtime, "inochi2d");
+    assert.equal(local.ai_teacher_live2d_model_url, "/models/teacher/teacher.inx");
+    assert.equal(local.ai_teacher_avatar_url, "/teacher.png");
+    const [borrowed] = normalizeTeacherList([{ ai_teacher_id: "8f4e1f3e-1111-2222-3333-444455556666", ai_teacher_name: "NoModel" }]);
+    assert.equal(borrowed?.model_url, "/models/teacher/teacher.inx");
+    assert.equal(borrowed?.runtime, "inochi2d");
+  } finally {
+    keys.forEach((key, index) => {
+      if (previous[index] === undefined) delete process.env[key];
+      else process.env[key] = previous[index];
+    });
+  }
+  assert.equal(platform.runtime, "live2d");
 });
 
 test("resolveTeacherTtsVoiceId substitutes platform UUID with default voice", () => {

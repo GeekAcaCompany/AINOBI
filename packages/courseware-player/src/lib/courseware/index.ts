@@ -19,7 +19,6 @@ export * from "@ainobi/courseware-core/quiz-score-summary-default-ast.ts";
 export * from "@ainobi/courseware-core/rich-ast.ts";
 export * from "./asset-presign-enabled.ts";
 export * from "./presign-scene.ts";
-export * from "@ainobi/avatar/live2d-model-presign";
 export * from "@ainobi/courseware-core/slide-canvas-audio.ts";
 export * from "./slide-snapshot-time.ts";
 export * from "./first-slide-fingerprint.ts";

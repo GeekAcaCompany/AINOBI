@@ -9,31 +9,25 @@
     "visibility": "public",
     "capabilities": [
       "avatar",
-      "live2d",
       "inochi2d"
     ]
   },
-  "description": "AINOBI avatar components for React: Live2D and Inochi2D rendering, model caching, and the shared stage.",
+  "description": "AINOBI avatar components for React: Inochi2D rendering, model caching, and the courseware stage helpers.",
   "exports": {
     ".": "./src/index.ts",
-    "./Inochi2DModel": "./src/Inochi2DModel.tsx",
-    "./Live2DModel": "./src/Live2DModel.tsx",
-    "./VtuberModelLoadingPlaceholder": "./src/VtuberModelLoadingPlaceholder.tsx",
+    "./host": "./src/host.ts",
     "./inochi-model-dispose": "./src/inochi-model-dispose.ts",
     "./inochi-model-instance-cache": "./src/inochi-model-instance-cache.ts",
     "./inochi-model-load-queue": "./src/inochi-model-load-queue.ts",
     "./inochi-puppet-drivers": "./src/inochi-puppet-drivers.ts",
     "./inochi-stage-render": "./src/inochi-stage-render.ts",
-    "./live2d-cubism-runtime": "./src/live2d-cubism-runtime.ts",
-    "./live2d-model-dispose": "./src/live2d-model-dispose.ts",
-    "./live2d-model-instance-cache": "./src/live2d-model-instance-cache.ts",
-    "./live2d-model-load-queue": "./src/live2d-model-load-queue.ts",
-    "./live2d-model-presign": "./src/live2d-model-presign.ts",
-    "./live2d-render-resolution": "./src/live2d-render-resolution.ts",
-    "./live2d-shared-stage": "./src/live2d-shared-stage.ts",
+    "./Inochi2DModel": "./src/Inochi2DModel.tsx",
+    "./Live2dStageModel": "./src/Live2dStageModel.tsx",
+    "./model-runtime": "./src/model-runtime.ts",
     "./vtuber-model-cache": "./src/vtuber-model-cache.ts",
     "./vtuber-model-defaults": "./src/vtuber-model-defaults.ts",
-    "./vtuber-source-key": "./src/vtuber-source-key.ts"
+    "./vtuber-source-key": "./src/vtuber-source-key.ts",
+    "./VtuberModelLoadingPlaceholder": "./src/VtuberModelLoadingPlaceholder.tsx"
   },
   "files": [
     "dist",
@@ -47,17 +41,9 @@
         "types": "./dist/index.d.ts",
         "import": "./dist/index.js"
       },
-      "./Inochi2DModel": {
-        "types": "./dist/Inochi2DModel.d.ts",
-        "import": "./dist/Inochi2DModel.js"
-      },
-      "./Live2DModel": {
-        "types": "./dist/Live2DModel.d.ts",
-        "import": "./dist/Live2DModel.js"
-      },
-      "./VtuberModelLoadingPlaceholder": {
-        "types": "./dist/VtuberModelLoadingPlaceholder.d.ts",
-        "import": "./dist/VtuberModelLoadingPlaceholder.js"
+      "./host": {
+        "types": "./dist/host.d.ts",
+        "import": "./dist/host.js"
       },
       "./inochi-model-dispose": {
         "types": "./dist/inochi-model-dispose.d.ts",
@@ -79,33 +65,17 @@
         "types": "./dist/inochi-stage-render.d.ts",
         "import": "./dist/inochi-stage-render.js"
       },
-      "./live2d-cubism-runtime": {
-        "types": "./dist/live2d-cubism-runtime.d.ts",
-        "import": "./dist/live2d-cubism-runtime.js"
+      "./Inochi2DModel": {
+        "types": "./dist/Inochi2DModel.d.ts",
+        "import": "./dist/Inochi2DModel.js"
       },
-      "./live2d-model-dispose": {
-        "types": "./dist/live2d-model-dispose.d.ts",
-        "import": "./dist/live2d-model-dispose.js"
+      "./Live2dStageModel": {
+        "types": "./dist/Live2dStageModel.d.ts",
+        "import": "./dist/Live2dStageModel.js"
       },
-      "./live2d-model-instance-cache": {
-        "types": "./dist/live2d-model-instance-cache.d.ts",
-        "import": "./dist/live2d-model-instance-cache.js"
-      },
-      "./live2d-model-load-queue": {
-        "types": "./dist/live2d-model-load-queue.d.ts",
-        "import": "./dist/live2d-model-load-queue.js"
-      },
-      "./live2d-model-presign": {
-        "types": "./dist/live2d-model-presign.d.ts",
-        "import": "./dist/live2d-model-presign.js"
-      },
-      "./live2d-render-resolution": {
-        "types": "./dist/live2d-render-resolution.d.ts",
-        "import": "./dist/live2d-render-resolution.js"
-      },
-      "./live2d-shared-stage": {
-        "types": "./dist/live2d-shared-stage.d.ts",
-        "import": "./dist/live2d-shared-stage.js"
+      "./model-runtime": {
+        "types": "./dist/model-runtime.d.ts",
+        "import": "./dist/model-runtime.js"
       },
       "./vtuber-model-cache": {
         "types": "./dist/vtuber-model-cache.d.ts",
@@ -118,6 +88,10 @@
       "./vtuber-source-key": {
         "types": "./dist/vtuber-source-key.d.ts",
         "import": "./dist/vtuber-source-key.js"
+      },
+      "./VtuberModelLoadingPlaceholder": {
+        "types": "./dist/VtuberModelLoadingPlaceholder.d.ts",
+        "import": "./dist/VtuberModelLoadingPlaceholder.js"
       }
     }
   },
@@ -134,15 +108,11 @@
   "peerDependencies": {
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "pixi.js": "^6.5.10",
-    "pixi-live2d-display": "^0.4.0",
     "three": "^0.146.0"
   },
   "devDependencies": {
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "pixi.js": "^6.5.10",
-    "pixi-live2d-display": "^0.4.0",
     "three": "^0.146.0",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",

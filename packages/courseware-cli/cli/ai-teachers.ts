@@ -50,7 +50,8 @@ export const DEFAULT_TTS_PROVIDER: TtsProvider = "google";
 /** Default before Google; still used for provider-less legacy records with a native voice id. */
 export const LEGACY_DEFAULT_TTS_PROVIDER: TtsProvider = "minimax";
 
-export const DEFAULT_AI_TEACHER: AITeacher = {
+/** The platform's default teacher. */
+const PLATFORM_DEFAULT_AI_TEACHER: AITeacher = {
   ai_teacher_id: "00000000-0000-0000-0000-000000000000",
   ai_teacher_name: "AINOBI教师",
   ai_teacher_tts_provider: DEFAULT_TTS_PROVIDER,
@@ -64,7 +65,32 @@ export const DEFAULT_AI_TEACHER: AITeacher = {
     "https://courseware.example.com/model/live2d_model/ainobi-teacher-001/ainobi-teacher-001.png",
 };
 
-export const DEFAULT_AI_TEACHERS: readonly AITeacher[] = [DEFAULT_AI_TEACHER];
+/** Inochi2D for an `.inx` model, Live2D otherwise. */
+export const modelRuntime = (modelUrl: string): string => (/.inx(?:[?#]|$)/i.test(modelUrl) ? "inochi2d" : "live2d");
+
+/**
+ * The teacher an element gets when none is named, and whose model a teacher without one borrows. A host that ships
+ * its own teacher names it with AINOBI_DEFAULT_AI_TEACHER_MODEL_URL (and _ID, _NAME, _AVATAR_URL); otherwise it is the
+ * platform's.
+ */
+export function defaultAiTeacher(): AITeacher {
+  const env = cliEnv();
+  const modelUrl = env.AINOBI_DEFAULT_AI_TEACHER_MODEL_URL?.trim();
+  if (!modelUrl) return PLATFORM_DEFAULT_AI_TEACHER;
+  const avatarUrl = env.AINOBI_DEFAULT_AI_TEACHER_AVATAR_URL?.trim() || modelUrl;
+  return {
+    ...PLATFORM_DEFAULT_AI_TEACHER,
+    ai_teacher_id: env.AINOBI_DEFAULT_AI_TEACHER_ID?.trim() || PLATFORM_DEFAULT_AI_TEACHER.ai_teacher_id,
+    ai_teacher_name: env.AINOBI_DEFAULT_AI_TEACHER_NAME?.trim() || PLATFORM_DEFAULT_AI_TEACHER.ai_teacher_name,
+    runtime: modelRuntime(modelUrl),
+    model_url: modelUrl,
+    ai_teacher_avatar_url: avatarUrl,
+    ai_teacher_live2d_model_url: modelUrl,
+    ai_teacher_live2d_model_image_url: avatarUrl,
+  };
+}
+
+export const defaultAiTeachers = (): readonly AITeacher[] => [defaultAiTeacher()];
 
 const stringOrEmpty = (value: unknown): string =>
   typeof value === "string" ? value : "";
@@ -107,7 +133,8 @@ const normalizeTeacher = (value: unknown): AITeacher | null => {
   const raw = value as Record<string, unknown>;
   const id = stringOrEmpty(raw.ai_teacher_id) || stringOrEmpty(raw.id) || stringOrEmpty(raw.model_id);
   const name = stringOrEmpty(raw.ai_teacher_name) || stringOrEmpty(raw.name);
-  const fallbackModelUrl = DEFAULT_AI_TEACHER.ai_teacher_live2d_model_url?.trim() || "";
+  const fallback = defaultAiTeacher();
+  const fallbackModelUrl = fallback.ai_teacher_live2d_model_url?.trim() || "";
   const platformLive2dModelUrl =
     stringOrEmpty(raw.ai_teacher_live2d_model_url) || stringOrEmpty(raw.live2d_model_url);
   const hasPlatformLive2dModel = Boolean(platformLive2dModelUrl);
@@ -119,14 +146,14 @@ const normalizeTeacher = (value: unknown): AITeacher | null => {
   const teacher: AITeacher = {
     ai_teacher_id: id,
     ai_teacher_name: name,
-    runtime: stringOrEmpty(raw.runtime) || "live2d",
+    runtime: stringOrEmpty(raw.runtime) || modelRuntime(modelUrl),
     model_url: modelUrl,
     ai_teacher_avatar_url: usedLive2dFallback
-      ? DEFAULT_AI_TEACHER.ai_teacher_avatar_url
+      ? fallback.ai_teacher_avatar_url
       : stringOrEmpty(raw.ai_teacher_avatar_url) || stringOrEmpty(raw.avatar_url),
     ai_teacher_live2d_model_url: modelUrl,
     ai_teacher_live2d_model_image_url: usedLive2dFallback
-      ? DEFAULT_AI_TEACHER.ai_teacher_live2d_model_image_url
+      ? fallback.ai_teacher_live2d_model_image_url
       : stringOrEmpty(raw.ai_teacher_live2d_model_image_url) ||
         stringOrEmpty(raw.live2d_model_image_url) ||
         modelUrl,
@@ -239,12 +266,12 @@ export const selectAITeacher = (
   externalTeachers: readonly AITeacher[],
   teacherId?: string,
 ): { teacher: AITeacher; source: "external" | "builtin" } => {
-  const pool = externalTeachers.length > 0 ? externalTeachers : DEFAULT_AI_TEACHERS;
+  const pool = externalTeachers.length > 0 ? externalTeachers : defaultAiTeachers();
   const selected = teacherId
     ? pool.find((teacher) => teacher.ai_teacher_id === teacherId)
     : pool[0];
   return {
-    teacher: selected ?? DEFAULT_AI_TEACHER,
+    teacher: selected ?? defaultAiTeacher(),
     source: externalTeachers.length > 0 && selected ? "external" : "builtin",
   };
 };

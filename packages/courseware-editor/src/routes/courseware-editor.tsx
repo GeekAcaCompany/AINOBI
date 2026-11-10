@@ -289,10 +289,8 @@ import { removeRichNodeAtPath } from "../lib/courseware/rich-edit.ts";
 import { isInlineSvgSource } from "@ainobi/courseware-player/lib/courseware/svg-edit";
 import type { SvgTextStylePatch, SvgTextStyleSnapshot } from "@ainobi/courseware-player/lib/courseware/svg-text-style";
 import Inochi2DModelComponent from "@ainobi/avatar/Inochi2DModel";
-import {
-  buildCoursewareInochiStageModelProps,
-  buildCoursewareLive2dStageModelProps,
-} from "@ainobi/avatar/inochi-stage-render";
+import { buildCoursewareInochiStageModelProps } from "@ainobi/avatar/inochi-stage-render";
+import { aiTeacherDefaultModelUrl } from "@ainobi/avatar/host";
 import {
   getVtuberModelCacheKey,
   getRememberedLive2dUnlockForMountSig,
@@ -302,7 +300,7 @@ import {
   shouldPreserveLive2dUnlockAcrossMountSigChange,
 } from "@ainobi/avatar/vtuber-model-cache";
 import { VtuberModelLoadingPlaceholder } from "@ainobi/avatar/VtuberModelLoadingPlaceholder";
-import Live2DModelComponent from "@ainobi/avatar/Live2DModel";
+import Live2dStageModel from "@ainobi/avatar/Live2dStageModel";
 import logger from "@ainobi/courseware-player/host/logger";
 import type { AITeacherInfo } from "@ainobi/courseware-player/schemas/ai_teacher";
 import {
@@ -359,7 +357,6 @@ import {
   shouldRefreshCoursewareCover,
   captureSlideCoverBlob,
   waitForCoverSlideReadiness,
-  DEFAULT_AI_TEACHER_LIVE2D_MODEL_URL,
   normalizeElementForSerialization,
   getAiTeacherIdFromVtuberMetadata,
   getVtuberModelUrlFromMetadata,
@@ -5662,8 +5659,7 @@ function CoursewareEditorContent({ coursewareId }: { coursewareId: string }) {
 
       const sourceMetadata = sourceVtuber.metadata as Record<string, unknown>;
       const targetModelUrlRaw =
-        targetTeacher.ai_teacher_live2d_model_url?.trim() ||
-        DEFAULT_AI_TEACHER_LIVE2D_MODEL_URL;
+        targetTeacher.ai_teacher_live2d_model_url?.trim() || aiTeacherDefaultModelUrl();
       const targetModelUrl =
         stripCoursewareAssetSignatureFromUrl(targetModelUrlRaw) || targetModelUrlRaw;
       const targetModelImageUrlRaw = targetTeacher.ai_teacher_live2d_model_image_url?.trim();
@@ -17015,15 +17011,13 @@ function VtuberStagePlayer({
             }
           />
         ) : !isModelLoadFailed ? (
-          <Live2DModelComponent
+          <Live2dStageModel
             key={liveModelKey}
-            {...buildCoursewareLive2dStageModelProps(widthPx, heightPx, {
-              showLoadingPlaceholder: false,
-            })}
+            widthPx={widthPx}
+            heightPx={heightPx}
             modelUrl={modelUrl}
             coursewareId={coursewareId}
             debugId={`editor:${element.element_id}:${modelUrl}`}
-            enableInteraction={false}
             onLoadingChange={handleModelLoadingChange}
             onError={handleModelError}
             onModelLoaded={(model) => {
@@ -20916,7 +20910,7 @@ const buildPptElementFromAsset = (asset: CoursewareAssetItem): CourseElement => 
 
 const buildAITeacherElement = (teacher: AITeacherInfo): CourseElement => {
   const live2dModelUrlRaw =
-    teacher.ai_teacher_live2d_model_url?.trim() || DEFAULT_AI_TEACHER_LIVE2D_MODEL_URL;
+    teacher.ai_teacher_live2d_model_url?.trim() || aiTeacherDefaultModelUrl();
   const live2dModelUrl =
     stripCoursewareAssetSignatureFromUrl(live2dModelUrlRaw) || live2dModelUrlRaw;
   const live2dModelImageUrlRaw = teacher.ai_teacher_live2d_model_image_url?.trim();

@@ -12,7 +12,15 @@ import { dirname, extname, join, normalize, resolve as resolvePath, sep } from '
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseEnv } from 'node:util';
 import pg from 'pg';
-import { createAiTeacherStore, generatorFromEnv, teacherFilePath } from './ai-teachers.mjs';
+import {
+  BUILT_IN_TEACHER_AVATAR_URL,
+  BUILT_IN_TEACHER_ID,
+  BUILT_IN_TEACHER_MODEL_URL,
+  BUILT_IN_TEACHER_NAME,
+  createAiTeacherStore,
+  generatorFromEnv,
+  teacherFilePath,
+} from './ai-teachers.mjs';
 import { isLoopbackHost, LOCAL_ORG_ID, startLocalHost } from './local-host.mjs';
 import { findDefaultVoice, loadVoices } from './voices.mjs';
 
@@ -111,6 +119,11 @@ export function coursewareEnv({ ports, token, internalToken, storageEndpoint, us
     AINOBI_MANAGE_VIEW_DISABLED: 'true',
     // Agents run on this machine, so they may hand over media they made by path.
     AINOBI_MCP_LOCAL_FILES: 'true',
+    // An element that names no teacher gets the built-in one, not the platform's.
+    AINOBI_DEFAULT_AI_TEACHER_ID: BUILT_IN_TEACHER_ID,
+    AINOBI_DEFAULT_AI_TEACHER_NAME: BUILT_IN_TEACHER_NAME,
+    AINOBI_DEFAULT_AI_TEACHER_MODEL_URL: BUILT_IN_TEACHER_MODEL_URL,
+    AINOBI_DEFAULT_AI_TEACHER_AVATAR_URL: BUILT_IN_TEACHER_AVATAR_URL,
     ...baseEnv,
     ...userEnv,
     ...googleCredentialsEnv({ ...baseEnv, ...userEnv }),
@@ -390,6 +403,7 @@ async function main() {
       teacherGeneration: teachers.canGenerate(),
       editorAssistant,
       embedOrigins: allowedEmbedders,
+      defaultModelUrl: BUILT_IN_TEACHER_MODEL_URL,
     }),
   });
 

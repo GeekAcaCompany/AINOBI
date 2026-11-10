@@ -6,6 +6,10 @@ import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync,
 import { join } from 'node:path';
 
 export const BUILT_IN_TEACHER_ID = '00000000-0000-4000-8000-000000000003';
+/** The built-in teacher's Inochi2D model, which is also the model of any avatar that names none. */
+export const BUILT_IN_TEACHER_MODEL_URL = '/models/ainobi-teacher/ainobi-teacher.inx';
+export const BUILT_IN_TEACHER_NAME = 'AINOBI Teacher';
+export const BUILT_IN_TEACHER_AVATAR_URL = '/ainobi-teacher.png';
 const CREATED_AT = '2026-01-01T00:00:00Z';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const MAX_PROMPT = 1200;
@@ -66,9 +70,9 @@ export function createAiTeacherStore({ dir, orgId, loadGenerator, loadAgentPipel
   const builtIn = () =>
     teacherRecord({
       id: BUILT_IN_TEACHER_ID,
-      name: 'AINOBI Teacher',
-      modelUrl: '/models/geekaca-teacher/geekaca-teacher.model3.json',
-      avatarUrl: '/geekaca-teacher.png',
+      name: BUILT_IN_TEACHER_NAME,
+      modelUrl: BUILT_IN_TEACHER_MODEL_URL,
+      avatarUrl: BUILT_IN_TEACHER_AVATAR_URL,
       orgId,
       createdAt: CREATED_AT,
       speech,

@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import { describe, expect, it } from "vitest";
 
+import { configureAvatar } from "./host.ts";
 import {
-  DEFAULT_AI_TEACHER_LIVE2D_MODEL_URL,
   getVtuberModelUrlFromMetadata,
   normalizeVtuberMetadataForPersistence,
 } from "./vtuber-model-defaults.ts";
+
+const DEFAULT_AI_TEACHER_MODEL_URL = "model/teachers/default/teacher.inx";
+configureAvatar({ aiTeacherDefaultModelUrl: DEFAULT_AI_TEACHER_MODEL_URL, defaultModelUrl: "/models/teacher.inx" });
 
 describe("vtuber-model-defaults", () => {
   it("fills default CDN model URL for AI teacher vtuber on persistence", () => {
@@ -13,9 +16,13 @@ describe("vtuber-model-defaults", () => {
       ai_teacher_id: "00000000-0000-4000-8000-000000000001",
       ai_teacher_name: "Test",
     });
-    expect(next.model_url).toBe(DEFAULT_AI_TEACHER_LIVE2D_MODEL_URL);
-    expect(next.ai_teacher_live2d_model_url).toBe(DEFAULT_AI_TEACHER_LIVE2D_MODEL_URL);
-    expect(next.runtime).toBe("live2d");
+    expect(next.model_url).toBe(DEFAULT_AI_TEACHER_MODEL_URL);
+    expect(next.ai_teacher_live2d_model_url).toBe(DEFAULT_AI_TEACHER_MODEL_URL);
+    expect(next.runtime).toBe("inochi2d");
+  });
+
+  it("resolves the host default for a vtuber without a model or teacher", () => {
+    expect(getVtuberModelUrlFromMetadata({})).toBe("/models/teacher.inx");
   });
 
   it("leaves vtuber without ai_teacher_id unchanged on persistence", () => {
@@ -28,7 +35,7 @@ describe("vtuber-model-defaults", () => {
       getVtuberModelUrlFromMetadata({
         ai_teacher_id: "00000000-0000-4000-8000-000000000001",
       }),
-    ).toBe(DEFAULT_AI_TEACHER_LIVE2D_MODEL_URL);
+    ).toBe(DEFAULT_AI_TEACHER_MODEL_URL);
   });
 
   it("aliases legacy .model3.js URLs to .model3.json", () => {

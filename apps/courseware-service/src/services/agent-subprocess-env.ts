@@ -22,6 +22,11 @@ export const pickAgentSubprocessEnv = createAgentSubprocessEnvPicker({
     // URL allowlist, derived by the host and passed through AINOBI_COURSEWARE_ASSET_BASE_URLS (a host key).
     // Credentials in the subprocess would let the LLM's bash tool read the platform storage write credentials (a security test anchor).
     "AINOBI_COURSEWARE_ASSET_BASE_URLS",
+    // A host's own default teacher (Studio's built-in one), for elements that name none.
+    "AINOBI_DEFAULT_AI_TEACHER_ID",
+    "AINOBI_DEFAULT_AI_TEACHER_NAME",
+    "AINOBI_DEFAULT_AI_TEACHER_MODEL_URL",
+    "AINOBI_DEFAULT_AI_TEACHER_AVATAR_URL",
   ],
   injectKeys: AGENT_BASE_INJECT_KEYS,
   /** Host-injected courseware / asset / persistence URLs (set on agent `env` after `buildClaudeEnv`). */

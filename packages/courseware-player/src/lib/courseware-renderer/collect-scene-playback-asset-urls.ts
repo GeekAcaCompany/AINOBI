@@ -3,7 +3,7 @@ import type { Element as CourseElement, Scene } from "../courseware/index.ts";
 import { collectQuizAssetUrlsForPresign } from "@ainobi/courseware-core/quiz.ts";
 import { collectSignableUrlsForPresign } from "../courseware/presign-scene.ts";
 import { getVtuberModelUrlFromMetadata } from "@ainobi/avatar/vtuber-model-defaults";
-import { isLive2dModel3JsonUrl } from "@ainobi/avatar/live2d-model-presign";
+import { isLive2dModelEntryUrl } from "@ainobi/avatar/model-runtime";
 
 const pushUrl = (urls: Set<string>, value: unknown): void => {
   if (typeof value !== "string") return;
@@ -68,21 +68,21 @@ export function partitionScenePlaybackAssetUrls(urls: readonly string[]): {
   audio: string[];
   image: string[];
   video: string[];
-  live2dModel: string[];
+  avatarModel: string[];
   other: string[];
 } {
   const audio: string[] = [];
   const image: string[] = [];
   const video: string[] = [];
-  const live2dModel: string[] = [];
+  const avatarModel: string[] = [];
   const other: string[] = [];
 
   for (const raw of urls) {
     const url = raw.trim();
     if (!url) continue;
     const lower = url.split("?")[0]?.toLowerCase() ?? url.toLowerCase();
-    if (isLive2dModel3JsonUrl(url) || lower.endsWith(".inx")) {
-      live2dModel.push(url);
+    if (isLive2dModelEntryUrl(url) || lower.endsWith(".inx")) {
+      avatarModel.push(url);
       continue;
     }
     if (/\.(mp3|wav|ogg|m4a|aac|flac|opus)(?:$|[?#])/i.test(lower)) {
@@ -100,5 +100,5 @@ export function partitionScenePlaybackAssetUrls(urls: readonly string[]): {
     other.push(url);
   }
 
-  return { audio, image, video, live2dModel, other };
+  return { audio, image, video, avatarModel, other };
 }

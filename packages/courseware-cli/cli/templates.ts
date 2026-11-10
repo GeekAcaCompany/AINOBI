@@ -6,7 +6,7 @@ import {
   buildDefaultRichAst,
 } from "@ainobi/courseware-core";
 import type { ElementType } from "@ainobi/courseware-core/elements.ts";
-import { aiTeacherMetadata, DEFAULT_AI_TEACHER } from "./ai-teachers.ts";
+import { aiTeacherMetadata, defaultAiTeacher } from "./ai-teachers.ts";
 import { SLIDE_BACKGROUND_IMAGE_FIT_VALUES } from "@ainobi/courseware-core/elements.ts";
 import { newElementId } from "./ids.ts";
 import { DEFAULT_COURSEWARE_ASSET_BASE_URL } from "./url-policy.ts";
@@ -304,15 +304,15 @@ const REGISTRY: Record<ElementType, () => ElementUsageDoc> = {
     description: "AI teacher voice-over with subtitle and segment metadata.",
     template: baseTemplate({
       element_type: "narration",
-      ai_teacher_id: DEFAULT_AI_TEACHER.ai_teacher_id,
-      ai_teacher_name: DEFAULT_AI_TEACHER.ai_teacher_name,
+      ai_teacher_id: defaultAiTeacher().ai_teacher_id,
+      ai_teacher_name: defaultAiTeacher().ai_teacher_name,
       vtuber_element_id: "",
       script: "",
       transcript: "",
       segments: [],
       metadata: {
-        ai_teacher_id: DEFAULT_AI_TEACHER.ai_teacher_id,
-        ai_teacher_name: DEFAULT_AI_TEACHER.ai_teacher_name,
+        ai_teacher_id: defaultAiTeacher().ai_teacher_id,
+        ai_teacher_name: defaultAiTeacher().ai_teacher_name,
       },
       subtitle_background_color: "#020617",
       subtitle_background_opacity: 0.7,
@@ -664,14 +664,14 @@ const REGISTRY: Record<ElementType, () => ElementUsageDoc> = {
   }),
   vtuber: () => ({
     element_type: "vtuber",
-    description: "Live2D / 3D virtual teacher element. Lives at scene.vtuber_elements[] usually.",
+    description: "AI teacher avatar element. Lives at scene.vtuber_elements[] usually.",
     template: baseTemplate({
       element_type: "vtuber",
-      name: DEFAULT_AI_TEACHER.ai_teacher_name,
-      model_id: DEFAULT_AI_TEACHER.ai_teacher_id,
+      name: defaultAiTeacher().ai_teacher_name,
+      model_id: defaultAiTeacher().ai_teacher_id,
       expression: "default",
       motion: "idle",
-      metadata: aiTeacherMetadata(DEFAULT_AI_TEACHER),
+      metadata: aiTeacherMetadata(defaultAiTeacher()),
       position: {
         x: 759.5957568807339,
         y: 258.8044724770642,

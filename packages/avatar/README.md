@@ -1,6 +1,6 @@
 # @ainobi/avatar
 
-Avatar rendering for React: Live2D (`.model3.json`) and Inochi2D (`.inx`) models, with model caching, a shared stage, and load queues.
+Avatar rendering for React: Inochi2D (`.inx`) models, with model caching, load queues, and the helpers courseware stages use.
 
 Runtime: browser, React 19.
 
@@ -22,11 +22,16 @@ Add the package's source to your Tailwind content, since its components use Tail
 | Setting | Purpose |
 | --- | --- |
 | `logger` | Receives the package's logs. |
-| `cubismCoreUrl` | Where the Live2D Cubism Core script is served from. Only Live2D models load it. Default `/live2dcubismcore.min.js`. |
 | `assetPresignEnabled`, `presignModelUrls` | Sign private model files at runtime. |
 | `publicModelBaseUrl` | Model URLs under this base load directly if signing fails. |
+| `defaultModelUrl` | The model of an avatar that names none. Default: none. |
+| `aiTeacherDefaultModelUrl` | The model of an AI teacher without one of its own. Default: none. |
 | `useTranslate` | A React hook returning the function that translates the package's labels. Default English. |
 
 ## Entry points
 
-`@ainobi/avatar/Live2DModel` and `@ainobi/avatar/Inochi2DModel` are the components. The other subpaths expose the cache, load queues, and stage helpers they are built on. Import components by subpath so a page that uses one runtime does not load the other.
+`@ainobi/avatar/Inochi2DModel` is the component. The other subpaths expose the cache, load queues, and stage helpers it is built on.
+
+## Other model formats
+
+Courseware stages hand every model that is not Inochi2D to `@ainobi/avatar/Live2dStageModel`. It draws with the runtime a host registered through `registerLive2dRuntime` (`@ainobi/avatar/model-runtime`); without one, it shows that the format is not supported.

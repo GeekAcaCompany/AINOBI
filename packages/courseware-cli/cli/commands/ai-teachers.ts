@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import { flagBool, flagNumber, flagString, type ParsedArgs } from "../args.ts";
-import { DEFAULT_AI_TEACHERS, type AITeacher } from "../ai-teachers.ts";
+import { defaultAiTeachers, type AITeacher } from "../ai-teachers.ts";
 import { fetchAiTeachersViaHost } from "../ai-teachers-host-job.ts";
 import { AinobiCliError } from "../errors.ts";
 import { printSuccess, type OutputOptions } from "../output.ts";
@@ -48,7 +48,7 @@ const fetchTeachers = async (args: ParsedArgs): Promise<{
     );
   }
 
-  const teachers = [...DEFAULT_AI_TEACHERS];
+  const teachers = [...defaultAiTeachers()];
   return {
     source: "builtin",
     org_id: null,

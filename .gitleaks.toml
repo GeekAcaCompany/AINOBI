@@ -13,7 +13,6 @@ paths = [
   '''(^|/)pnpm-lock\.yaml$''',
   # Minified third-party builds: their identifiers read as high-entropy strings.
   '''(^|/)packages/inochi2d/dist/''',
-  '''(^|/)apps/studio/public/live2dcubismcore\.min\.js$''',
 ]
 regexes = [
   '''\$\{\{[^}]*\}\}''',

@@ -26,7 +26,7 @@ import Inochi2DModel from '@ainobi/avatar/Inochi2DModel';
 export const Teacher = () => <Inochi2DModel modelUrl="/models/teacher.inx" maxWidth={320} maxHeight={480} />;
 ```
 
-For a Live2D model, import `@ainobi/avatar/Live2DModel` and pass a `.model3.json` URL. Live2D also needs the Cubism Core script served from your site root, or from wherever `configureAvatar({ cubismCoreUrl })` points; read its terms in [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md) first.
+AINOBI renders Inochi2D (`.inx`) models. Make one from a description with the `avatar-generator` profile, or let your agent make one with the ainobi-ai-teacher skill.
 
 The components use Tailwind classes, so add the package to your Tailwind sources:
 
@@ -34,7 +34,7 @@ The components use Tailwind classes, so add the package to your Tailwind sources
 @source "../node_modules/@ainobi/avatar/dist";
 ```
 
-Peer dependencies: `react`, `react-dom`, `pixi.js`, `pixi-live2d-display`, `three`. The [package README](../packages/avatar/README.md) lists every setting.
+Peer dependencies: `react`, `react-dom`, `three`. The [package README](../packages/avatar/README.md) lists every setting.
 
 ## Format only
 

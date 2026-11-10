@@ -13,12 +13,7 @@ import { flushSync } from "react-dom";
 import { Loader2 } from "lucide-react";
 import { GlobalAudioTracks } from "../components/courseware/GlobalAudioTracks.tsx";
 import { HyperframesSceneMediaDeclarations } from "../components/courseware/HyperframesSceneMediaDeclarations.tsx";
-import {
-  flushAllSharedLive2dStages,
-  hasPaintedLive2dSharedStageTargets,
-  isLive2dSharedStageBoundForCapture,
-  setLive2dSharedStageCaptureManualMode,
-} from "@ainobi/avatar/live2d-shared-stage";
+import { getLive2dRuntime } from "@ainobi/avatar/model-runtime";
 import {
   collectSlideCanvasAudioElementsForMixer,
   createSceneScriptRuntime,
@@ -98,6 +93,8 @@ import {
 } from "./courseware-preview.tsx";
 
 const PLAYBACK_UI_PUBLISH_MS = 80;
+/** The canvas Live2D models share, when the host registered Live2D. */
+const live2dStage = () => getLive2dRuntime()?.sharedStage;
 const RENDERER_WARMUP_TIMEOUT_MS = 120_000;
 
 const clamp = (value: number, min: number, max: number): number =>
@@ -612,8 +609,8 @@ function CoursewareRendererContent() {
         } finally {
           hfCaptureSeekRef.current = false;
         }
-        flushAllSharedLive2dStages();
-        flushAllSharedLive2dStages();
+        live2dStage()?.flushAll();
+        live2dStage()?.flushAll();
       },
     };
   }, []);
@@ -628,10 +625,10 @@ function CoursewareRendererContent() {
       warmupHeadlessLive2dReadyRef.current = true;
       return true;
     }
-    if (!isLive2dSharedStageBoundForCapture()) return false;
-    flushAllSharedLive2dStages();
-    if (!hasPaintedLive2dSharedStageTargets()) return false;
-    flushAllSharedLive2dStages();
+    if (!live2dStage()?.isBoundForCapture()) return false;
+    live2dStage()?.flushAll();
+    if (!live2dStage()?.hasPaintedTargets()) return false;
+    live2dStage()?.flushAll();
     warmupHeadlessLive2dReadyRef.current = true;
     return true;
   }, []);
@@ -889,7 +886,7 @@ function CoursewareRendererContent() {
   useEffect(() => {
     if (!hfHeadlessDrive) return;
     setNarrationBlobPlaybackEnabled(false);
-    setLive2dSharedStageCaptureManualMode(true);
+    live2dStage()?.setCaptureManualMode(true);
     const w = window as Window & {
       __hf?: { duration: number; seek: (timeSec: number) => void | Promise<void> };
       __hfFlushSync?: () => void | Promise<void>;
@@ -900,9 +897,9 @@ function CoursewareRendererContent() {
     w.__COURSEWARE_RENDERER_ERROR__ = errorMessage;
     w.__hfFlushSync = () =>
       new Promise<void>((resolve) => {
-        flushAllSharedLive2dStages();
+        live2dStage()?.flushAll();
         requestAnimationFrame(() => {
-          flushAllSharedLive2dStages();
+          live2dStage()?.flushAll();
           requestAnimationFrame(() => resolve());
         });
       });
@@ -915,7 +912,7 @@ function CoursewareRendererContent() {
 
     return () => {
       setNarrationBlobPlaybackEnabled(true);
-      setLive2dSharedStageCaptureManualMode(false);
+      live2dStage()?.setCaptureManualMode(false);
       delete w.__hf;
       delete w.__hfFlushSync;
     };

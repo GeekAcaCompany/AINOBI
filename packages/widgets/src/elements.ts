@@ -5,8 +5,8 @@
  *
  * Attributes: `base-url` (the AINOBI web app; `src` is accepted as an alias),
  * `courseware-id` (`course-id` alias), `org-id` (the organization the page works in, e.g. where
- * a new courseware is created), `model-url` (avatar only: a Live2D `.model3.json` or Inochi2D
- * `.inx` URL; omitted, the frame uses the user's configured model), `height`, `auto-resize`,
+ * a new courseware is created), `model-url` (avatar only: a model the frame can render, such as an
+ * Inochi2D `.inx`; omitted, the frame uses the user's configured model), `height`, `auto-resize`,
  * `handoff` (a one-time code, delivered over postMessage — never placed in the frame URL).
  * Property: `handoffProvider: () => Promise<string | null>` mints a code on demand.
  * Events (bubbling, composed): `ainobi-ready`, `ainobi-resize`, `ainobi-saved`,

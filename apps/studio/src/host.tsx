@@ -16,6 +16,8 @@ export type StudioConfig = {
   teacherGeneration: boolean;
   editorAssistant: boolean;
   embedOrigins: string[];
+  /** The built-in teacher's model, for avatars and teachers that name none. */
+  defaultModelUrl: string;
 };
 
 export async function loadStudioConfig(): Promise<StudioConfig> {
@@ -36,7 +38,7 @@ export function connectStudio(config: StudioConfig): TeacherClient {
   const api = createCoursewareRequester({ baseUrl: config.platformApi, getAccessToken });
   const teachers = createTeacherClient(api, config.orgId);
   const embed = startStudioEmbed(config.embedOrigins);
-  configureAvatar({ assetPresignEnabled: false });
+  configureAvatar({ assetPresignEnabled: false, defaultModelUrl: config.defaultModelUrl, aiTeacherDefaultModelUrl: config.defaultModelUrl });
   configureCoursewareHost({
     config: {
       origin: { coursewareApi: config.coursewareApi, api: config.platformApi, manage: '', static: '' },

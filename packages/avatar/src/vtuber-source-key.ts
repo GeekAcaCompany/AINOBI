@@ -5,7 +5,7 @@ import { listVtubersOnSlide } from "@ainobi/courseware-core/slide-stack.ts";
 import { getVtuberModelUrlFromMetadata } from "./vtuber-model-defaults.ts";
 
 /**
- * Stable key for reusing the same Live2D / Inochi2D runtime across slides and element ids.
+ * Stable key for reusing the same model runtime across slides and element ids.
  * Strips presigned query params so URL-only signature churn does not spawn a second instance.
  */
 /** Editor thumbnail / minimap: only use snapshot for the current model source key. */

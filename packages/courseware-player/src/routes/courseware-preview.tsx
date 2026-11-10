@@ -201,12 +201,10 @@ import { RichRenderer } from "../components/courseware/rich/RichRenderer.tsx";
 import { GlobalAudioTracks } from "../components/courseware/GlobalAudioTracks.tsx";
 import { PPTRenderer } from "../components/courseware/PPTRenderer.tsx";
 import { VtuberModelLoadingPlaceholder } from "@ainobi/avatar/VtuberModelLoadingPlaceholder";
-import Live2DModelComponent from "@ainobi/avatar/Live2DModel";
+import Live2dStageModel from "@ainobi/avatar/Live2dStageModel";
 import Inochi2DModelComponent from "@ainobi/avatar/Inochi2DModel";
-import {
-  buildCoursewareInochiStageModelProps,
-  buildCoursewareLive2dStageModelProps,
-} from "@ainobi/avatar/inochi-stage-render";
+import { buildCoursewareInochiStageModelProps } from "@ainobi/avatar/inochi-stage-render";
+import { defaultModelUrl } from "@ainobi/avatar/host";
 import { getVtuberModelUrlFromMetadata } from "@ainobi/avatar/vtuber-model-defaults";
 import {
   getVtuberModelCacheKey,
@@ -6872,7 +6870,7 @@ function getPreviewVtuberRuntime(
           meta.ai_teacher_live2d_model_url.length > 0
         ? meta.ai_teacher_live2d_model_url
         : declaredRuntime === "live2d"
-          ? "/models/geekaca-teacher/geekaca-teacher.model3.json"
+          ? defaultModelUrl()
           : inochiUrl;
   return isPreviewInochiModelUrl(modelUrl) || declaredRuntime === "inochi2d" ? "inochi2d" : "live2d";
 }
@@ -7322,7 +7320,7 @@ function VtuberRenderer({
       : typeof meta.ai_teacher_live2d_model_url === "string" && meta.ai_teacher_live2d_model_url.length > 0
         ? meta.ai_teacher_live2d_model_url
         : declaredRuntime === "live2d"
-          ? "/models/geekaca-teacher/geekaca-teacher.model3.json"
+          ? defaultModelUrl()
           : inochiUrl;
   const runtime: "inochi2d" | "live2d" =
     isInochiModelUrl(modelUrl) || declaredRuntime === "inochi2d" ? "inochi2d" : "live2d";
@@ -7501,11 +7499,10 @@ function VtuberRenderer({
             : "invisible h-full w-full"
         }
       >
-          <Live2DModelComponent
+          <Live2dStageModel
             key={modelRenderKey}
-            {...buildCoursewareLive2dStageModelProps(widthPx, heightPx, {
-              showLoadingPlaceholder: false,
-            })}
+            widthPx={widthPx}
+            heightPx={heightPx}
             modelUrl={modelUrl}
             coursewareId={previewCoursewareId ?? undefined}
             debugId={
@@ -7513,7 +7510,6 @@ function VtuberRenderer({
                 ? `preview:${modelCacheKey}`
                 : `preview:${element.element_id}:${modelUrl}`
             }
-            enableInteraction={false}
             sceneTimeMs={headlessSeekDrive && stageActive ? sceneTimeMs : undefined}
             headlessSceneDrive={headlessSeekDrive}
             onLoadingChange={handleModelLoadingChange}

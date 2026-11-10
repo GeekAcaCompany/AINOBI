@@ -51,6 +51,7 @@ Always host-side: `AINOBI_KNOWLEDGE_HOST_URL` (knowledge commands; `AINOBI_KNOWL
 | `AINOBI_COURSEWARE_ORG_ID` | Its organization (voice catalogs, billing). |
 | `AINOBI_SECTION_ID` | The course section (knowledge commands). |
 | `AINOBI_COURSEWARE_SYNCED_AT` | The host's `updated_at` baseline, stored by `load` for sync checks. |
+| `AINOBI_DEFAULT_AI_TEACHER_MODEL_URL`, `AINOBI_DEFAULT_AI_TEACHER_ID`, `AINOBI_DEFAULT_AI_TEACHER_NAME`, `AINOBI_DEFAULT_AI_TEACHER_AVATAR_URL` | The teacher an element gets when it names none, and whose model a teacher without one borrows. Unset: the platform's default teacher. |
 
 ## Storage (local runtime)
 

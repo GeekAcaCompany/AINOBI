@@ -2,6 +2,7 @@
 import { api, coursewareApi as coursewareServiceApi } from "../host/requester.ts";
 import { requireResourceOrgId } from "./org-path.ts";
 import type { AITeacherInfo } from "../schemas/ai_teacher.ts";
+import { defaultModelUrl } from "@ainobi/avatar/host";
 import type { PaginatedResponse } from "@ainobi/web-kit/schemas/response/common";
 
 export const COURSEWARE_ASSET_ACCEPTED_EXTENSIONS = [
@@ -271,7 +272,8 @@ const resolveExtension = (fileName: string): CoursewareAssetExtension | null => 
     : null;
 };
 
-const DEFAULT_AI_TEACHER: AITeacherInfo = {
+/** Stands in when an organization has no teacher; built on use, since the default model is a host setting. */
+const defaultAiTeacher = (): AITeacherInfo => ({
   ai_teacher_id: "00000000-0000-0000-0000-000000000001",
   ai_teacher_no: "default-teacher",
   ai_teacher_name: "默认AI教师",
@@ -284,7 +286,7 @@ const DEFAULT_AI_TEACHER: AITeacherInfo = {
   ai_teacher_llm_provider: "openai",
   ai_teacher_llm_model: null,
   ai_teacher_llm_temperature: null,
-  ai_teacher_live2d_model_url: "/models/geekaca-teacher/geekaca-teacher.model3.json",
+  ai_teacher_live2d_model_url: defaultModelUrl() || null,
   ai_teacher_live2d_model_image_url: null,
   ai_teacher_tts_id: null,
   ai_teacher_tts_speed: null,
@@ -294,10 +296,10 @@ const DEFAULT_AI_TEACHER: AITeacherInfo = {
   ai_teacher_sort: 0,
   remark: "courseware default",
   org_id: "00000000-0000-0000-0000-000000000000",
-} as AITeacherInfo;
+}) as AITeacherInfo;
 
 const withDefaultAITeacher = (list: AITeacherInfo[]): AITeacherInfo[] => {
-  if (list.length === 0) return [DEFAULT_AI_TEACHER];
+  if (list.length === 0) return [defaultAiTeacher()];
   return list;
 };
 
@@ -411,9 +413,9 @@ export default {
       if (Array.isArray(response)) {
         return { ai_teachers: withDefaultAITeacher(response as AITeacherInfo[]) };
       }
-      return { ai_teachers: [DEFAULT_AI_TEACHER] };
+      return { ai_teachers: [defaultAiTeacher()] };
     } catch {
-      return { ai_teachers: [DEFAULT_AI_TEACHER] };
+      return { ai_teachers: [defaultAiTeacher()] };
     }
   },
   async submitQuizAnswer(

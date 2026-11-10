@@ -123,4 +123,4 @@ The quick start uses embedded stores so it runs anywhere. The courseware service
 
 The code and documentation are licensed under the [GNU Affero General Public License v3.0 only](LICENSE). Copyright GeekAca Ltd. and contributors; see [NOTICE](NOTICE). External contributions require a signed [Contributor License Agreement](CLA.md).
 
-The AINOBI name and logo are trademarks of GeekAca Ltd. and are excluded from this license; see [TRADEMARKS.md](TRADEMARKS.md). Third-party components and assets, including the Live2D Cubism Core runtime and the bundled avatar model, are under their own terms; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Courseware you create or upload does not become subject to this license through the use of AINOBI.
+The AINOBI name and logo are trademarks of GeekAca Ltd. and are excluded from this license; see [TRADEMARKS.md](TRADEMARKS.md). Third-party components, such as the Inochi2D runtime, are under their own terms; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Courseware you create or upload does not become subject to this license through the use of AINOBI.

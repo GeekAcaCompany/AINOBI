@@ -3,7 +3,7 @@ import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { AiTeacherError, BUILT_IN_TEACHER_ID, createAiTeacherStore, generatorFromEnv, teacherFilePath } from './ai-teachers.mjs';
+import { AiTeacherError, BUILT_IN_TEACHER_ID, BUILT_IN_TEACHER_MODEL_URL, createAiTeacherStore, generatorFromEnv, teacherFilePath } from './ai-teachers.mjs';
 import { avatarApiKeyFromEnv } from '../../../packages/avatar-generator/src/config.ts';
 import { answer, LOCAL_ORG_ID } from './local-host.mjs';
 
@@ -36,7 +36,7 @@ const finished = async (teachers: ReturnType<typeof store>, id: string) => {
 describe('AI teacher store', () => {
   it('ships with one teacher, whose model comes with the app', () => {
     const [teacher] = store().list();
-    expect(teacher).toMatchObject({ ai_teacher_id: BUILT_IN_TEACHER_ID, ai_teacher_status: 'active', ai_teacher_live2d_model_url: '/models/geekaca-teacher/geekaca-teacher.model3.json' });
+    expect(teacher).toMatchObject({ ai_teacher_id: BUILT_IN_TEACHER_ID, ai_teacher_status: 'active', ai_teacher_live2d_model_url: BUILT_IN_TEACHER_MODEL_URL });
   });
 
   it('generates, keeps the result, and lists it after a restart', async () => {

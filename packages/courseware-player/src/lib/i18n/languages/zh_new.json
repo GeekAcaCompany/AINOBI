@@ -294,6 +294,7 @@
   "inochi2d.initializing": "初始化 Inochi2D …",
   "inochi2d.loadingModel": "加载 Inochi2D 模型…",
   "inochi2d.missingUrl": "请传入 Inochi2D 模型 URL（.inx）",
+  "avatar.unsupportedModel": "此处不支持该模型格式，请使用 Inochi2D 模型（.inx）。",
   "classroom.loading.courseInfo": "正在加载课程信息",
   "classroom.loading.generatingSlides": "正在生成课件配置",
   "classroom.loading.preparingContent": "正在为您准备学习内容，请稍候...",

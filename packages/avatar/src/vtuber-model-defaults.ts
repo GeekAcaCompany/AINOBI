@@ -1,17 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import type { Element } from "@ainobi/courseware-core/elements.ts";
+import { aiTeacherDefaultModelUrl, defaultModelUrl } from "./host.ts";
 
-/**
- * AI teacher vtuber: the default Live2D when no model URL is set.
- * A bare storage key (the example-storage private bucket). Loading always goes through presign
- * (batch_presign_urls with a courseware context, publicOnlyMode without one).
- * The old value `https://courseware.example.com/model/...` was a direct public CDN link,
- * retired because it contradicts the "sign everything" policy after example-public was closed.
- */
-export const DEFAULT_AI_TEACHER_LIVE2D_MODEL_URL =
-  "model/live2d_model/ainobi-teacher-001/ainobi-teacher-001.model3.json";
-
-export const DEFAULT_VTUBER_MODEL_URL = "/models/geekaca-teacher/geekaca-teacher.model3.json";
+// The default models are host settings (configureAvatar): defaultModelUrl for an avatar that names no model, and
+// aiTeacherDefaultModelUrl for an AI teacher without one of its own.
 
 export const isInochiModelUrl = (url: string): boolean => /\.inx(?:[?#]|$)/i.test(url);
 
@@ -45,9 +37,9 @@ export function getVtuberModelUrlFromMetadata(
   const explicit = readMetadataModelUrl(metadata);
   if (explicit) return explicit;
   if (getAiTeacherIdFromVtuberMetadata(metadata)) {
-    return DEFAULT_AI_TEACHER_LIVE2D_MODEL_URL;
+    return aiTeacherDefaultModelUrl();
   }
-  return DEFAULT_VTUBER_MODEL_URL;
+  return defaultModelUrl();
 }
 
 /**
@@ -60,11 +52,12 @@ export function normalizeVtuberMetadataForPersistence(
   if (!getAiTeacherIdFromVtuberMetadata(meta)) return metadata;
   if (readMetadataModelUrl(meta)) return metadata;
 
-  const live2dModelUrl = DEFAULT_AI_TEACHER_LIVE2D_MODEL_URL;
+  const modelUrl = aiTeacherDefaultModelUrl();
+  if (!modelUrl) return metadata;
   return {
     ...metadata,
-    model_url: live2dModelUrl,
-    ai_teacher_live2d_model_url: live2dModelUrl,
-    runtime: isInochiModelUrl(live2dModelUrl) ? "inochi2d" : "live2d",
+    model_url: modelUrl,
+    ai_teacher_live2d_model_url: modelUrl,
+    runtime: isInochiModelUrl(modelUrl) ? "inochi2d" : "live2d",
   };
 }

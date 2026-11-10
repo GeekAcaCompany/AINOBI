@@ -8,7 +8,7 @@ These install into your project. None needs a server unless the table says so.
 
 | Package | What it gives you | Runs in | Depends on |
 | --- | --- | --- | --- |
-| `@ainobi/avatar` | Live2D and Inochi2D rendering for React, with model caching and a shared stage | Browser | `@ainobi/courseware-core`, `inochi2d` |
+| `@ainobi/avatar` | Inochi2D rendering for React, with model caching and the courseware stage helpers | Browser | `@ainobi/courseware-core`, `inochi2d` |
 | `@ainobi/avatar-generator` | Generates an Inochi2D avatar from a text description, with quality checks | Node.js, needs an image API key | Nothing |
 | `@ainobi/courseware-core` | The courseware format: schema, validation, editing operations, quiz scoring. No React, Node.js APIs, or storage | Anywhere | Nothing |
 | `@ainobi/courseware-player` | The stage, timeline, narration, quizzes, preview and render pages, and the client for the service's API | Browser, needs `courseware-service` | `@ainobi/avatar`, `@ainobi/courseware-core`, `@ainobi/api-contracts`, `@ainobi/web-kit` |

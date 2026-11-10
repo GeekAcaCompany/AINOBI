@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import type { Inochi2DModelProps } from "./Inochi2DModel.tsx";
-import type { Live2DModelProps } from "./Live2DModel.tsx";
-import { COURSEWARE_LIVE2D_STAGE_RENDER_PROPS } from "./live2d-render-resolution.ts";
 
 /**
  * Inochi2D render parameters shared by courseware stages (editor canvas, preview playback).
@@ -47,27 +45,6 @@ export function buildCoursewareInochiStageModelProps(
   Partial<Inochi2DModelProps> {
   return {
     ...COURSEWARE_INOCHI_STAGE_RENDER_PROPS,
-    maxHeight: Math.max(20, Math.round(heightPx)),
-    maxWidth: Math.max(20, Math.round(widthPx)),
-    className: "h-full w-full",
-    ...overrides,
-  };
-}
-
-export type CoursewareLive2dStageRenderProps = typeof COURSEWARE_LIVE2D_STAGE_RENDER_PROPS;
-
-/** Render parameters shared by courseware stage Live2D (editor / preview). */
-export function buildCoursewareLive2dStageModelProps(
-  widthPx: number,
-  heightPx: number,
-  overrides?: Partial<Live2DModelProps>,
-): Pick<
-  Live2DModelProps,
-  keyof CoursewareLive2dStageRenderProps | "maxHeight" | "maxWidth" | "className"
-> &
-  Partial<Live2DModelProps> {
-  return {
-    ...COURSEWARE_LIVE2D_STAGE_RENDER_PROPS,
     maxHeight: Math.max(20, Math.round(heightPx)),
     maxWidth: Math.max(20, Math.round(widthPx)),
     className: "h-full w-full",

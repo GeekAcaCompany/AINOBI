@@ -2,7 +2,7 @@
   "$comment": "The component catalog: what each piece needs, and the smallest install for each goal. `npm run add -- <profile> --to <your app>` and docs/components.md read it.",
   "profiles": {
     "avatar": {
-      "summary": "Render a Live2D or Inochi2D avatar in your React app.",
+      "summary": "Render an Inochi2D avatar in your React app.",
       "packages": [
         "@ainobi/avatar"
       ],

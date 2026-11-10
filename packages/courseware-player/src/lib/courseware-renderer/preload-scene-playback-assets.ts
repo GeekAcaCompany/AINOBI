@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import type { Scene } from "../courseware/index.ts";
-import {
-  collectLive2dModelDependencyUrls,
-  isLive2dModel3JsonUrl,
-} from "@ainobi/avatar/live2d-model-presign";
+import { getLive2dRuntime, isLive2dModelEntryUrl } from "@ainobi/avatar/model-runtime";
 import { preloadNarrationSegmentUrls } from "../courseware/narration-preload.ts";
 import {
   collectScenePlaybackAssetUrls,
@@ -57,7 +54,7 @@ const preloadLive2dModelBundle = async (model3Url: string): Promise<void> => {
   const res = await fetch(model3Url, { mode: "cors", credentials: "omit", cache: "force-cache" });
   if (!res.ok) return;
   const json = (await res.json()) as unknown;
-  const deps = collectLive2dModelDependencyUrls(json, model3Url);
+  const deps = getLive2dRuntime()?.collectModelDependencyUrls(json, model3Url) ?? [];
   await Promise.all(
     deps.map((dep) =>
       fetch(dep, { mode: "cors", credentials: "omit", cache: "force-cache" }).catch(() => undefined),
@@ -81,7 +78,7 @@ export async function preloadScenePlaybackAssets(
   if (typeof window === "undefined") return;
 
   const urls = collectScenePlaybackAssetUrls(scene);
-  const { audio, image, video, live2dModel, other } = partitionScenePlaybackAssetUrls(urls);
+  const { audio, image, video, avatarModel, other } = partitionScenePlaybackAssetUrls(urls);
 
   preloadNarrationSegmentUrls(audio);
 
@@ -90,8 +87,8 @@ export async function preloadScenePlaybackAssets(
     ...video.map((url) => () => preloadVideo(url)),
     ...audio.map((url) => () => preloadAudioFetch(url)),
     ...other.map((url) => () => preloadGeneric(url)),
-    ...live2dModel.map((url) => () =>
-      isLive2dModel3JsonUrl(url) ? preloadLive2dModelBundle(url) : preloadGeneric(url),
+    ...avatarModel.map((url) => () =>
+      isLive2dModelEntryUrl(url) ? preloadLive2dModelBundle(url) : preloadGeneric(url),
     ),
   ];
 

@@ -4,20 +4,17 @@ import {
   countInochiCachedInstances,
   isInochiModelCacheWarm,
 } from "./inochi-model-instance-cache.ts";
-import {
-  countLive2dCachedInstances,
-  isLive2dModelCacheWarm,
-} from "./live2d-model-instance-cache.ts";
+import { getLive2dRuntime } from "./model-runtime.ts";
 import { isInochiModelUrl } from "./vtuber-model-defaults.ts";
 
-/** Live2D / Inochi instance cache key (same as modelReloadKey in the component). */
+/** Model instance cache key (same as modelReloadKey in the component). */
 export function getVtuberModelCacheKey(modelUrl: string): string {
   const trimmed = (modelUrl ?? "").trim();
   return stripCoursewareAssetSignatureFromUrl(trimmed) || trimmed;
 }
 
 export function isLive2dVtuberModelWarmInCache(modelUrl: string): boolean {
-  return isLive2dModelCacheWarm(getVtuberModelCacheKey(modelUrl));
+  return getLive2dRuntime()?.isModelCacheWarm(getVtuberModelCacheKey(modelUrl)) ?? false;
 }
 
 /** Whether the Live2D at mountIndex can mount right away (for the same URL, the instance count is checked too). */
@@ -27,7 +24,7 @@ export function isLive2dVtuberWarmEnoughForMountIndex(
 ): boolean {
   if (mountIndex < 0) return false;
   const key = getVtuberModelCacheKey(modelUrl);
-  return countLive2dCachedInstances(key) > mountIndex;
+  return (getLive2dRuntime()?.countCachedInstances(key) ?? 0) > mountIndex;
 }
 
 export function isInochiVtuberModelWarmInCache(modelUrl: string): boolean {

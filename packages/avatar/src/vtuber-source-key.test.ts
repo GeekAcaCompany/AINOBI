@@ -22,9 +22,9 @@ describe("getVtuberSourceKey", () => {
     expect(getVtuberSourceKey(el)).toBe(getVtuberSourceKey(el2));
   });
 
-  it("uses default live2d path when metadata has no model url", () => {
+  it("falls back to the model id when neither metadata nor the host names a model", () => {
     const el = baseVtuber({ model_id: "teacher_a", metadata: {} });
-    expect(getVtuberSourceKey(el)).toBe("model:/models/geekaca-teacher/geekaca-teacher.model3.json");
+    expect(getVtuberSourceKey(el)).toBe("model-id:teacher_a");
   });
 });
 

@@ -2,6 +2,7 @@
 import { join, resolve, sep } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { answer, isLoopbackHost, LOCAL_ORG_ID } from './local-host.mjs';
+import { BUILT_IN_TEACHER_ID } from './ai-teachers.mjs';
 import { coursewareEnv, documentConverterUrls, embedOrigins, frameAncestors, googleBackend, googleCredentialsEnv, googleCredentialsStatus, mcpConfig, resolveStatic, studioPorts } from './start.mjs';
 import { findDefaultVoice, loadVoices, voicePage } from './voices.mjs';
 
@@ -48,6 +49,12 @@ describe('coursewareEnv', () => {
     expect(result.DB_HOST).toBe('127.0.0.1');
     expect(result.REDIS_HOST).toBe('127.0.0.1');
     expect(result.AINOBI_BACKEND_API_BASE).toBe('http://127.0.0.1:5601/v1');
+  });
+
+  it('gives an element that names no teacher the built-in Inochi2D teacher', () => {
+    const result = env({});
+    expect(result.AINOBI_DEFAULT_AI_TEACHER_ID).toBe(BUILT_IN_TEACHER_ID);
+    expect(result.AINOBI_DEFAULT_AI_TEACHER_MODEL_URL).toMatch(/.inx$/);
   });
 
   it('tells the service there is no manage app, so agents get no dead links', () => {

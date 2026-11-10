@@ -9,7 +9,7 @@ interface VtuberModelLoadingPlaceholderProps {
   showBorder?: boolean;
 }
 
-/** Spinner while Live2D / Inochi2D assets load. Transparent background only. */
+/** Spinner while model assets load. Transparent background only. */
 export function VtuberModelLoadingPlaceholder({
   label,
   overlay = true,

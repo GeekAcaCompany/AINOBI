@@ -12,7 +12,7 @@ import { listWorkspaceDirectories } from './workspaces.mjs';
 const root = fileURLToPath(new URL('..', import.meta.url));
 const LICENSE = 'AGPL-3.0-only';
 // Vendored third-party material keeps its own license; THIRD_PARTY_NOTICES.md records each of these.
-const VENDORED = ['packages/inochi2d/', 'apps/studio/public/live2dcubismcore.min.js', 'apps/studio/public/models/', 'apps/studio/public/geekaca-teacher.png', 'apps/video-render-service/runtime/'];
+const VENDORED = ['packages/inochi2d/', 'apps/video-render-service/runtime/'];
 const SOURCE = new Set(['.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs']);
 const SPDX = new RegExp(`^(?:#![^\\n]*\\n)?// SPDX-License-Identifier: ${LICENSE}\\n`);
 
@@ -41,7 +41,7 @@ describe('licensing', () => {
 
   it('records each piece of vendored material in the notices', () => {
     const notices = readFileSync(join(root, 'THIRD_PARTY_NOTICES.md'), 'utf8');
-    for (const name of ['Live2D Cubism Core', 'Inochi2D', 'geekaca-teacher']) expect(notices).toContain(name);
+    expect(notices).toContain('Inochi2D');
   });
 });
 
