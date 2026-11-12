@@ -43,6 +43,8 @@ const en = {
   needKeyNote: 'Everything else keeps working without it, including the teacher AINOBI ships with.',
   copy: 'Copy',
   copied: 'Copied',
+  sourceCode: 'Source code',
+  thirdPartyLicenses: 'Third-party licenses',
 };
 
 type Text = typeof en;
@@ -88,6 +90,8 @@ const zh: Text = {
   needKeyNote: '不配也不影响其他功能，包括 AINOBI 自带的教师。',
   copy: '复制',
   copied: '已复制',
+  sourceCode: '源代码',
+  thirdPartyLicenses: '第三方许可证',
 };
 
 const ja: Text = {
@@ -131,6 +135,8 @@ const ja: Text = {
   needKeyNote: 'これがなくても、AINOBI 付属の教師を含め他の機能は使えます。',
   copy: 'コピー',
   copied: 'コピーしました',
+  sourceCode: 'ソースコード',
+  thirdPartyLicenses: 'サードパーティライセンス',
 };
 
 export function useStudioText(): Text {

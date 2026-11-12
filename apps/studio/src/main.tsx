@@ -6,7 +6,7 @@ import { lazy, StrictMode, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Toaster } from 'react-hot-toast';
 import { createBrowserRouter, Outlet, RouterProvider } from 'react-router';
-import { connectStudio, loadStudioConfig } from './host.tsx';
+import { connectStudio, loadStudioConfig, type StudioAbout } from './host.tsx';
 import { CoursewareList } from './CoursewareList.tsx';
 import { TeacherDialog } from './TeacherDialog.tsx';
 import type { TeacherClient } from './teachers.ts';
@@ -19,7 +19,7 @@ const AvatarDemo = lazy(() => import('./AvatarDemo.tsx'));
 const root = createRoot(document.getElementById('root')!);
 
 // A data router: the editor blocks navigation while there are unsaved changes.
-const studioRouter = (orgId: string, teachers: TeacherClient) =>
+const studioRouter = (orgId: string, teachers: TeacherClient, about: StudioAbout | null) =>
   createBrowserRouter([
     {
       element: (
@@ -28,7 +28,7 @@ const studioRouter = (orgId: string, teachers: TeacherClient) =>
         </Suspense>
       ),
       children: [
-        { path: '/', element: <CoursewareList orgId={orgId} teachers={teachers} /> },
+        { path: '/', element: <CoursewareList orgId={orgId} teachers={teachers} about={about} /> },
         { path: '/courseware-editor', element: <CoursewareEditor /> },
         { path: '/courseware-preview', element: <CoursewarePreview /> },
         { path: '/courseware-renderer', element: <CoursewareRenderer /> },
@@ -45,7 +45,7 @@ try {
     <StrictMode>
       <QueryClientProvider client={new QueryClient()}>
         <I18nNewProvider>
-          <RouterProvider router={studioRouter(config.orgId, teachers)} />
+          <RouterProvider router={studioRouter(config.orgId, teachers, config.about)} />
           <TeacherDialog client={teachers} canGenerate={config.teacherGeneration} />
           <Toaster position="top-center" />
         </I18nNewProvider>

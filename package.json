@@ -4,6 +4,10 @@
   "private": true,
   "license": "AGPL-3.0-only",
   "author": "GeekAca Ltd.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GeekAcaCompany/AINOBI.git"
+  },
   "type": "module",
   "description": "Courseware authoring, playback, and avatars you can run with Node.js alone or embed piece by piece.",
   "packageManager": "pnpm@10.5.0",

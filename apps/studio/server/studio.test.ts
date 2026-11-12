@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0-only
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join, resolve, sep } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { answer, isLoopbackHost, LOCAL_ORG_ID } from './local-host.mjs';
 import { BUILT_IN_TEACHER_ID } from './ai-teachers.mjs';
-import { coursewareEnv, documentConverterUrls, embedOrigins, frameAncestors, googleBackend, googleCredentialsEnv, googleCredentialsStatus, mcpConfig, resolveStatic, studioPorts } from './start.mjs';
+import { aboutStudio, coursewareEnv, documentConverterUrls, embedOrigins, frameAncestors, googleBackend, googleCredentialsEnv, googleCredentialsStatus, mcpConfig, resolveStatic, studioPorts } from './start.mjs';
 import { findDefaultVoice, loadVoices, voicePage } from './voices.mjs';
 
 describe('local host', () => {
@@ -115,6 +117,30 @@ describe('mcpConfig', () => {
       type: 'http',
       url: 'http://127.0.0.1:5633/mcp',
       headers: { Authorization: 'Bearer t' },
+    });
+  });
+});
+
+describe('aboutStudio', () => {
+  const withManifest = (manifest: object, run: (root: string) => void) => {
+    const root = mkdtempSync(join(tmpdir(), 'studio-about-'));
+    try {
+      writeFileSync(join(root, 'package.json'), JSON.stringify(manifest));
+      run(root);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  };
+
+  it('says nothing when the manifest names no repository', () => {
+    withManifest({ version: '1.0.0', license: 'X-1' }, (root) => expect(aboutStudio(root)).toBeNull());
+  });
+
+  it('gives the license and the source address, and offers the notices only when the file is there', () => {
+    withManifest({ version: '1.0.0', license: 'X-1', repository: { type: 'git', url: 'git+https://git.example/a/b.git' } }, (root) => {
+      expect(aboutStudio(root)).toEqual({ version: '1.0.0', license: 'X-1', sourceUrl: 'https://git.example/a/b', commit: null, notices: false });
+      writeFileSync(join(root, 'THIRD_PARTY_NOTICES.md'), 'notices');
+      expect(aboutStudio(root)?.notices).toBe(true);
     });
   });
 });

@@ -3,7 +3,7 @@
 // Runs Studio on one machine with Node.js alone: the embedded stores, the local host, the courseware service, and
 // the web app. State lives in .ainobi/ at the repository root. Video export is the one optional piece: it runs in a
 // container started separately (docs/video-export.md), and everything else works without it.
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { createReadStream, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
@@ -28,6 +28,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const studioDir = join(here, '..');
 const repositoryRoot = join(studioDir, '../..');
 const STORAGE_BUCKET = 'ainobi-local';
+const NOTICES_FILE = 'THIRD_PARTY_NOTICES.md';
 
 const portFromEnv = (name, fallback) => {
   const raw = process.env[name];
@@ -178,6 +179,30 @@ export function embedOrigins(value) {
     });
 }
 
+/**
+ * What the home page says about this copy, from the root manifest: its version and license, where its source is, and
+ * the commit it runs when that is known. Null when the manifest names no repository.
+ */
+export function aboutStudio(root = repositoryRoot) {
+  const manifest = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+  const repository = typeof manifest.repository === 'string' ? manifest.repository : manifest.repository?.url;
+  const sourceUrl = repository?.replace(/^git\+/, '').replace(/\.git$/, '');
+  if (!sourceUrl?.startsWith('https://')) return null;
+  let commit = null;
+  try {
+    commit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() || null;
+  } catch {
+    // Not a git checkout, or no git: the link goes to the repository itself.
+  }
+  return {
+    version: manifest.version ?? null,
+    license: manifest.license ?? null,
+    sourceUrl: commit ? `${sourceUrl}/tree/${commit}` : sourceUrl,
+    commit,
+    notices: existsSync(join(root, NOTICES_FILE)),
+  };
+}
+
 /** Who may frame Studio. Its pages hold the local access token, so nobody may by default. */
 export const frameAncestors = (origins) => ["frame-ancestors 'self'", ...origins].join(' ');
 
@@ -208,7 +233,7 @@ const CONTENT_TYPES = {
   '.woff2': 'font/woff2',
 };
 
-function startWeb({ port, distDir, session, teachersDir, framing }) {
+function startWeb({ port, distDir, session, teachersDir, framing, noticesFile }) {
   const server = createServer((req, res) => {
     const host = req.headers.host ?? '';
     if (!isLoopbackHost(host, port)) {
@@ -225,6 +250,15 @@ function startWeb({ port, distDir, session, teachersDir, framing }) {
       }
       res.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' });
       res.end(JSON.stringify(session()));
+      return;
+    }
+    if (pathname === '/local/third-party-notices') {
+      if (!existsSync(noticesFile)) {
+        res.writeHead(404).end('not found');
+        return;
+      }
+      res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8' });
+      createReadStream(noticesFile).pipe(res);
       return;
     }
     if (pathname.startsWith('/local/ai-teachers/')) {
@@ -389,11 +423,13 @@ async function main() {
   videoProbe.unref();
 
   let editorAssistant = false;
+  const about = aboutStudio();
   const web = await startWeb({
     port: ports.web,
     distDir: join(studioDir, 'dist'),
     teachersDir,
     framing: frameAncestors(allowedEmbedders),
+    noticesFile: join(repositoryRoot, NOTICES_FILE),
     session: () => ({
       accessToken: secrets.token,
       orgId: LOCAL_ORG_ID,
@@ -404,6 +440,7 @@ async function main() {
       editorAssistant,
       embedOrigins: allowedEmbedders,
       defaultModelUrl: BUILT_IN_TEACHER_MODEL_URL,
+      about,
     }),
   });
 

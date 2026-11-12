@@ -7,6 +7,15 @@ import type { ReactNode } from 'react';
 import { startStudioEmbed } from './embed.ts';
 import { createTeacherClient, openTeacherDialog, type TeacherClient } from './teachers.ts';
 
+/** This copy's version and license, and where its source is; see aboutStudio in server/start.mjs. */
+export type StudioAbout = {
+  version: string | null;
+  license: string | null;
+  sourceUrl: string;
+  commit: string | null;
+  notices: boolean;
+};
+
 export type StudioConfig = {
   accessToken: string;
   orgId: string;
@@ -18,6 +27,7 @@ export type StudioConfig = {
   embedOrigins: string[];
   /** The built-in teacher's model, for avatars and teachers that name none. */
   defaultModelUrl: string;
+  about: StudioAbout | null;
 };
 
 export async function loadStudioConfig(): Promise<StudioConfig> {

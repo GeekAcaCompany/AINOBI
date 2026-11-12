@@ -3,6 +3,7 @@ import { deleteCourseware, listCoursewareLibrary, type CoursewareLibraryListItem
 import { Pencil, Play, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
+import type { StudioAbout } from './host.tsx';
 import { TeacherStrip } from './TeacherStrip.tsx';
 import type { TeacherClient } from './teachers.ts';
 import { useStudioText } from './text.ts';
@@ -12,7 +13,7 @@ const editorUrl = (key: string, orgId: string) =>
 const previewUrl = (key: string, orgId: string) =>
   `/courseware-preview?courseware_id=${encodeURIComponent(key)}&org_id=${encodeURIComponent(orgId)}`;
 
-export function CoursewareList({ orgId, teachers }: { orgId: string; teachers: TeacherClient }) {
+export function CoursewareList({ orgId, teachers, about }: { orgId: string; teachers: TeacherClient; about: StudioAbout | null }) {
   const text = useStudioText();
   const navigate = useNavigate();
   const [items, setItems] = useState<CoursewareLibraryListItem[] | null>(null);
@@ -106,6 +107,23 @@ export function CoursewareList({ orgId, teachers }: { orgId: string; teachers: T
           </li>
         ))}
       </ul>
+      {about ? (
+        <footer className="mt-10 flex flex-wrap gap-x-3 gap-y-1 border-t border-slate-200 pt-4 text-xs text-slate-500">
+          <span>
+            AINOBI {about.version}
+            {about.commit ? ` (${about.commit.slice(0, 7)})` : null}
+          </span>
+          {about.license ? <span>{about.license}</span> : null}
+          <a className="underline hover:text-slate-700" href={about.sourceUrl} target="_blank" rel="noreferrer">
+            {text.sourceCode}
+          </a>
+          {about.notices ? (
+            <a className="underline hover:text-slate-700" href="/local/third-party-notices" target="_blank" rel="noreferrer">
+              {text.thirdPartyLicenses}
+            </a>
+          ) : null}
+        </footer>
+      ) : null}
     </main>
   );
 }
