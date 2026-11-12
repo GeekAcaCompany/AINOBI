@@ -24,7 +24,17 @@ npm start
 
 The first run installs and builds, which takes a few minutes. Then open <http://127.0.0.1:5600>: a courseware list, with editing and preview for each item. Your work is stored in `.ainobi/` in this directory.
 
-This is the smallest way to run AINOBI, not a fixed choice. The database is PGlite (PostgreSQL in WebAssembly), Redis is an in-memory server, and objects are files on disk, all inside the Node.js process, so nothing has to be installed or configured. It suits one person or a small team on one machine. When you outgrow it, swap any of the three for your own server; see [Your own database, Redis, and storage](#your-own-database-redis-and-storage).
+This is the smallest way to run AINOBI, not a fixed choice. The database is PGlite (PostgreSQL in WebAssembly), Redis is an in-memory server, and objects are files on disk, all inside the Node.js process, so nothing has to be installed or configured. It suits one person on one machine: there is one user and no sign-in. To serve several people, run the courseware service behind your own sign-in and swap any of the three stores for your own server; see [Your own database, Redis, and storage](#your-own-database-redis-and-storage).
+
+Open only courseware you trust. A slide can contain HTML whose scripts run as you in Studio, so courseware from someone else is like a program from someone else; see [SECURITY.md](SECURITY.md).
+
+To update, pull, install, and rebuild. `npm start` builds only what is missing, so without `--rebuild` it keeps running the old build:
+
+```sh
+git pull
+npx pnpm@10.5.0 install
+npm start -- --rebuild
+```
 
 If a port is taken, `npm start` stops and names it. Add `AINOBI_PORT_OFFSET=100` to `.env.local` to move every port together, and Studio is then at <http://127.0.0.1:5700>.
 
@@ -56,19 +66,19 @@ You can also hand the whole job over. Give your agent this repository and say:
 
 [AGENTS.md](AGENTS.md) tells the agent how to choose the smallest set of components and integrate them into your project.
 
-## Required setting
+## Narration and AI scoring need a Gemini key
 
-One key is required. Get a Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey), add it to `.env.local` in this folder, and restart:
+Studio starts, and you can edit and play courseware, without any key. Narration and AI scoring need one: get a Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey), add it to `.env.local` in this folder, and restart:
 
 ```sh
 GEMINI_API_KEY=your-key
 ```
 
-It powers narration, in 30 voices, and the AI scoring of essay, shadowing, and speech questions. Studio still starts without it so you can look around, but it warns you at startup, and narration and AI scoring report an error when used. To run both on Google Cloud Vertex AI instead, with a service account, see [docs/google-cloud.md](docs/google-cloud.md).
+It powers narration, in 30 voices, and the AI scoring of essay, shadowing, and speech questions. Without it Studio warns you at startup, and narration and AI scoring report an error when used. To run both on Google Cloud Vertex AI instead, with a service account, see [docs/google-cloud.md](docs/google-cloud.md).
 
 ## What works out of the box
 
-- **An AI teacher.** Studio ships with one, ready to add to any slide and to narrate.
+- **An AI teacher.** Studio ships with one, ready to add to any slide. Its narration needs the Gemini key above.
 - **Quizzes.** Single choice, multiple choice, and exact fill-in questions are scored locally, with a final score page. Essay, shadowing, and speech questions are scored by Gemini.
 
 ## Your agent does the rest
@@ -77,7 +87,7 @@ AINOBI assumes an AI agent is working on it, and that agent can already research
 
 | Skill | What your agent does | Key needed only if your agent cannot |
 | --- | --- | --- |
-| [`ainobi-courseware`](skills/ainobi-courseware/SKILL.md) | Plans, builds, and edits courseware: slides, layout, quizzes, motion, and narration | None |
+| [`ainobi-courseware`](skills/ainobi-courseware/SKILL.md) | Plans, builds, and edits courseware: slides, layout, quizzes, motion, and narration | None; narration needs your `GEMINI_API_KEY` whichever agent you use |
 | [`ainobi-research`](skills/ainobi-research/SKILL.md) | Researches and checks facts with its own web search, and reads your documents | `TAVILY_API_KEY` (search the web) |
 | [`ainobi-images`](skills/ainobi-images/SKILL.md) | Draws illustrations with its own image generation and adds them to slides | `OPENAI_API_KEY` (generate images) |
 | [`ainobi-ai-teacher`](skills/ainobi-ai-teacher/SKILL.md) | Creates a new animated AI teacher: it draws the character and checks every step itself, while Studio cuts, animates, and assembles it | `OPENAI_API_KEY` (generate images) |
@@ -117,6 +127,7 @@ The quick start uses embedded stores so it runs anywhere. The courseware service
 - [Narration and AI scoring on Google Cloud](docs/google-cloud.md)
 - [Video export](docs/video-export.md)
 - [Document conversion](docs/document-conversion.md)
+- [Security](SECURITY.md) and [privacy](docs/PRIVACY.md)
 - [Development and contributing](CONTRIBUTING.md)
 
 ## License
@@ -125,4 +136,4 @@ The code, the documentation, and the AI teacher that ships with Studio are licen
 
 The AINOBI name and logo are trademarks of GeekAca Ltd. and are excluded from this license; see [TRADEMARKS.md](TRADEMARKS.md). Third-party components, such as the Inochi2D runtime, are under their own terms, and the Claude Agent SDK behind the editor's AI assistant is proprietary software under Anthropic's terms; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Courseware you create or upload does not become subject to this license through the use of AINOBI.
 
-Studio's home page links to the source of the version it runs and to the third-party notices. If you let other people use a modified version over a network, the AGPL requires you to offer them its source: point `repository` in the root `package.json` at it, and that link follows.
+Studio's home page links to the source of the commit it runs and to the third-party notices, and says so when the files have changes that the commit does not include. If you let other people use a modified version over a network, the AGPL requires you to offer them its source: point `repository` in the root `package.json` at it, and that link follows.

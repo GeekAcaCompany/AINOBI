@@ -6,7 +6,7 @@ This describes where content goes when you run AINOBI with `npm start`. AINOBI h
 
 - Courseware, uploaded files, generated narration and images, AI teachers, and quiz answers and scores are stored in `.ainobi/` in the repository directory: a PGlite database and files on disk. `AINOBI_STORAGE_DIR` moves the stored files.
 - Playback, editing, and the scoring of single choice, multiple choice, and exact fill-in questions run locally.
-- You control retention: deleting courseware in Studio removes its slides, narration, and uploaded files, and deleting `.ainobi/` removes everything.
+- You control retention. Deleting courseware in Studio removes its slides, its narration audio, and the recorded answers to its questions. Images, documents, and other files you uploaded to it stay in `.ainobi/storage`, because the same file can be used by other courseware. Deleting `.ainobi/` removes everything.
 - The optional video renderer and document converters run in containers on your machine and read the courseware or the file you give them from there.
 
 ## What is sent to a provider
