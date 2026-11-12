@@ -13,7 +13,7 @@ const en = {
   edit: 'Edit',
   preview: 'Preview',
   delete: 'Delete',
-  deleteConfirm: 'Delete "{title}"? Its slides, narration, and uploaded files are removed for good.',
+  deleteConfirm: 'Delete "{title}"? This cannot be undone.',
   deleteFailed: 'Could not delete',
   teachers: 'AI teachers',
   newTeacher: 'New teacher',
@@ -45,6 +45,7 @@ const en = {
   copied: 'Copied',
   sourceCode: 'Source code',
   thirdPartyLicenses: 'Third-party licenses',
+  modifiedSource: 'Has local changes that the linked source does not include',
 };
 
 type Text = typeof en;
@@ -60,7 +61,7 @@ const zh: Text = {
   edit: '编辑',
   preview: '预览',
   delete: '删除',
-  deleteConfirm: '确定删除“{title}”吗？它的幻灯片、旁白和上传的文件都会被永久删除。',
+  deleteConfirm: '确定删除“{title}”吗？删除后无法恢复。',
   deleteFailed: '删除失败',
   teachers: 'AI 教师',
   newTeacher: '新建教师',
@@ -92,6 +93,7 @@ const zh: Text = {
   copied: '已复制',
   sourceCode: '源代码',
   thirdPartyLicenses: '第三方许可证',
+  modifiedSource: '含有本地修改，链接的源代码不包含这些修改',
 };
 
 const ja: Text = {
@@ -105,7 +107,7 @@ const ja: Text = {
   edit: '編集',
   preview: 'プレビュー',
   delete: '削除',
-  deleteConfirm: '「{title}」を削除しますか？スライド、ナレーション、アップロードしたファイルは完全に削除されます。',
+  deleteConfirm: '「{title}」を削除しますか？この操作は元に戻せません。',
   deleteFailed: '削除できませんでした',
   teachers: 'AI教師',
   newTeacher: '新しい教師',
@@ -137,6 +139,7 @@ const ja: Text = {
   copied: 'コピーしました',
   sourceCode: 'ソースコード',
   thirdPartyLicenses: 'サードパーティライセンス',
+  modifiedSource: 'ローカルの変更があり、リンク先のソースには含まれていません',
 };
 
 export function useStudioText(): Text {

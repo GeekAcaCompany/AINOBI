@@ -138,7 +138,7 @@ describe('aboutStudio', () => {
 
   it('gives the license and the source address, and offers the notices only when the file is there', () => {
     withManifest({ version: '1.0.0', license: 'X-1', repository: { type: 'git', url: 'git+https://git.example/a/b.git' } }, (root) => {
-      expect(aboutStudio(root)).toEqual({ version: '1.0.0', license: 'X-1', sourceUrl: 'https://git.example/a/b', commit: null, notices: false });
+      expect(aboutStudio(root)).toEqual({ version: '1.0.0', license: 'X-1', sourceUrl: 'https://git.example/a/b', commit: null, modified: false, notices: false });
       writeFileSync(join(root, 'THIRD_PARTY_NOTICES.md'), 'notices');
       expect(aboutStudio(root)?.notices).toBe(true);
     });

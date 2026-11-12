@@ -180,17 +180,21 @@ export function embedOrigins(value) {
 }
 
 /**
- * What the home page says about this copy, from the root manifest: its version and license, where its source is, and
- * the commit it runs when that is known. Null when the manifest names no repository.
+ * What the home page says about this copy, from the root manifest: its version and license, where its source is, the
+ * commit it runs when that is known, and whether the files differ from that commit, in which case the linked source
+ * is not all of what runs. Null when the manifest names no repository.
  */
 export function aboutStudio(root = repositoryRoot) {
   const manifest = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
   const repository = typeof manifest.repository === 'string' ? manifest.repository : manifest.repository?.url;
   const sourceUrl = repository?.replace(/^git\+/, '').replace(/\.git$/, '');
   if (!sourceUrl?.startsWith('https://')) return null;
+  const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
   let commit = null;
+  let modified = false;
   try {
-    commit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() || null;
+    commit = git('rev-parse', 'HEAD') || null;
+    modified = git('status', '--porcelain') !== '';
   } catch {
     // Not a git checkout, or no git: the link goes to the repository itself.
   }
@@ -199,6 +203,7 @@ export function aboutStudio(root = repositoryRoot) {
     license: manifest.license ?? null,
     sourceUrl: commit ? `${sourceUrl}/tree/${commit}` : sourceUrl,
     commit,
+    modified,
     notices: existsSync(join(root, NOTICES_FILE)),
   };
 }

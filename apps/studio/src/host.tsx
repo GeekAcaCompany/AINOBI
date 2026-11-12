@@ -13,6 +13,8 @@ export type StudioAbout = {
   license: string | null;
   sourceUrl: string;
   commit: string | null;
+  /** The files differ from the commit, so the linked source is not all of what runs. */
+  modified: boolean;
   notices: boolean;
 };
 

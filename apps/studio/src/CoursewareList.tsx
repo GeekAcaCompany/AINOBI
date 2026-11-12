@@ -113,6 +113,7 @@ export function CoursewareList({ orgId, teachers, about }: { orgId: string; teac
             AINOBI {about.version}
             {about.commit ? ` (${about.commit.slice(0, 7)})` : null}
           </span>
+          {about.modified ? <span className="text-amber-700">{text.modifiedSource}</span> : null}
           {about.license ? <span>{about.license}</span> : null}
           <a className="underline hover:text-slate-700" href={about.sourceUrl} target="_blank" rel="noreferrer">
             {text.sourceCode}
