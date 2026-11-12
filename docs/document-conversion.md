@@ -65,4 +65,4 @@ Studio looks for the converters at the addresses above; if they run elsewhere, s
 
 ## Licenses
 
-pdf2htmlEX is licensed under the GNU General Public License v3, and its source is available from its release. The PowerPoint converter includes JSZip (used under its MIT option), with its license texts in `apps/pptx2html-service/runtime/vendor/licenses/`. It installs [pptx-preview](https://www.npmjs.com/package/pptx-preview) from npm and uses it unmodified. [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md) has the details.
+pdf2htmlEX is licensed under the GNU General Public License v3, and its source is available from its release. The PowerPoint converter includes JSZip (used under its MIT option), with its license texts in `apps/pptx2html-service/runtime/vendor/licenses/`. It installs [pptx-preview](https://www.npmjs.com/package/pptx-preview) from npm and uses it unmodified; the image you build contains that package, whose author allows free use of the npm package but not republishing a modified copy of its source. [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md) has the details.
