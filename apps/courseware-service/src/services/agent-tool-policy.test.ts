@@ -306,6 +306,66 @@ test('bash blocks absolute paths outside workspace but allows workspace scene pa
   assert.equal(isAgentBashCommandBlocked('cd ..', ctx).blocked, true);
 });
 
+test('bash blocks every other way out of the workspace', () => {
+  const blocked = (command: string) => isAgentBashCommandBlocked(command, ctx).blocked;
+  for (const command of [
+    'cat ../../secrets.txt',
+    'cp scene.json notes/../../../out.json',
+    'cat "$AINOBI_WORK_DIR/../other/file"',
+    'cat ~/.ssh/id_rsa',
+    'ls ~',
+    'cat $HOME/.aws/config',
+    'cat "${USERPROFILE}/Documents/a.txt"',
+    'type %APPDATA%\\a.txt',
+    'cat </etc/passwd',
+    'pushd notes',
+  ]) {
+    assert.equal(blocked(command), true, command);
+  }
+  for (const command of ['cat notes/../scene.json', 'ainobi text set --text "wait... then go"', 'ls notes/a..b']) {
+    assert.equal(blocked(command), false, command);
+  }
+});
+
+test('bash blocks Windows drive and share paths outside the workspace', { skip: process.platform !== 'win32' }, () => {
+  const blocked = (command: string) => isAgentBashCommandBlocked(command, ctx).blocked;
+  assert.equal(blocked('cat C:\\Users\\someone\\.ssh\\id_rsa'), true);
+  assert.equal(blocked('cat C:/Users/someone/.ssh/id_rsa'), true);
+  assert.equal(blocked('cat D:/data.txt'), true);
+  assert.equal(blocked('cat \\\\server\\share\\file.txt'), true);
+  assert.equal(blocked('cat //server/share/file.txt'), true);
+  assert.equal(blocked(`cat ${resolve(agentCwd, 'notes.md')}`), false);
+});
+
+test('bash blocks nested shells and Windows system commands', () => {
+  const blocked = (command: string) => isAgentBashCommandBlocked(command, ctx).blocked;
+  for (const command of [
+    "bash -c 'rm -rf notes'",
+    'sh -lc "cat scene.json"',
+    'echo "rm -rf notes" | sh',
+    'eval "$cmd"',
+    'powershell -Command "Remove-Item notes"',
+    'pwsh -c ls',
+    'cmd /c del notes.md',
+    'cmd.exe /c dir',
+    'wsl ls',
+    'del notes.md',
+    'reg add HKCU\\Software\\X',
+    'ls; taskkill /im node.exe',
+    'certutil -urlcache -f http://example.com/a a',
+  ]) {
+    assert.equal(blocked(command), true, command);
+  }
+  for (const command of ['ainobi slide list', 'ainobi text set --text "use the cmd key"', 'ainobi export --format png']) {
+    assert.equal(blocked(command), false, command);
+  }
+});
+
+test('a second shell tool and notebook edits outside the workspace are refused', () => {
+  assert.equal(evaluateAgentToolUse('PowerShell', { command: 'Get-ChildItem' }, ctx).allowed, false);
+  assert.equal(evaluateAgentToolUse('NotebookEdit', { notebook_path: '/etc/a.ipynb', new_source: '' }, ctx).allowed, false);
+});
+
 test('grep and glob require scoped paths', () => {
   assert.equal(evaluateAgentToolUse('Grep', { pattern: 'slide', path: '.' }, ctx).allowed, false);
   assert.equal(

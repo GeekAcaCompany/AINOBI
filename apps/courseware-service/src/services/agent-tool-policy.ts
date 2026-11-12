@@ -158,7 +158,7 @@ const BASH_BLOCKED_PATTERNS: ReadonlyArray<BashBlockedPattern> = [
     reason: 'searching credential, .env, or .git metadata via shell is blocked',
   },
   {
-    pattern: new RegExp(`${SHELL_CMD_LEAD}${SHELL_CMD_GAP}cd(?:\\s|$|[|;&])`, 'i'),
+    pattern: new RegExp(`${SHELL_CMD_LEAD}${SHELL_CMD_GAP}(?:cd|pushd|popd)(?:\\s|$|[|;&])`, 'i'),
     reason: 'cd is blocked; the agent workspace directory is fixed. Run commands from the current directory and address helper files as "$AINOBI_WORK_DIR/<file>"',
   },
   {
@@ -190,6 +190,21 @@ const BASH_BLOCKED_PATTERNS: ReadonlyArray<BashBlockedPattern> = [
   {
     pattern: new RegExp(`${SHELL_CMD_LEAD}${SHELL_CMD_GAP}find\\b[^\\n|;&]*\\s-delete`, 'i'),
     reason: 'find -delete is blocked in the agent shell',
+  },
+  {
+    // A nested shell would run a quoted command line that none of the patterns above see.
+    pattern: new RegExp(
+      `${SHELL_CMD_LEAD}${SHELL_CMD_GAP}(?:(?:bash|sh|zsh|dash|ksh|fish)(?:\\.exe)?\\s+-[a-zA-Z]*c\\b|eval(?:\\s|$)|(?:powershell|pwsh|cmd|wsl|wscript|cscript|mshta|rundll32|regsvr32)(?:\\.exe)?(?:\\s|$|[|;&]))|\\|\\s*(?:bash|sh|zsh|dash|ksh|fish)(?:\\.exe)?(?:\\s|$|[|;&])`,
+      'i',
+    ),
+    reason: 'nested shells and script hosts are not allowed in the agent shell; run ainobi commands directly',
+  },
+  {
+    pattern: new RegExp(
+      `${SHELL_CMD_LEAD}${SHELL_CMD_GAP}(?:taskkill|takeown|icacls|cacls|schtasks|wmic|certutil|bitsadmin|runas|diskpart)(?:\\.exe)?(?:\\s|$|[|;&])|(?:^|[|;&(])\\s*(?:del|erase|rd|reg|net|sc|format)(?:\\.exe|\\.com)?\\s`,
+      'i',
+    ),
+    reason: 'Windows system commands are not allowed in the agent shell',
   },
 ];
 
@@ -225,7 +240,7 @@ const SENSITIVE_PATH_SUBSTRINGS = [
   'service-account.json',
 ] as const;
 
-const FILE_TOOLS = new Set(['Read', 'Write', 'Edit', 'MultiEdit']);
+const FILE_TOOLS = new Set(['Read', 'Write', 'Edit', 'MultiEdit', 'NotebookEdit']);
 
 // Parse the arguments after `ainobi` with the CLI's own parseArgs and take the subcommand it would really dispatch
 // (positionals[0]). Guessing flag values ourselves could be bypassed by forms like `--pretty false init` or `--select slide init`
@@ -408,6 +423,24 @@ function isBashScannedAbsolutePath(raw: string): boolean {
   return segments.length >= 2;
 }
 
+/**
+ * The home directory, or a variable holding a directory outside the workspace. These are refused without being
+ * resolved.
+ */
+const SHELL_OUTSIDE_PATH_PATTERN =
+  /(?:^|[\s'"=()<>])(?:~(?=[\\/\s'"]|$)|\$\{?(?:HOME|USERPROFILE|HOMEPATH|HOMEDRIVE|APPDATA|LOCALAPPDATA|PROGRAMDATA|PROGRAMFILES|SYSTEMROOT|WINDIR|OLDPWD)\b|%[A-Za-z_][A-Za-z0-9_()]*%|\$env:)/i;
+
+/** An absolute path in a shell word: POSIX, a Windows drive, or a UNC share. */
+const SHELL_ABSOLUTE_PATH_PATTERN =
+  /(?:^|[\s'"=()<>])(\/[^\s'"`;|&<>]+|[A-Za-z]:[\\/][^\s'"`;|&<>]*|\\\\[\w.$-]+\\[^\s'"`;|&<>]+)/g;
+
+/** A shell word with a ".." segment, which may climb out of the workspace. */
+const SHELL_PARENT_PATH_PATTERN =
+  /(?:^|[\s'"=()<>])((?:[^\s'"`;|&<>()]*[\\/])?\.\.(?:[\\/][^\s'"`;|&<>()]*)?)(?=$|[\s'"`;|&<>()])/g;
+
+const SHELL_PATH_ESCAPE_REASON =
+  'shell cannot access paths outside the agent workspace; use relative workspace paths or "$AINOBI_WORK_DIR/<file>" (CLI work_dir)';
+
 function isBashAbsolutePathEscape(
   command: string,
   workspaceCwd: string,
@@ -415,10 +448,19 @@ function isBashAbsolutePathEscape(
 ): { blocked: boolean; reason?: string } {
   const ws = resolve(workspaceCwd);
   const workDir = cliWorkDir?.trim() ? resolve(cliWorkDir.trim()) : null;
-  const pattern = /(?:^|[\s'"=()])(\/[^\s'"`;|&]+)/g;
-  for (const match of command.matchAll(pattern)) {
+  if (SHELL_OUTSIDE_PATH_PATTERN.test(command)) {
+    return { blocked: true, reason: SHELL_PATH_ESCAPE_REASON };
+  }
+  for (const match of command.matchAll(SHELL_PARENT_PATH_PATTERN)) {
     const raw = match[1];
-    if (!raw || !isBashScannedAbsolutePath(raw)) {
+    // A variable in front of ".." cannot be resolved here.
+    if (/[$%]/.test(raw) || !isPathWithinRoot(ws, raw.replace(/\\/g, '/'))) {
+      return { blocked: true, reason: SHELL_PATH_ESCAPE_REASON };
+    }
+  }
+  for (const match of command.matchAll(SHELL_ABSOLUTE_PATH_PATTERN)) {
+    const raw = match[1];
+    if (!raw || (raw.startsWith('/') && !isBashScannedAbsolutePath(raw))) {
       continue;
     }
     if (/^\/tmp(?:\/|$)/.test(raw) || /^\/var\/folders\//.test(raw) || /^\/private\/tmp\//.test(raw)) {
@@ -430,7 +472,7 @@ function isBashAbsolutePathEscape(
     }
     const rel = relative(ws, abs);
     if (rel.startsWith('..') || isAbsolute(rel)) {
-      return { blocked: true, reason: 'shell cannot access paths outside the agent workspace; use relative workspace paths or "$AINOBI_WORK_DIR/<file>" (CLI work_dir)' };
+      return { blocked: true, reason: SHELL_PATH_ESCAPE_REASON };
     }
   }
   return { blocked: false };
@@ -633,6 +675,11 @@ export function evaluateAgentToolUse(
     return allow();
   }
 
+  // A second shell tool would run commands that none of the Bash rules see.
+  if (toolName === 'PowerShell') {
+    return deny('PowerShell is not available to the agent; use Bash with ainobi commands');
+  }
+
   if (toolName === 'Grep') {
     return evaluateGrepTool(input, ctx);
   }
@@ -643,7 +690,7 @@ export function evaluateAgentToolUse(
 
   if (FILE_TOOLS.has(toolName)) {
     const mode = toolName === 'Read' ? 'read' : 'write';
-    const pathKeys = ['file_path', 'path', 'filePath', 'target_file', 'file'] as const;
+    const pathKeys = ['file_path', 'path', 'filePath', 'target_file', 'file', 'notebook_path'] as const;
     for (const key of pathKeys) {
       const value = input[key];
       if (typeof value !== 'string') {
