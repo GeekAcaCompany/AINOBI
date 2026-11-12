@@ -1,5 +1,5 @@
 {
-  "sourceCommit": "299fb6eb7a613770a77306c152fceeb09f00cbdb",
+  "sourceCommit": "6d64da1ed0f5066c6546bbfff707f6d8395b9051",
   "files": [
     "apps/courseware-service/.dockerignore",
     "apps/courseware-service/.env.example",
@@ -332,6 +332,10 @@
     "apps/pptx2html-service/runtime/converter.html",
     "apps/pptx2html-service/runtime/preview-render-hooks.js",
     "apps/pptx2html-service/runtime/vendor/jszip.min.js",
+    "apps/pptx2html-service/runtime/vendor/licenses/immediate-LICENSE.txt",
+    "apps/pptx2html-service/runtime/vendor/licenses/jszip-LICENSE.markdown",
+    "apps/pptx2html-service/runtime/vendor/licenses/lie-LICENSE.md",
+    "apps/pptx2html-service/runtime/vendor/licenses/pako-LICENSE",
     "apps/pptx2html-service/runtime/wedge-callout-pptx.js",
     "apps/pptx2html-service/scripts/convert-pptx-to-html.js",
     "apps/pptx2html-service/scripts/sync-runtime-vendor.js",

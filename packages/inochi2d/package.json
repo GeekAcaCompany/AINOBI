@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "Vendored build of Inochi2D/inochi2d-ts (three.js as peer dependency). Rebuild: clone repo, set vite rollupOptions.external: [\"three\"], npm run build, copy dist/.",
   "type": "module",
-  "license": "MIT",
+  "license": "BSD-2-Clause",
   "main": "./dist/inochi2d.es.js",
   "module": "./dist/inochi2d.es.js",
   "exports": {
