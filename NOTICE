@@ -7,6 +7,11 @@ This product is licensed under the GNU Affero General Public License v3.0 only
 The AINOBI name and logo are trademarks of GeekAca Ltd. and are not covered by that
 license; see TRADEMARKS.md.
 
+The AI teacher that ships with Studio (apps/studio/public/models/ainobi-teacher
+and apps/studio/public/ainobi-teacher.png) is GeekAca's own asset, drawn with an
+image generation model and assembled by AINOBI's avatar generator. It is
+licensed under AGPL-3.0-only like the code.
+
 Except for third-party material recorded in THIRD_PARTY_NOTICES.md, templates and
 example courseware under examples/ are dedicated to the public domain under
 CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/legalcode). This file
