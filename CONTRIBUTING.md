@@ -1,6 +1,6 @@
 # Contributing
 
-Issues, suggestions, and pull requests are welcome. External contributions require a signed [Contributor License Agreement](CLA.md).
+Issues, suggestions, and pull requests are welcome. External contributions require a signed [Contributor License Agreement](CLA.md): on your first pull request a bot asks you to agree by posting a comment, and its check passes once you have.
 
 ## Setup
 
@@ -23,4 +23,4 @@ Use `type(scope): summary`, for example `fix(player): keep the slide index on re
 
 ## License
 
-The code and documentation are AGPL-3.0-only. Start each new source file with `// SPDX-License-Identifier: AGPL-3.0-only`. Record any third-party code or asset in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), and use only material whose license allows it.
+The code and documentation are AGPL-3.0-only. Start each new source file with `// SPDX-License-Identifier: AGPL-3.0-only`. Record any third-party code or asset in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), and use only material whose license allows it. Third-party files keep their own headers and do not get the SPDX line. When you add a dependency, check its license with `npx pnpm@10.5.0 licenses list`, and add it to the notices if it is not under a permissive license.

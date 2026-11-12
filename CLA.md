@@ -1,6 +1,6 @@
 # Contributor License Agreement
 
-Thank you for contributing to AINOBI. Before GeekAca Ltd. (株式会社GeekAca, "GeekAca") can merge your first pull request, you must agree to the terms below. Once the repository is published, a CLA check on each pull request records your agreement; you only need to agree once.
+Thank you for contributing to AINOBI. Before GeekAca Ltd. (株式会社GeekAca, "GeekAca") can merge your first pull request, you must agree to the terms below. A check on each pull request asks you to agree by posting a comment and records your agreement; you only need to agree once.
 
 Status: this is the working draft of the agreement. It must be reviewed by GeekAca's legal counsel before the repository is published and is not legal advice.
 
