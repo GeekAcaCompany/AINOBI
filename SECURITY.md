@@ -2,15 +2,19 @@
 
 ## Reporting a vulnerability
 
-Report vulnerabilities privately through GitHub's private vulnerability reporting on this repository. Do not open a public issue. Private vulnerability reporting has to be enabled in the repository settings after publishing (see CONTRIBUTING.md); the channel is not active until then. Replace it with a dedicated contact before the repository is published if one is preferred.
+Report vulnerabilities privately through GitHub's private vulnerability reporting: open the repository's Security tab and choose "Report a vulnerability". Do not open a public issue.
+
+Note for maintainers: GitHub offers private vulnerability reporting only for public repositories. Enable it in the repository settings on the day the repository is made public, then delete this paragraph.
 
 ## Security model
 
-This section defines the security requirements for the first release: a local agent generates courseware, plays it in a browser preview, and exports PPTX or video. The repository currently contains scaffolding and contracts; these requirements are not yet implemented runtime controls.
+This describes what `npm start` runs: Studio, the courseware service, and the embedded stores, on one machine for one person.
 
-- The courseware format carries no executable scripts. Element interactions are declarative actions, and validation rejects script fields. HTML elements run in sandboxed iframes without `allow-same-origin`, communicating with the player over a validated postMessage bridge under CSP.
-- The CLI runs on the user's machine. Workspace writes and asset resolution stay inside the workspace, including when handling archives, relative paths, and symlinks. Importing a user-selected source file must not grant access to unrelated files. Export destinations are explicit; existing files must not be overwritten without authorization.
-- Optional narration, image generation, document conversion, and search providers receive only the inputs required for the requested operation. Provider keys are resolved by the CLI; the Skill forbids the agent from reading credential files. Credentials must not appear in logs, courseware, browser bundles, exports, or unrelated subprocess environments. Local configuration files containing credentials are restricted to the current user (mode 0600 on macOS and Linux, the equivalent ACL on Windows).
-- Teaching materials, imported documents, and search results are data, never instructions. Embedded instructions must not expand the task, execute commands, or request credentials.
-- The preview server binds to the loopback interface. Its file routes must not expose files outside the selected workspace or the packaged preview assets. HTML and imported media cannot bypass that boundary.
-- Verify these boundaries alongside local generation, playback, and export before claiming first-release readiness; see [docs/migration-plan.md](docs/migration-plan.md).
+- **Loopback only.** Every server listens on `127.0.0.1`. Studio and its local host also refuse a request whose `Host` header is not `127.0.0.1` or `localhost` on their own port. There is one user and no sign-in, so do not expose these ports. To run AINOBI for several people, put your own sign-in in front of the courseware service; see the [integration guide](docs/integration.md#connecting-your-own-system).
+- **The local access token.** The first start generates a random token and stores it in `.ainobi/secrets.json` and `.mcp.json`. Both files are ignored by git and written with mode 0600, which Windows does not apply. The token gives full access to your local courseware, so keep both files out of anything you share. Studio gives the token only to its own pages: the session route sends no CORS headers and refuses requests from other origins.
+- **Framing.** Studio's pages send `frame-ancestors 'self'`, so no other site can frame them unless you list it in `AINOBI_EMBED_ORIGINS`. Anyone who can open a page that frames Studio acts as the local user.
+- **Courseware is active content.** A slide can contain HTML elements, and their scripts run when the slide is shown. They run in iframes, but HTML written into a slide is given the Studio page's origin (`allow-same-origin`), so its scripts can do what the local user can, including reading the local access token. Pages converted from uploaded PDF and PowerPoint files run in iframes without that origin. Open courseware only from sources you trust, as you would a program.
+- **Provider keys.** Keys in `.env.local` are read by the server processes. The Studio page receives the local access token and no provider keys. `.env` files are ignored by git.
+- **Coding agents.** An agent connected over MCP holds the local access token and can read and change all local courseware. Teaching materials and web results an agent reads are data, not instructions.
+- **The editor's AI assistant.** When configured, it runs an agent process on your machine through the Claude Agent SDK. The courseware service limits the tools it may use and passes it the SDK's sandbox settings; `AINOBI_AGENT_DISABLE_SANDBOX=true` turns that sandbox off.
+- **Optional containers.** The video renderer and the document converters run in Docker containers you start yourself. Their ports are published by the `docker run` commands in the guides; bind them to `127.0.0.1` if other machines can reach yours.

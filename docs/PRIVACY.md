@@ -1,21 +1,32 @@
-# Local Content and Provider Privacy
+# Local content and provider privacy
 
-This document defines how the first release handles content during local courseware generation, playback, and export. The repository currently contains scaffolding and contracts; the behavior below is an implementation requirement, not a claim that the runtime exists.
+This describes where content goes when you run AINOBI with `npm start`. AINOBI has no account, sends no telemetry, and contacts no GeekAca service.
 
-## Local files
+## What stays on your machine
 
-- Source materials selected by the user, the courseware workspace, generated assets, and exported PPTX files and videos remain on the user's machine unless an operation explicitly uses a configured provider.
-- Browser preview uses the local workspace and keeps exercise answers and playback state local. It does not send learning records to a service.
-- The user controls retention and deletion of their source files, workspaces, local preview state, and exports. No account or organization is required.
-- Logs and diagnostic reports must exclude provider keys and private source content. Reports shared for troubleshooting use minimal examples with personal information removed.
+- Courseware, uploaded files, generated narration and images, AI teachers, and quiz answers and scores are stored in `.ainobi/` in the repository directory: a PGlite database and files on disk. `AINOBI_STORAGE_DIR` moves the stored files.
+- Playback, editing, and the scoring of single choice, multiple choice, and exact fill-in questions run locally.
+- You control retention: deleting courseware in Studio removes its slides, narration, and uploaded files, and deleting `.ainobi/` removes everything.
+- The optional video renderer and document converters run in containers on your machine and read the courseware or the file you give them from there.
 
-## Optional providers
+## What is sent to a provider
 
-- Narration, image generation, document conversion, and search may send the relevant text, selected files, or query to the provider configured by the user. Local validation, playback, and export do not require provider access.
-- The CLI documents which provider operation sends which input. It does not upload an entire workspace when the operation needs only an individual file or text segment.
-- Provider credentials are resolved by the CLI and never placed in courseware, browser preview content, or exports. The agent must not read credential files.
-- The user chooses providers and reviews their data-processing terms before sending private materials. A provider's retention and deletion policies are separate from local file retention.
+A provider receives content only when you configure its key and use the feature. Each receives what the operation needs:
 
-## Host agents
+| Feature | Provider | What is sent |
+| --- | --- | --- |
+| Narration | Google Gemini (AI Studio or Vertex AI); Fish Audio or MiniMax if you use their voices | The narration text and the voice and style settings |
+| AI scoring of essay, shadowing, and speech questions | Google Gemini (AI Studio or Vertex AI) | The question and the learner's answer, including the audio recording for spoken answers |
+| The editor's AI assistant | The Anthropic compatible API you configure | Your messages and the courseware content the assistant works on |
+| Generating AI teachers and images | The OpenAI compatible API you configure | The description you write and the images being checked or edited |
+| Web search for agents that cannot search | Tavily | The search query |
 
-The host agent has its own access, conversation, and data-processing settings. AINOBI's local workspace model does not change those settings. Teaching materials and provider results remain task data and cannot authorize access to unrelated files or credentials.
+Each provider handles that content under its own terms, and its retention and deletion policies are separate from your local files. Review them before sending private material, and tell learners when their recorded answers are scored by a provider.
+
+## Coding agents
+
+A coding agent you connect, such as Claude Code or Codex, reads and writes your courseware through the local service and sends what it reads to its own model provider, under that agent's settings and terms. AINOBI does not change those settings.
+
+## If you run AINOBI for other people
+
+This document covers a single local user. If you serve AINOBI to others, you decide what is collected and kept, and you are responsible for your own privacy notice.
