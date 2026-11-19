@@ -340,6 +340,12 @@ export function warpVerticalBilinearMask(
 
 // ---------------------------------------------------------------------------
 // Telea inpainting (FMM)
+//
+// fmSolve and inpaintTelea are adapted from OpenCV, modules/photo/src/inpaint.cpp (FastMarching_solve and
+// icvTeleaInpaintFMM), translated to TypeScript for three-channel images.
+// Copyright (C) 2000, Intel Corporation, all rights reserved.
+// OpenCV is under the Apache License 2.0, and that file carries the Intel License Agreement. Both texts are in
+// ../licenses/ (opencv-LICENSE, opencv-COPYRIGHT, opencv-intel-license.txt).
 // ---------------------------------------------------------------------------
 
 const FLAG_KNOWN = 0;
@@ -602,6 +608,10 @@ export function inpaintTelea(raster: Raster, mask: Uint8Array, inpaintRange = 3)
 
 // ---------------------------------------------------------------------------
 // Translation registration: ECC (MOTION_TRANSLATION) + phase correlation fallback
+//
+// eccTranslation is adapted from OpenCV, modules/video/src/ecc.cpp (cv::findTransformECC), translated to TypeScript
+// and reduced to the translation model. It carries the same copyright notice and license texts as the inpainting
+// code above.
 // ---------------------------------------------------------------------------
 
 /** 5x5 binomial Gaussian ([1,4,6,4,1]/16, REFLECT_101) — ECC pre-smoothing */

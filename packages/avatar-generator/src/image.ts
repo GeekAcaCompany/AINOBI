@@ -323,6 +323,12 @@ export function bandHistogram(band: Uint8Array): number[] {
 
 // ---------------------------------------------------------------------------
 // Gaussian blur ("extended box filter" implementation — three passes approximating a Gaussian)
+//
+// gaussianBlurBoxRadius and boxBlurLine are adapted from Pillow, src/libImaging/BoxBlur.c (_gaussian_blur_radius and
+// ImagingLineBoxBlur8), translated to TypeScript.
+// Copyright © 1997-2011 by Secret Labs AB. Copyright © 1995-2011 by Fredrik Lundh and contributors.
+// Copyright © 2010 by Jeffrey 'Alex' Clark and contributors.
+// Pillow is under the MIT-CMU license, in ../licenses/pillow-LICENSE.
 // ---------------------------------------------------------------------------
 
 /** Target sigma → radius of a single extended box filter pass (gwosdek-ssvm11 [7][11][14]; float32 throughout) */

@@ -17,6 +17,7 @@
   },
   "files": [
     "dist",
+    "licenses",
     "README.md"
   ],
   "publishConfig": {

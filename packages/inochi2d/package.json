@@ -19,6 +19,7 @@
   "files": [
     "dist",
     "LICENSE",
+    "licenses",
     "inochi2d.d.ts"
   ],
   "private": true,

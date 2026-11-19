@@ -23,6 +23,11 @@ const INDICES_QUAD = [0, 2, 1, 2, 3, 1];
 
 // ---------------------------------------------------------------------------
 // MT19937 (init_by_array seeding + 32-bit draws)
+//
+// Mt19937 is adapted from the reference implementation mt19937ar.c (init_genrand, init_by_array, and the 32-bit
+// generator), translated to TypeScript.
+// Copyright (C) 1997 - 2002, Makoto Matsumoto and Takuji Nishimura, All rights reserved.
+// It is under the 3-clause BSD license in ../licenses/mt19937-LICENSE.txt.
 // ---------------------------------------------------------------------------
 
 const MT_N = 624;

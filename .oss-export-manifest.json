@@ -336,6 +336,7 @@
     "apps/pptx2html-service/runtime/vendor/licenses/jszip-LICENSE.markdown",
     "apps/pptx2html-service/runtime/vendor/licenses/lie-LICENSE.md",
     "apps/pptx2html-service/runtime/vendor/licenses/pako-LICENSE",
+    "apps/pptx2html-service/runtime/vendor/licenses/set-immediate-shim-README.md",
     "apps/pptx2html-service/runtime/wedge-callout-pptx.js",
     "apps/pptx2html-service/scripts/convert-pptx-to-html.js",
     "apps/pptx2html-service/scripts/sync-runtime-vendor.js",
