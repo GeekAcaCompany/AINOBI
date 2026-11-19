@@ -12,6 +12,10 @@
 
 AINOBI is a courseware system you can run as a whole or take apart. Run it complete with one command, or install only the avatar, only the player, or only the editor into your own app.
 
+<p align="center">
+  <img src="docs/assets/studio-player.gif" alt="AINOBI Studio opening a lesson from the courseware list: the AI teacher stands beside animated slides, then a quiz is answered and scored" width="800" />
+</p>
+
 ## Quick start
 
 Install [Node.js](https://nodejs.org) 22.12 or later (22, 24, or a newer even-numbered release). For this quick start you need nothing else: no Docker, no database, no Redis.
@@ -23,6 +27,10 @@ npm start
 ```
 
 The first run installs and builds, which takes a few minutes. Then open <http://127.0.0.1:5600>: a courseware list, with editing and preview for each item. Your work is stored in `.ainobi/` in this directory.
+
+<p align="center">
+  <img src="docs/assets/studio-editor.gif" alt="The courseware editor: enlarging a title, moving the AI teacher, switching scenes, and playing a slide on its timeline" width="800" />
+</p>
 
 This is the smallest way to run AINOBI, not a fixed choice. The database is PGlite (PostgreSQL in WebAssembly), Redis is an in-memory server, and objects are files on disk, all inside the Node.js process, so nothing has to be installed or configured. It suits one person on one machine: there is one user and no sign-in. To serve several people, run the courseware service behind your own sign-in and swap any of the three stores for your own server; see [Your own database, Redis, and storage](#your-own-database-redis-and-storage).
 

@@ -11,5 +11,5 @@
 # feat(courseware-core)!: revise the courseware format
 # Add a short body after a blank line only when the diff alone is hard to understand.
 # Check English clarity and verb usage during review.
-# Do not add Co-Authored-By trailers or AI attributions.
+# A Co-Authored-By trailer is allowed. Do not add any other AI attribution, such as a "Generated with" line.
 # Validate a message file: pnpm lint:commits --edit <file>

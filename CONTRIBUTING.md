@@ -21,6 +21,12 @@ Most of the code is exported from GeekAca's private monorepo, which is where sha
 
 Use `type(scope): summary`, for example `fix(player): keep the slide index on reload`. The scope is required and the subject is English, at most 72 characters, with a lowercase summary and no final period. Types are `feat`, `fix`, `docs`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, and `revert`. `pnpm lint:commits` checks a message.
 
+## Pull requests
+
+Give a pull request a title in the commit format, `type(scope): summary`, in at most 65 characters. When a pull request is squashed, GitHub makes the title the commit subject and appends the number, such as ` (#123)`, and that commit is checked like any other.
+
+The description follows the [template](.github/pull_request_template.md), in English: a summary of what the change does and why, then a test plan. The test plan names the automated tests that cover the change and the commands you ran, gives the steps a reviewer follows to see it working, and says what you could not test. Reviewers verify those statements, as [docs/review-guidelines.md](docs/review-guidelines.md) describes, so write only what you ran or saw.
+
 ## License
 
 The code and documentation are AGPL-3.0-only. Start each new source file with `// SPDX-License-Identifier: AGPL-3.0-only`. Record any third-party code or asset in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), and use only material whose license allows it. Third-party files keep their own headers and do not get the SPDX line. When you add a dependency, check its license with `npx pnpm@10.5.0 licenses list`, and add it to the notices if it is not under a permissive license.

@@ -14,7 +14,7 @@ const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const config = await load({}, { cwd: root });
 const sha = (digit) => digit.repeat(40);
 
-test('accepts scoped commits, breaking changes, and the 72-character boundary', async () => {
+test('accepts scoped commits, breaking changes, co-author trailers, and the 72-character boundary', async () => {
   const messages = [
     'docs(readme): make English the default language',
     'fix(courseware-core): preserve element ids when saving',
@@ -22,6 +22,8 @@ test('accepts scoped commits, breaking changes, and the 72-character boundary', 
     'feat(api)!: change response\n\nBREAKING CHANGE: Return enrollment details.',
     'revert(player): restore the previous playback behavior',
     'feat(cli): ' + 'a'.repeat(61),
+    'feat(cli): add validation\n\nCo-Authored-By: Someone <test@example.com>',
+    'feat(cli): add validation\n\nCo-Authored-By: Claude <noreply@anthropic.com>',
   ];
   for (const message of messages) {
     const result = await lintMessage(message, config);
@@ -49,12 +51,9 @@ test('rejects malformed, ignored-by-default, empty, and attributed messages', as
     ' \n ',
     '# comment',
     '# comment\nfeat(cli): add validation',
-    'feat(cli): add validation\n\nCo-Authored-By: Someone <test@example.com>',
-    'feat(cli): add validation\n\ncO-aUtHoReD-bY: Someone <test@example.com>',
     'feat(cli): add validation\n\n🤖 Generated with [Claude Code](https://example.com)',
     'feat(cli): add validation\n\nAI-assisted implementation',
     'fix(cli): preserve parsing\n\n# Generated with Codex',
-    'fix(cli): preserve parsing\n\n# Co-Authored-By: Someone <test@example.com>',
   ];
   for (const message of messages) {
     assert.equal((await lintMessage(message, config)).valid, false, JSON.stringify(message));
