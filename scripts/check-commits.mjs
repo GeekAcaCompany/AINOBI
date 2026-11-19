@@ -29,8 +29,21 @@ export function commitRange(eventName, event) {
   throw new Error(`Unsupported GitHub event: ${eventName || '(missing)'}. Expected pull_request or push.`);
 }
 
+function hasCommit(sha, cwd) {
+  try {
+    execFileSync('git', ['cat-file', '-e', sha + '^{commit}'], { cwd, stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function commitsForEvent(eventName, event, cwd = process.cwd()) {
-  return execFileSync('git', ['rev-list', '--reverse', commitRange(eventName, event), '--'], {
+  let range = commitRange(eventName, event);
+  // A forced push can replace history, so the commit it replaced may no longer exist. Check
+  // every commit the new head reaches.
+  if (eventName === 'push' && range.includes('..') && !hasCommit(event.before, cwd)) range = event.after;
+  return execFileSync('git', ['rev-list', '--reverse', range, '--'], {
     cwd,
     encoding: 'utf8',
   }).trim().split('\n').filter(Boolean);

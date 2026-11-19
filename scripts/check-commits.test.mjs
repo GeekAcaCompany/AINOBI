@@ -98,6 +98,8 @@ test('checks the root commit and all PR/push commits, not only the final valid c
   assert.deepEqual(commitsForEvent('push', firstPush, directory), [first, invalid, last]);
   assert.deepEqual(commitsForEvent('push', push, directory), [invalid, last]);
   assert.deepEqual(commitsForEvent('pull_request', pr, directory), [invalid, last]);
+  // A forced push that replaced history names a commit that is gone.
+  assert.deepEqual(commitsForEvent('push', { before: sha('b'), after: last }, directory), [first, invalid, last]);
 
   const run = (eventName, event) => {
     const eventPath = join(directory, 'event.json');
