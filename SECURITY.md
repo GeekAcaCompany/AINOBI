@@ -4,8 +4,6 @@
 
 Report vulnerabilities privately through GitHub's private vulnerability reporting: open the repository's Security tab and choose "Report a vulnerability". Do not open a public issue.
 
-Note for maintainers: GitHub offers private vulnerability reporting only for public repositories. Enable it in the repository settings on the day the repository is made public, then delete this paragraph.
-
 ## Security model
 
 This describes what `npm start` runs: Studio, the courseware service, and the embedded stores, on one machine for one person.
