@@ -33,7 +33,7 @@ Most of this repository is exported from GeekAca's private monorepo, and `.oss-e
 
 - Use pnpm through `npx pnpm@10.5.0`; `pnpm-lock.yaml` is the only lockfile. Run `pnpm typecheck`, `pnpm lint`, and `pnpm test` before committing.
 - Code and documentation are AGPL-3.0-only, and every source file written for AINOBI starts with `// SPDX-License-Identifier: AGPL-3.0-only`. Vendored material keeps its own license and is recorded in `THIRD_PARTY_NOTICES.md`. Every `package.json` declares `license` and `author: GeekAca Ltd.`
-- The project language is English: documentation, comments, commit messages, and package metadata.
+- The project language is English: documentation, comments, commit messages, and package metadata. `README.ja.md` and `README.zh-CN.md` are the exception: they translate `README.md`, so change them together with it.
 - Commit messages use `type(scope): summary`: scope required, English, at most 72 characters, lowercase summary, no final period. Types are `feat`, `fix`, `docs`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, and `revert`. A Co-Authored-By trailer is allowed; any other AI attribution, such as a "Generated with" line, is not.
 - A pull request title uses the same `type(scope): summary` format in at most 65 characters, because a squash merge makes it a commit subject with ` (#123)` appended. Its description fills in [.github/pull_request_template.md](.github/pull_request_template.md), in English: a summary of what changed and why, and a test plan with the automated tests that cover the change, the steps to verify it, and what was not tested.
 - Review against [docs/review-guidelines.md](docs/review-guidelines.md).
