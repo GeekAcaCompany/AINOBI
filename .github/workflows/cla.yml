@@ -36,5 +36,5 @@ jobs:
           path-to-document: https://github.com/GeekAcaCompany/AINOBI/blob/main/CLA.md
           branch: cla-signatures
           # Bots sign nothing. Add GeekAca staff here: their work already belongs to GeekAca.
-          allowlist: dependabot[bot],github-actions[bot]
+          allowlist: dependabot[bot],github-actions[bot],Hanye-GeekAca,WeibinGeekAca
           lock-pullrequest-aftermerge: false
