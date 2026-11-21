@@ -8,9 +8,11 @@
 
 [Quick start](#quick-start) · [Pick what you need](#pick-only-what-you-need) · [Use it from your agent](#use-it-from-your-coding-agent) · [Components](docs/components.md) · [Integration guide](docs/integration.md)
 
+English · [日本語](README.ja.md) · [简体中文](README.zh-CN.md)
+
 </div>
 
-AINOBI is a courseware system you can run as a whole or take apart. Run it complete with one command, or install only the avatar, only the player, or only the editor into your own app.
+AINOBI is an AI-based system for creating teaching content that you can run as a whole or take apart. Run it complete with one command, or install only the avatar, only the player, or only the editor into your own app.
 
 <p align="center">
   <img src="docs/assets/studio-player.gif" alt="AINOBI Studio opening a lesson from the courseware list: the AI teacher stands beside animated slides, then a quiz is answered and scored" width="800" />
