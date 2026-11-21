@@ -1,6 +1,6 @@
 # Contributing
 
-Issues, suggestions, and pull requests are welcome. External contributions require a signed [Contributor License Agreement](CLA.md): on your first pull request a bot asks you to agree by posting a comment, and its check passes once you have.
+Issues, suggestions, and pull requests are welcome. By opening a pull request you agree to the [Contributor License Agreement](CLA.md) for what it contains; there is nothing to sign.
 
 ## Setup
 

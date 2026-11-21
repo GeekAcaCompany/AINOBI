@@ -142,7 +142,7 @@ The quick start uses embedded stores so it runs anywhere. The courseware service
 
 ## License
 
-The code, the documentation, and the AI teacher that ships with Studio are licensed under the [GNU Affero General Public License v3.0 only](LICENSE). Copyright GeekAca Ltd. and contributors; see [NOTICE](NOTICE). External contributions require a signed [Contributor License Agreement](CLA.md).
+The code, the documentation, and the AI teacher that ships with Studio are licensed under the [GNU Affero General Public License v3.0 only](LICENSE). Copyright GeekAca Ltd. and contributors; see [NOTICE](NOTICE). Submitting a contribution means you agree to the [Contributor License Agreement](CLA.md); there is nothing to sign.
 
 The AINOBI name and logo are trademarks of GeekAca Ltd. and are excluded from this license; see [TRADEMARKS.md](TRADEMARKS.md). Third-party components, such as the Inochi2D runtime, are under their own terms, and the Claude Agent SDK behind the editor's AI assistant is proprietary software under Anthropic's terms; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Courseware you create or upload does not become subject to this license through the use of AINOBI.
 

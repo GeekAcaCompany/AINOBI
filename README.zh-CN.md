@@ -144,7 +144,7 @@ AINOBI 假定有一个 AI Agent 在使用它，而这个 Agent 本来就会查�
 
 ## 许可证
 
-代码、文档以及 Studio 自带的 AI 教师均以 [GNU Affero General Public License v3.0 only](LICENSE) 授权。版权归 GeekAca Ltd. 及贡献者所有，见 [NOTICE](NOTICE)。外部贡献需要签署[贡献者许可协议](CLA.md)。
+代码、文档以及 Studio 自带的 AI 教师均以 [GNU Affero General Public License v3.0 only](LICENSE) 授权。版权归 GeekAca Ltd. 及贡献者所有，见 [NOTICE](NOTICE)。提交贡献即表示你同意[贡献者许可协议](CLA.md)，无需另行签署。
 
 AINOBI 名称和标志是 GeekAca Ltd. 的商标，不在本许可证的授权范围内，见 [TRADEMARKS.md](TRADEMARKS.md)。第三方组件（例如 Inochi2D 运行时）适用其各自的条款，编辑器的 AI 助手所使用的 Claude Agent SDK 是适用 Anthropic 条款的专有软件，见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。你创建或上传的课件不会因为使用 AINOBI 而受本许可证约束。
 
