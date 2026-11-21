@@ -144,7 +144,7 @@ Node.js 以外のものが必要な機能が 2 つあり、どちらも、必要
 
 ## ライセンス
 
-コード、ドキュメント、および Studio に付属する AI教師は、[GNU Affero General Public License v3.0 only](LICENSE) の下でライセンスされています。著作権は GeekAca Ltd. およびコントリビューターにあります。[NOTICE](NOTICE) を参照してください。外部からのコントリビューションには、署名済みの[コントリビューターライセンス契約](CLA.md)が必要です。
+コード、ドキュメント、および Studio に付属する AI教師は、[GNU Affero General Public License v3.0 only](LICENSE) の下でライセンスされています。著作権は GeekAca Ltd. およびコントリビューターにあります。[NOTICE](NOTICE) を参照してください。コントリビューションを提出すると、[コントリビューターライセンス契約](CLA.md)に同意したことになります。別途の署名は不要です。
 
 AINOBI の名称とロゴは GeekAca Ltd. の商標であり、このライセンスの対象外です。[TRADEMARKS.md](TRADEMARKS.md) を参照してください。Inochi2D ランタイムなどのサードパーティコンポーネントにはそれぞれのライセンス条件が適用され、エディターの AIアシスタントが使う Claude Agent SDK は Anthropic の利用条件に基づくプロプライエタリソフトウェアです。[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) を参照してください。あなたが作成またはアップロードした教材が、AINOBI を使ったことによってこのライセンスの対象になることはありません。
 

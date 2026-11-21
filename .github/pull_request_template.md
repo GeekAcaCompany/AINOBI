@@ -24,3 +24,7 @@ Write in English. Report a vulnerability privately instead of here: see SECURITY
 ### Not tested
 
 <!-- Platforms, Node versions, services, or cases you could not check. -->
+
+---
+
+By submitting this pull request, I agree to the [Contributor License Agreement](https://github.com/GeekAcaCompany/AINOBI/blob/main/CLA.md).
