@@ -2,11 +2,14 @@
 // Commitlint rules that enforce the AINOBI commit message convention.
 const headerPattern = /^[a-z]+\([a-z][a-z0-9-]*\)!?: [a-z][\x20-\x7e]*$/;
 const aiAttributionPattern = /^(?:(?:generated|written|authored|created|assisted|co-authored)\s+(?:by|with|using)\s+\[?(?:AI\b|Codex\b|Claude\b|ChatGPT\b|Copilot\b|Gemini\b|Cursor\b|Hermes\b|OpenAI\b|Anthropic\b)|AI[- ](?:generated|assisted)\b)/i;
+const pullRequestMergePattern = /^Merge pull request #\d+ from \S+(?:\n|$)/;
 
 export default {
   extends: ['@commitlint/config-conventional'],
-  // Merge, revert and version-bump messages are validated like any other; there are no exceptions.
+  // Revert, version-bump and other merge messages are validated like any other. The one exception is the merge
+  // commit GitHub creates for a pull request, because GitHub writes its subject.
   defaultIgnores: false,
+  ignores: [(message) => pullRequestMergePattern.test(message)],
   plugins: [{
     rules: {
       'ainobi-header-format': ({ header }) => [

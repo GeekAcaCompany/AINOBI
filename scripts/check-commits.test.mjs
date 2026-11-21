@@ -14,7 +14,7 @@ const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const config = await load({}, { cwd: root });
 const sha = (digit) => digit.repeat(40);
 
-test('accepts scoped commits, breaking changes, co-author trailers, and the 72-character boundary', async () => {
+test('accepts scoped commits, breaking changes, co-author trailers, pull request merges, and the 72-character boundary', async () => {
   const messages = [
     'docs(readme): make English the default language',
     'fix(courseware-core): preserve element ids when saving',
@@ -24,6 +24,7 @@ test('accepts scoped commits, breaking changes, co-author trailers, and the 72-c
     'feat(cli): ' + 'a'.repeat(61),
     'feat(cli): add validation\n\nCo-Authored-By: Someone <test@example.com>',
     'feat(cli): add validation\n\nCo-Authored-By: Claude <noreply@anthropic.com>',
+    'Merge pull request #1 from example/feature\n\nfeat(cli): add validation',
   ];
   for (const message of messages) {
     const result = await lintMessage(message, config);
@@ -43,7 +44,8 @@ test('rejects malformed, ignored-by-default, empty, and attributed messages', as
     'feat(cli): add validation.',
     'feat(cli): add validation ',
     'feat(cli): ' + 'a'.repeat(62),
-    'Merge pull request #1 from example/feature',
+    "Merge branch 'main' into feature",
+    'Merge pull request from example/feature',
     'Revert "feat(cli): add validation"',
     'v1.0.0',
     'fixup! feat(cli): add validation',
